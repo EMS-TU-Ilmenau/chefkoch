@@ -1,75 +1,68 @@
 language: python
 os: linux
 sudo: required
-
 branches:
   only:
-    - master
-    - stable
-
+  - master
+  - stable
 services:
-    - docker
-
+- docker
 env:
   global:
-    - CIBW_BEFORE_BUILD="{pip} install six dask dask-jobqueue --only-binary all"
-    - secure: a7Ef8MN7YRctNIe/o+xeJuV6ak5gKM5V9vBPQDcO7MI5ieyNSf0TE6nLGtt8A4gfAqTM1QtZAbAGKIVB4fs2pJXjABwuDwmPR1feB6xVJGqKXhraNWLsP/CV/JIfdJcfjNxGGUn+GYEAGZQ1q6zA3JSTHuFdAVERFUKJjvcE4Wp/DPS0o75nShgpurrwn2cYzzqxB43XaOmjYVyV7mm5DbQ2D2eXtkNJ1vfIscgFEG7B+ClymEjv5XkGWeJ7xKvQCvcyBYYpi/yGAKXAEd99s/r/2T1CDSW/CsgUrWql1MF/1/93MN4bFOriG+QhbOP/zrDXdpOVnmNggtVUw7nxXzuPAZ7GSYa+OzA7zjhpWRQsHvTza86sAHm4FNyPrk3u52EDulrHCbtjc1n4ESOzYqxozi4Nyx+Ga1vVvN5OmpliHr6JoHReF7YnFAYjEGhdEW99Z7dTohqva5lmrEUvU5I3qQ+9sxCv+qXRz/TabIbFSI570KqPMHb8hTT24rpjkL2enSsg2YgMsryavOdY1jnT79lhAH9RVSPJ17Pxl4jNqkLGOJ4HQuX4c8bEsmz6sRa8eMvo3ZEfP9garKjZkraWetulC2HrbTGprtJ1BcO/cfQwxxpjUepA4a2E73b/EBSSuk6xrOsL/FVQZOZN4KtmyQN4W8gexxwgCNhRtok=
-
+  - CIBW_BEFORE_BUILD="{pip} install six dask dask-jobqueue --only-binary all"
+  - secure: mzeBeHe9b35P5YljfWtYFr+P87Lb53R5mnIaDT//vwpeqogwnd7s7ZwwcxPTChvGvDMJi4m4vKoIzE5IjtLOY4uckuS+n0lfcO+Wkvuv8speylu40NuiBlBxf57A4hYkimvs4LIAJmQkVBBz+9fHLmxn0IfYYQqpCP9YtdoxSce6cUlIf5nQHycLClMo7RvXlHkOKIQEoXbRdFI+EFLsO4VYSHiWZNC3Z3ME3lAtD/k9GwkLpOHVDQnmeX0ahgooKBhd0tSZFKM0HEJKOo9Oj9tgMSXOZ3hbwLzWgexw/HQyHov9T5J4jTVk7C7xg3KGiIaivWMuIAAlxDGR61ux8YtFt5QkQaU4TKk4V4bA/Z1bv+n54K2WBk4owi7ugbOI/0tNy4FwFM9XhAfNsriuDs/V91XTSSEkTFs5C4bNhlmrj8Fp+haFmKyOwnTDDthsgngrQab0QNr7To6bQFSqfZJY5tsPZmUG0StcJUciF+uU/P0e79VoeloGMwwmRtxYhK159YU8VUkpONfp/ZcQ2OQcQmSaPwn+MKWXCLgv4qM0RXWDNkbWJTtvDnO65Rjo4Ytq4mU7dKkR/jQSMWqtP2ATfCj59y+KMRi/MU/db8TaEEFe8AcaGVBpt6T4GPFTinG8FravQh8LZOjWdwpPEDLWtG+VZhLJjJM5s8Fg6X0=
 matrix:
   include:
-    - python: '3.7'
-      dist: xenial
-      sudo: true
-      if: type != pull_request
-      env: CIBW_SKIP='cp[!3]?-* cp3[!7]-*'
-    - python: '3.6'
-      if: branch = stable OR type = pull_request
-      env: CIBW_SKIP='cp[!3]?-* cp3[!6]-*'
-    - python: '3.5'
-      if: branch = stable
-      env: CIBW_SKIP='cp[!3]?-* cp3[!5]-*'
-    - python: '3.4'
-      if: branch = stable
-      env: CIBW_SKIP='cp[!3]?-* cp3[!4]-*'
-    - python: '2.7'
-      if: type != pull_request
-      env: CIBW_SKIP='cp[!2]?-* cp2[!7]-*'
-
+  - python: '3.7'
+    dist: xenial
+    sudo: true
+    if: type != pull_request
+    env: CIBW_SKIP='cp[!3]?-* cp3[!7]-*'
+  - python: '3.6'
+    if: branch = stable OR type = pull_request
+    env: CIBW_SKIP='cp[!3]?-* cp3[!6]-*'
+  - python: '3.5'
+    if: branch = stable
+    env: CIBW_SKIP='cp[!3]?-* cp3[!5]-*'
+  - python: '3.4'
+    if: branch = stable
+    env: CIBW_SKIP='cp[!3]?-* cp3[!4]-*'
+  - python: '2.7'
+    if: type != pull_request
+    env: CIBW_SKIP='cp[!2]?-* cp2[!7]-*'
 install:
-  - pip install six
-  - pip install dask dask-jobqueue --only-binary all
-  - pip install pycodestyle
-  - echo "$TRAVIS_BRANCH $TRAVIS_PYTHON_VERSION $PYTHON"
-  - |
-    if [[ "$TRAVIS_BRANCH" == "stable" ]] ; then
-        pip install cibuildwheel==0.9.4 twine
-    else
-        if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]] ; then
-            pip install coverage coveralls
-        fi
-    fi
-
+- pip install six
+- pip install dask dask-jobqueue --only-binary all
+- pip install pycodestyle
+- echo "$TRAVIS_BRANCH $TRAVIS_PYTHON_VERSION $PYTHON"
+- |
+  if [[ "$TRAVIS_BRANCH" == "stable" ]] ; then
+      pip install cibuildwheel==0.9.4 twine
+  else
+      if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]] ; then
+          pip install coverage coveralls
+      fi
+  fi
 script:
-  - echo "Running code style checks"
-  - make styleCheck
-  - echo "Running build for $TRAVIS_PYTHON_VERSION"
-  - |
-    make compile
-    if [[ "$TRAVIS_BRANCH" == "stable" ]] ; then
-        # all version targets: build a wheel!
-        echo "Generating wheel... (skipping $(CIBW_SKIP))"
-        cibuildwheel --output-dir wheelhouse
-        ls -l wheelhouse/*
-    elif [[ "$TRAVIS_BRANCH" == "master" ]] ; then
-        # master branch: regular tests and code coverage analysis
-        if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]] ; then
-            echo "Running coverage analysis..."
-            echo "import chefkoch" > test.py
-            coverage run --source=chefkoch test.py
-        else
-            echo "No test code deployed yet."
-        fi
-    fi
-
+- echo "Running code style checks"
+- make styleCheck
+- echo "Running build for $TRAVIS_PYTHON_VERSION"
+- |
+  make compile
+  if [[ "$TRAVIS_BRANCH" == "stable" ]] ; then
+      # all version targets: build a wheel!
+      echo "Generating wheel... (skipping $(CIBW_SKIP))"
+      cibuildwheel --output-dir wheelhouse
+      ls -l wheelhouse/*
+  elif [[ "$TRAVIS_BRANCH" == "master" ]] ; then
+      # master branch: regular tests and code coverage analysis
+      if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]] ; then
+          echo "Running coverage analysis..."
+          echo "import chefkoch" > test.py
+          coverage run --source=chefkoch test.py
+      else
+          echo "No test code deployed yet."
+      fi
+  fi
 after_success:
-  - "./.travis.yml.after_success"
+- "./.travis.yml.after_success"
