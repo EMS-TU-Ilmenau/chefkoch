@@ -204,7 +204,8 @@ if __name__ == '__main__':
     setup(
         name=packageName,
         version=packageVersion,
-        description='A compute cluster cuisine for distributed scientific computing in python',
+        description=('A compute cluster cuisine for distributed scientific ' +
+                     'computing in python'),
         long_description=longDescription,
         author='Christoph Wagner, EMS group TU Ilmenau',
         author_email='christoph.wagner@tu-ilmenau.de',
@@ -212,7 +213,7 @@ if __name__ == '__main__':
         license='Apache Software License',
         classifiers=[
             'Development Status :: 1 - Planning',
-             'Intended Audience :: Developers',
+            'Intended Audience :: Developers',
             'Intended Audience :: Education',
             'Intended Audience :: Science/Research',
             'Intended Audience :: Information Technology',
@@ -233,7 +234,8 @@ if __name__ == '__main__':
             'Topic :: Scoftware Development',
             'Topic :: System :: Distributed Computing'
         ],
-        keywords='compute cluster HPC LSF dask parallel computing scheduler framework',
+        keywords=('compute cluster HPC LSF dask parallel computing ' +
+                  'scheduler framework'),
         setup_requires=setupRequires,
         install_requires=installRequires,
         packages=[
