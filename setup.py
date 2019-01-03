@@ -74,8 +74,6 @@ def getCurrentVersion():
     global packageVersion
     global fullVersion
 
-    print('bla')
-
     # check if there is a manual version override
     if os.path.isfile(".version"):
         with open(".version", "r") as f:
@@ -193,9 +191,9 @@ if __name__ == '__main__':
     setupRequires = []
     installRequires = []
     checkRequirement(setupRequires, 'setuptools', 'setuptools>=18.0')
-    checkRequirement(installRequires, 'dask', 'dask')
+    checkRequirement(installRequires, 'dask', 'dask>=1.0.0')
     checkRequirement(installRequires, 'six', 'six')
-    checkRequirement(installRequires, 'dask-jobqueue', 'dask-jobqueue')
+    checkRequirement(installRequires, 'dask-jobqueue', 'dask-jobqueue>=0.4.1')
 
     print("Requirements for setup: %s" % (setupRequires))
     print("Requirements for install: %s" % (installRequires))

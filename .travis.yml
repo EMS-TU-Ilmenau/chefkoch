@@ -54,16 +54,15 @@ script:
   - make styleCheck
   - echo "Running build for $TRAVIS_PYTHON_VERSION"
   - |
+    make compile
     if [[ "$TRAVIS_BRANCH" == "stable" ]] ; then
         # all version targets: build a wheel!
-        make compile
         echo "Generating wheel... (skipping $(CIBW_SKIP))"
         cibuildwheel --output-dir wheelhouse
         ls -l wheelhouse/*
     elif [[ "$TRAVIS_BRANCH" == "master" ]] ; then
         # master branch: regular tests and code coverage analysis
         if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]] ; then
-            make compile-coverage
             echo "Running coverage analysis..."
             coverage run --source=chefkoch test.py
         else
