@@ -1,0 +1,3 @@
+cython
+dask
+dask_jobqueue

@@ -1,0 +1,81 @@
+branches:
+  only:
+    - stable
+
+environment:
+  TWINE_REPOSITORY:
+    secure: uxrVt8G0aReV23OXS5lWKg==
+
+  TWINE_REPOSITORY_URL:
+    secure: ZOBFk0ZQrSJU2YF/RWZObU/2O9XBbQ42I9vDVg3JPd8=
+
+  TWINE_USERNAME:
+    secure: vmEPVHBcWLBeQoU4t3pl8A==
+
+  TWINE_PASSWORD:
+    secure: s5rlS2aZ0pdnIhWQrN0B0LZO5FU6B7CIp1ON4wriejs=
+
+  matrix:
+    - PYTHON: "C:\\Python27_64"
+      PYTHON_VERSION: "2.7"
+      PYTHON_ARCH: "64"
+      CONDA_PY: "27"
+      CIBW_SKIP: 'cp[!2]?-* cp2[!7]-*'
+
+    - PYTHON: "C:\\Python34_64"
+      PYTHON_VERSION: "3.4"
+      PYTHON_ARCH: "64"
+      CONDA_PY: "34"
+      CIBW_SKIP: 'cp[!3]?-* cp3[!4]-*'
+
+    - PYTHON: "C:\\Python35_64"
+      PYTHON_VERSION: "3.5"
+      PYTHON_ARCH: "64"
+      CONDA_PY: "35"
+      CIBW_SKIP: 'cp[!3]?-* cp3[!5]-*'
+
+    - PYTHON: "C:\\Python36_64"
+      PYTHON_VERSION: "3.6"
+      PYTHON_ARCH: "64"
+      CONDA_PY: "36"
+      CIBW_SKIP: 'cp[!3]?-* cp3[!6]-*'
+
+    - PYTHON: "C:\\Python37_64"
+      PYTHON_VERSION: "3.7"
+      PYTHON_ARCH: "64"
+      CONDA_PY: "37"
+      CIBW_SKIP: 'cp[!3]?-* cp3[!7]-*'
+    # For Python versions available on Appveyor, see
+    # http://www.appveyor.com/docs/installed-software#python
+
+init:
+  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
+  - "ECHO %CIBW_SKIP%"
+  - "ECHO %CIBW_ENVIRONMENT%"
+  - "ECHO \"%APPVEYOR_SCHEDULED_BUILD%\""
+
+install:
+  # Prepend chosen Python to the PATH of this build
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+  # Check that we have the expected version and architecture for Python
+  - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+  - "ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%"
+  - "ECHO \"%APPVEYOR_SCHEDULED_BUILD%\""
+  - >-
+     %CMD_IN_ENV%
+     python -c "import sys,platform,struct;
+     print(sys.platform, platform.machine(), struct.calcsize('P') * 8, )"
+
+build_script:
+  - pip install cibuildwheel==0.9.4 twine
+  - pip install .
+
+test_script:
+  - echo "No testing implemented yet."
+  - cibuildwheel --output-dir wheelhouse
+  - twine upload "wheelhouse\\*.whl"
+
+artifacts:
+  - path: "wheelhouse\\*.whl"
+    name: Wheels

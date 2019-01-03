@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include makefile
+include .version
+recursive-include chefkoch *.py
+recursive-include doc *
