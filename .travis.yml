@@ -24,9 +24,6 @@ matrix:
   - python: '3.5'
     if: branch = stable
     env: CIBW_SKIP='cp[!3]?-* cp3[!5]-*'
-  - python: '3.4'
-    if: branch = stable
-    env: CIBW_SKIP='cp[!3]?-* cp3[!4]-*'
   - python: '2.7'
     if: type != pull_request
     env: CIBW_SKIP='cp[!2]?-* cp2[!7]-*'
@@ -66,3 +63,14 @@ script:
   fi
 after_success:
 - "./.travis.yml.after_success"
+deploy:
+  provider: pypi
+  skip_existing: true
+  distributions: sdist bdist_wheel
+  tags: true
+  on:
+    branch: stable
+  user:
+    secure: F+1Z9O1bcitY86qbwog8bj8wYOq/Ylp7xUa6zYd/ilmPl/iKiESZXbqI5Svs1XbOYN62CCz7NrBXxPhe6FFxD7+J6MWFlwLRv09v7HLotMUqQJKITtyPvHjiX/m8oTkD5qIdqtZDrN+DqVkC7nDDGBVIBvajjuoEY800lGNX9jw6QIXPU6x6JTyI8GiOORwYbD5X2Y8xc/FsXviGSUU9FxmstMp/u5sWG5eOptQnm75a9vWAhFAyjSWQRX/shhin8z7RdOzo9spfUyvitpBYGKaq1mpo768dbDDGdIVygZWGt56Nf3KYkJhR30uenB72WcJV6WSRYj2lRH/fvofD+onNd8T4mm2UviaxEPj7RNuFs1Nbn3bibpHGJtuT+U4QWida2DXh+8fISRVgfQZiC0fUfsY8GwQUfYybPvEjufwoa8rz+AMsprVtsjrdD628Bd9Ccl3a41kG/OIv3uBHxq3FL9mtj7pvIRa18ORyAPo5i/gNgLYoYfyA6UkgC9yRsLA7LNfgSET1Ip5zhnnmS4p9+h4ohUbQgQO29bcZdpuV2ZuJbbuuCyq9UUraq1938GqVH0J4d3d8UKQbMvQgfwUbZeXnYkQZSuWECDddDT/dWfAJw8MeJHKzlQDD/4cXMcL5WdBnaBohPGmw60HPCBpimiGxCRrbqcXiwDYWnm0=
+  password:
+    secure: RJ5dHANgutGaVG07BRIa7nzG1oteK9Bfzm6Eg5XgmvkxYs3aC+WW0h03dXgCi2me5Wjp6LnqfAnS1nZq1ub33uACd6BVMR18uXY2nRO6C0BB6XgYIlKjvPtOfMbsr3fx24lRJIE2Ty6XJEMULSGpw6Q1c2LkgMmqf5ot5QX0BHSwgszNwIX/UiYQ0R9NvsdeFcD7OH7Ht7T9TrokNluhpR5RrTpXwag1TcFjYWzsMi04pSguwKuAzjufmPkUKUjhbSXU1Xcfj96HyEPliRrZZ7XUgt/XHAXzmfKtMlzZ/2HDJqKWLLbLexRab8HGcpFhto/NFvelA0Npup5FmOfP1SO3E/oqxm2SgQEhza2Yuk7R5c8JOYDSnMcbk9jX1D40cxRw+WUAIYnhvoTCzeyzApVyzYIXSZxksv8lZ9gcCzJNUD0E/E98CSf1tQeX/9Li3pnQW38l2hZPdcHj2wRMyZM1hYnFbLH8svmRfuXO6NaNZsJe1pUsn4GksIt988BqyHaDB5SHa/u7jnOMdPOK6B5zZygnJcg6+WRG7o1v8YEacf32wMnd41sFyBTonhlrE/6pTOBWlGLM1uBrQEA625BvDGc08mo4M8tOZAs4CxYbVVSaqZmVruKDC8jAsPqTpqlDNwVVzR7nqEWNJnFYGJPp1EAm4iV2kc6gX8m+Wo0=

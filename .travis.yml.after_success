@@ -2,17 +2,7 @@
 
 echo "Finished job for $TRAVIS_BRANCH:py$TRAVIS_PYTHON_VERSION successfully. Post processing ..."
 
-if [[ "$TRAVIS_BRANCH" == "stable" ]] ; then
-    echo "Uploading generated wheels..."
-    ls -l wheelhouse/*
-    twine upload wheelhouse/*.whl
-
-    if [[ ""$TRAVIS_PYTHON_VERSION == "3.7" ]] ; then
-        python setup.py sdist
-        twine upload dist/*
-    fi
-
-elif [[ "$TRAVIS_BRANCH" == "master" ]] ; then
+if [[ "$TRAVIS_BRANCH" == "master" ]] ; then
     if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]] ; then
         echo "Submitting coverage analysis results..."
         coveralls
