@@ -195,7 +195,7 @@ if __name__ == '__main__':
     checkRequirement(setupRequires, 'setuptools', 'setuptools>=18.0')
     checkRequirement(installRequires, 'dask', 'dask')
     checkRequirement(installRequires, 'six', 'six')
-    checkRequirement(installRequires, 'dask_jobqueue', 'dask_jobqueue')
+    checkRequirement(installRequires, 'dask-jobqueue', 'dask-jobqueue')
 
     print("Requirements for setup: %s" % (setupRequires))
     print("Requirements for install: %s" % (installRequires))

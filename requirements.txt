@@ -1,3 +1,2 @@
-cython
 dask
-dask_jobqueue
+dask-jobqueue

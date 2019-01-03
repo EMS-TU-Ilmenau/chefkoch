@@ -16,7 +16,7 @@ Description: # chefkoch
         ### Dependencies
         - Python >= 2.7 or >=3.4
         - dask
-        - dask_jobqueue
+        - dask-jobqueue
 
         ### Authors
         - Christoph Wagner - Technische Universität Ilmenau, Institute for Information Technology,
