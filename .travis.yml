@@ -64,6 +64,7 @@ script:
         # master branch: regular tests and code coverage analysis
         if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]] ; then
             echo "Running coverage analysis..."
+            echo "import chefkoch" > test.py
             coverage run --source=chefkoch test.py
         else
             echo "No test code deployed yet."
