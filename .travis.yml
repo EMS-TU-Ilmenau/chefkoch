@@ -19,13 +19,10 @@ matrix:
     if: type != pull_request
     env: CIBW_SKIP='cp[!3]?-* cp3[!7]-*'
   - python: '3.6'
-    if: branch = stable OR type = pull_request
+    if: type = pull_request
     env: CIBW_SKIP='cp[!3]?-* cp3[!6]-*'
-  - python: '3.5'
-    if: branch = stable
-    env: CIBW_SKIP='cp[!3]?-* cp3[!5]-*'
   - python: '2.7'
-    if: type != pull_request
+    if: branch = master AND type != pull_request
     env: CIBW_SKIP='cp[!2]?-* cp2[!7]-*'
 install:
 - pip install six
@@ -70,7 +67,8 @@ deploy:
   tags: true
   on:
     branch: stable
+    python: 3.7
   user:
     secure: F+1Z9O1bcitY86qbwog8bj8wYOq/Ylp7xUa6zYd/ilmPl/iKiESZXbqI5Svs1XbOYN62CCz7NrBXxPhe6FFxD7+J6MWFlwLRv09v7HLotMUqQJKITtyPvHjiX/m8oTkD5qIdqtZDrN+DqVkC7nDDGBVIBvajjuoEY800lGNX9jw6QIXPU6x6JTyI8GiOORwYbD5X2Y8xc/FsXviGSUU9FxmstMp/u5sWG5eOptQnm75a9vWAhFAyjSWQRX/shhin8z7RdOzo9spfUyvitpBYGKaq1mpo768dbDDGdIVygZWGt56Nf3KYkJhR30uenB72WcJV6WSRYj2lRH/fvofD+onNd8T4mm2UviaxEPj7RNuFs1Nbn3bibpHGJtuT+U4QWida2DXh+8fISRVgfQZiC0fUfsY8GwQUfYybPvEjufwoa8rz+AMsprVtsjrdD628Bd9Ccl3a41kG/OIv3uBHxq3FL9mtj7pvIRa18ORyAPo5i/gNgLYoYfyA6UkgC9yRsLA7LNfgSET1Ip5zhnnmS4p9+h4ohUbQgQO29bcZdpuV2ZuJbbuuCyq9UUraq1938GqVH0J4d3d8UKQbMvQgfwUbZeXnYkQZSuWECDddDT/dWfAJw8MeJHKzlQDD/4cXMcL5WdBnaBohPGmw60HPCBpimiGxCRrbqcXiwDYWnm0=
   password:
-    secure: jIayMSXoMj61JItOoes6rhlZjA7w5Yi8a/Z2d55Pm9lvFT/iacyaJgA/3RqQhOFynQ+Krf5NFnEek5d+rUxDOYquoDD0Vh6A8fxHzsX1ccfDU7xxu5pK2qxEzGN1xlAi2oC1eoeT6Zk/ZtXxVQ7twtRAuNnXjcpb4dsXnz8979oqtRyRdwughSKhbaBJ0brqsIkQfn/yRHXAO8SYlGJECML2yDKoxhftEKjAStcClp0pKGG+sOlmCZtXUk7TZXw05hHKtS2pgDz1IKQ1wUWsAiR3AqoKkm8HZc+Vj8LG2BySIT9+3Nt9mk9aO4g8L12pJ+p+T+ftWJrtUE8KIu+hLg8yqyciCinsVR+SrYAf6HN9OeeGqMSaUumJhu45Qx+Yf6SaZzl02FObMTHSk1b8/aBGKFDXbUfZCpM+idNwuH+dkRKZSCUEY12xHHEd5E8U8ynLdZr5VMeIrpaRwlGOdyRPVDZnBfrcSFOJmRNi4aAc5gNGlUBkeQzIZubTKqdCJM+GN8CiWe79Wkz6IShptaBsp9Gxe/6lqTCZwtsYsw0708v7RLyVF40lO/C5VyHn/mOBgi5+ctdC+yP+l1E5AWwh/QFmbTposvi+nKC8BLOiFz5NYrKruD0GG3x/JkQEP7R3Vl5S7DQcwW1BEOiw++z1PTrJkosnV91D9qJ0WQI=
+    secure: CPrGmWHnDuECSbfkdkgQVdqK+IoeZrXDx4P8ZHUtryMeV7LlW91g72WM14xCOwayDRqUWy/NByc9BsSo++vrFAbg1KSnssogu4PNvLiR4R83NVssEZ/UECRtM5EeuamB30xj3KQ30UhTRqvwVF4ha/QAK3dFCFApzi7EQrBh25WnYZZPy+PR6XghqO6JbpaN8JzRr8O3jd+ehZr+q0ORjhG4jAxN/1Se1Lm9jbf9KoozYcAWSrK5rsUzqsYC4C89FZET6WRkbL/dSXToRBQkuw8+5mw00KbJL0OFhddPqe9DkSWAqwjNyAgSq+8HUFY5TM3tRTrsiEanOESHKuXWxJud/HfRKjxgdvZC8gYX+DWzAZ5DeBpPgj6IuF5aADW0rH6/N2bwgkBpFqH5TYbR0ZvmStM5pQpQJmlEppgpibI248K19mUFe4csehvcxmVZBoPOliGC5bVrfGTPIRKwdcjWeN9dQcPpR5g/ETMt9ynKdrOSUx2A0jMV8h9bhALH6XDZWzMoDC1ee4sx+RAw2jQ9va92hh/bvJeoPw18AqpnU0V53zESNq3pX+lYsayoV3OHqx0puZCww5wGC6x9w2SRRn3EJr8wdRpN3TQc2/d+fsC8+NoKo/jocQ7f0p7n+vbuAJO8CRdaBR9Qp6FKNP+B5TxlV/BDY2KzTly3ohQ=

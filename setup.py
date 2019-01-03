@@ -228,7 +228,7 @@ if __name__ == '__main__':
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             'Topic :: Scientific/Engineering',
-            'Topic :: Scoftware Development',
+            'Topic :: Software Development',
             'Topic :: System :: Distributed Computing'
         ],
         keywords=('compute cluster HPC LSF dask parallel computing ' +
