@@ -14,14 +14,20 @@
     limitations under the License.
 
 .. toctree::
-   :glob:
-   :maxdepth: 2
-   :hidden:
+    :glob:
+    :maxdepth: 2
+    :hidden:
 
-   architecture
-   classes
+    architecture
+    classes
+    examples
 
 .. automodule:: chefkoch
+
+.. _chefkoch:
+
+Introduction
+============
 
 Chefkoch under development
 --------------------------
@@ -31,17 +37,15 @@ Read about the general design of chefkoch in our :ref:`architecture` section. A 
 Please tune in soon for more details.
 
 
-Examples for usage
-==================
-
-Never seen a simulation, it should compute.
-
+.. _contributions:
 
 Contributions
 -------------
 
 There are many ways you as an individual can contribute. We are happy about feature requests, bug reports and of course contributions in form of additional features. To these ends, please step by at `Github <https://github.com/EMS-TU-Ilmenau/chefkoch>`_ where we organize the work on the package.
 
+
+.. _affiliations:
 
 Affiliations and Credits
 ------------------------

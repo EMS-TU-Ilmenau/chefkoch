@@ -19,6 +19,8 @@
 #
 import os
 import sys
+print(sys.version)
+
 sys.path.append(os.path.abspath('../'))
 sys.path.append(os.path.abspath('../chefkoch'))
 import chefkoch as ck
@@ -40,6 +42,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.githubpages',
     'sphinx.ext.autosummary',
+    'sphinxcontrib.tikz',
     'numpydoc'
     ]
 
@@ -93,13 +96,15 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'bizstyle'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "collapse_navigation": False
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -112,6 +117,10 @@ html_static_path = []
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'chefdoc'
 
+
+# -- Options for sphinxcontrib.tikz ---------------------------------------
+tikz_transparent = True
+tikz_tikzlibraries = 'positioning'
 
 # -- Options for Texinfo output -------------------------------------------
 
