@@ -18,4 +18,6 @@
 Classes
 =======
 
-Please tune in soon for more UML Diagrams.
+Please tune in soon for more UML Diagrams to Chef, the main program coordinator, chef the module, the worker, the DB directory, the
+pantry, the flavours, a recipe, a worker's log, the chef init log, the dependency graph, the CLI, the config file, the solution
+evaluation part of the system.
