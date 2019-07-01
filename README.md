@@ -24,7 +24,7 @@ A compute cluster cuisine for distributed scientific computing in python
   Technische Universität Ilmenau, Institute for Information Technology, EMS Group
 - **<https://www.tu-ilmenau.de/it-ems/>**
 
-## Documentation / HELP !
+## Documentation / HELP!
 Please have a look at the documentation, which is included in the source
 distribution at github or may be built locally on your machine by running
     `make doc`
