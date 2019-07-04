@@ -238,6 +238,7 @@ if __name__ == '__main__':
         packages=[
             'chefkoch'
         ],
+        scripts=['bin/chef'],
         cmdclass={'build_doc': doc_opts()},
         command_options={
             'build_doc': {
