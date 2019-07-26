@@ -194,6 +194,7 @@ if __name__ == '__main__':
     checkRequirement(installRequires, 'dask', 'dask>=1.0.0')
     checkRequirement(installRequires, 'six', 'six')
     checkRequirement(installRequires, 'dask-jobqueue', 'dask-jobqueue>=0.4.1')
+    checkRequirement(installRequires, 'arghandler', 'arghandler>=1.2.0')
 
     print("Requirements for setup: %s" % (setupRequires))
     print("Requirements for install: %s" % (installRequires))
