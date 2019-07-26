@@ -30,37 +30,54 @@ if __name__ == '__main__':
     import chefkoch
     import sys
     from arghandler import *
-    print(chefkoch.version)
+
+    REMOTES = "remotes"
+    TOKEN = "token"
+    ARG_VERBOSE = {
+        TOKEN: ("-v", "--verbose"), "action": "store_true",
+        "help": "Increase verbosity of output."
+    }
+
+    def add_arguments(parser, *args):
+        """Wrapper to call parser.add_argument(*arg) for each arg in args"""
+        for arg in args:
+            token = arg.pop(TOKEN, ())
+            parser.add_argument(*token, **arg)
 
     @subcmd("cook")
-    def cmd_cook(*args):
-        """This is the header describing the cook method, which is currently
-        doing nothing."""
-        #if verbose: print(cmd_cook.__doc__)
-        print("cook")
+    def cmd_cook(parser, context, args):
+        parser.description = "Cook something and then return the result."
+        add_arguments(parser, ARG_VERBOSE)
+        args = parser.parse_args(args)
         return #something
 
     @subcmd("check")
-    def cmd_check(*args):
-        """This is the header describing the check method, which is currently
-        doing nothing."""
-        print("check")
+    def cmd_check(parser, context, args):
+        parser.description = "Check something and then return the result."
+        add_arguments(parser, ARG_VERBOSE)
+        args = parser.parse_args(args)
         return #something
 
     @subcmd("inspect")
-    def cmd_inspect(*args):
-        """This is the header describing the inspect method, which is currently
-        doing nothing."""
-        print("inspect")
-        print(*args)
+    def cmd_inspect(parser, context, args):
+        parser.description = "Inspect something and then return the result."
+        add_arguments(parser, ARG_VERBOSE)
+        args = parser.parse_args(args)
         return #something
 
     @subcmd("version")
-    def cmd_version(*args):
-        """This is the header describing the version method, which is currently
-        doing something which is returning the version number."""
-        print("version")
-        return chefkoch.version
+    def cmd_version(parser, context, args):
+        add_arguments(parser, ARG_VERBOSE)
+        args = parser.parse_args(args)
+
+        if args.verbose: print("Increased verbosity.")
+
+        print("chefkoch Version: " + str(chefkoch.version))
+        print("\nChefkoch is a compute cluster cuisine for distributed "
+                 + "scientific computing in python.")
+        print("\n(2019) EMS Research Group TU Ilmenau")
+        print("http://github.com/EMS-TU-Ilmenau/chefkoch")
+        print("https://www.tu-ilmenau.de/it-ems")
 
     handler = ArgumentHandler(enable_autocompletion = True)
     handler.description = """A compute cluster cuisine for distributed
