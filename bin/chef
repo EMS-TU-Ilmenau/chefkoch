@@ -34,41 +34,64 @@ if __name__ == '__main__':
     REMOTES = "remotes"
     TOKEN = "token"
     ARG_VERBOSE = {
-        TOKEN: ("-v", "--verbose"), "action": "store_true",
+        TOKEN: ("-v", "--verbose"),
+        "action": "store_true",
         "help": "Increase verbosity of output."
     }
+    ARG_DEBUGLEVEL = {
+        TOKEN: ("-d", "--debug-level"),
+        "type": int,
+        "default": 0,
+        "help": "Set debug level."
+    }
 
-    def add_arguments(parser, *args):
+    args = None
+
+    def env_add_arguments(parser, *args):
         """Wrapper to call parser.add_argument(*arg) for each arg in args"""
         for arg in args:
             token = arg.pop(TOKEN, ())
             parser.add_argument(*token, **arg)
 
+    def env_parse_and_apply(parser, context, arguments):
+        """
+        Setup global arguments, parse them and set up environment accordingly.
+
+        Installs the `--verbose` and `--debug-level` command line options and
+        evaluates them. The evaluated arguments will be put into global
+        variable `args` and furthre evaluated. Creates a global `logging`
+        object in the global namespace and configures it according to the
+        corresponding command line settings.
+
+        Args:
+            parser (ArgumentParser): argument parser to expand and evaluate
+            context: context object as supplied by ArgumentHandler
+            input_args (list): List of command line arguments to parse
+
+        Returns:
+            None
+        """
+        global args
+        env_add_arguments(parser, ARG_VERBOSE, ARG_DEBUGLEVEL)
+        args = parser.parse_args(arguments)
+
     @subcmd("cook")
-    def cmd_cook(parser, context, args):
+    def cmd_cook(parser, context, arguments):
         parser.description = "Cook something and then return the result."
-        add_arguments(parser, ARG_VERBOSE)
-        args = parser.parse_args(args)
+        env_parse_and_apply(parser, context, arguments)
         return #something
 
     @subcmd("check")
-    def cmd_check(parser, context, args):
+    def cmd_check(parser, context, arguments):
         parser.description = "Check something and then return the result."
-        add_arguments(parser, ARG_VERBOSE)
-        args = parser.parse_args(args)
-        return #something
+        env_parse_and_apply(parser, context, arguments)
 
     @subcmd("inspect")
-    def cmd_inspect(parser, context, args):
+    def cmd_inspect(parser, context, arguments):
         parser.description = "Inspect something and then return the result."
-        add_arguments(parser, ARG_VERBOSE)
-        args = parser.parse_args(args)
-        return #something
+        env_parse_and_apply(parser, context, arguments)
 
     @subcmd("version")
-    def cmd_version(parser, context, args):
-        add_arguments(parser, ARG_VERBOSE)
-        args = parser.parse_args(args)
 
         if args.verbose: print("Increased verbosity.")
 
@@ -78,15 +101,10 @@ if __name__ == '__main__':
         print("\n(2019) EMS Research Group TU Ilmenau")
         print("http://github.com/EMS-TU-Ilmenau/chefkoch")
         print("https://www.tu-ilmenau.de/it-ems")
+    def cmd_version(parser, context, arguments):
+        env_parse_and_apply(parser, context, arguments)
 
     handler = ArgumentHandler(enable_autocompletion = True)
     handler.description = """A compute cluster cuisine for distributed
                             scientific computing in python."""
-    handler.add_argument("-v", "--verbose", action = "store_true",
-                        default = False,
-                        help = "Increase verbosity of text output."
-    )
-    handler.add_argument("-d", "--debug-level", type = int, default = 0,
-                        help = "Set debug level."
-    )
     handler.run(sys.argv[1:])
