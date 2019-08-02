@@ -50,6 +50,7 @@ if __name__ == '__main__':
     def env_add_arguments(parser, *args):
         """Wrapper to call parser.add_argument(*arg) for each arg in args"""
         for arg in args:
+            arg = arg.copy()
             token = arg.pop(TOKEN, ())
             parser.add_argument(*token, **arg)
 
