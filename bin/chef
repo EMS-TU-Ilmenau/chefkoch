@@ -29,6 +29,7 @@
 if __name__ == '__main__':
     import chefkoch
     import sys
+    from logging import *
     from arghandler import *
 
     REMOTES = "remotes"
@@ -38,11 +39,10 @@ if __name__ == '__main__':
         "action": "store_true",
         "help": "Increase verbosity of output."
     }
-    ARG_DEBUGLEVEL = {
-        TOKEN: ("-d", "--debug-level"),
-        "type": int,
-        "default": 0,
-        "help": "Set debug level."
+    ARG_DEBUG = {
+        TOKEN: ("-d", "--debug"),
+        "action": "store_true",
+        "help": "Output debug messages."
     }
 
     args = None
@@ -73,8 +73,14 @@ if __name__ == '__main__':
             None
         """
         global args
-        env_add_arguments(parser, ARG_VERBOSE, ARG_DEBUGLEVEL)
+        env_add_arguments(parser, ARG_VERBOSE, ARG_DEBUG)
         args = parser.parse_args(arguments)
+        args.verbose = args.verbose or context.verbose
+        args.debug = args.debug or context.debug
+        logger = getLogger()
+        logger.setLevel(
+            DEBUG if args.debug else INFO if args.verbose else WARNING
+        )
 
     HELP_COOK = "Cook something from the scope of your recipe"
     @subcmd("cook", help=HELP_COOK)
@@ -120,5 +126,6 @@ if __name__ == '__main__':
     )
     handler.description = ("A compute cluster cuisine for distributed " +
                            "scientific computing in python.")
+    env_add_arguments(handler, ARG_VERBOSE, ARG_DEBUG)
     # if invoked with no arguments, print help output
     handler.run(sys.argv[1:] if len(sys.argv) > 1 else ['-h'])
