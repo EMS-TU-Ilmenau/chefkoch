@@ -75,36 +75,49 @@ if __name__ == '__main__':
         env_add_arguments(parser, ARG_VERBOSE, ARG_DEBUGLEVEL)
         args = parser.parse_args(arguments)
 
-    @subcmd("cook")
+    HELP_COOK = "Cook something from the scope of your recipe"
+    @subcmd("cook", help=HELP_COOK)
     def cmd_cook(parser, context, arguments):
-        parser.description = "Cook something and then return the result."
+        parser.description = HELP_COOK
         env_parse_and_apply(parser, context, arguments)
         return #something
 
-    @subcmd("check")
+    HELP_CHECK = "Check if cooking results are consistent"
+    @subcmd("check", help=HELP_CHECK)
     def cmd_check(parser, context, arguments):
-        parser.description = "Check something and then return the result."
+        parser.description = HELP_CHECK
         env_parse_and_apply(parser, context, arguments)
 
-    @subcmd("inspect")
+    HELP_INSPECT = "Inspect cooking results"
+    @subcmd("inspect", help=HELP_INSPECT)
     def cmd_inspect(parser, context, arguments):
-        parser.description = "Inspect something and then return the result."
+        parser.description = HELP_INSPECT
         env_parse_and_apply(parser, context, arguments)
 
-    @subcmd("version")
-
-        if args.verbose: print("Increased verbosity.")
-
-        print("chefkoch Version: " + str(chefkoch.version))
-        print("\nChefkoch is a compute cluster cuisine for distributed "
-                 + "scientific computing in python.")
-        print("\n(2019) EMS Research Group TU Ilmenau")
-        print("http://github.com/EMS-TU-Ilmenau/chefkoch")
-        print("https://www.tu-ilmenau.de/it-ems")
+    HELP_VERSION = "Report who I am"
+    @subcmd("version", help=HELP_VERSION)
     def cmd_version(parser, context, arguments):
+        parser.description = HELP_VERSION
         env_parse_and_apply(parser, context, arguments)
 
-    handler = ArgumentHandler(enable_autocompletion = True)
-    handler.description = """A compute cluster cuisine for distributed
-                            scientific computing in python."""
-    handler.run(sys.argv[1:])
+        print(
+            ("Chefkoch %s\n" +
+             " -- %s\n\n" +
+             "Published under the Apache 2.0 license. See LICENSE.\n" +
+             "Visit chefkoch at http://github.com/EMS-TU-Ilmenau/chefkoch\n\n" +
+             "(2019) EMS Research Group TU Ilmenau\n" +
+             "       http://github.com/EMS-TU-Ilmenau\n"
+             "       https://www.tu-ilmenau.de/it-ems") %(
+                chefkoch.version,
+                handler.description
+            )
+        )
+
+    handler = ArgumentHandler(
+        enable_autocompletion=True,
+        use_subcommand_help=True
+    )
+    handler.description = ("A compute cluster cuisine for distributed " +
+                           "scientific computing in python.")
+    # if invoked with no arguments, print help output
+    handler.run(sys.argv[1:] if len(sys.argv) > 1 else ['-h'])
