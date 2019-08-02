@@ -1,0 +1,131 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# PYTHON_ARGCOMPLETE_OK
+# https://www.tu-ilmenau.de/it-ems/
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+#  PURPOSE
+#  =======
+#  A compute cluster cuisine for distributed scientific computing in python.
+#
+#  Requires: probably quite a few packages
+#
+#  Author: Christoph Wagner, Sophie Altenburg, Johannes van Reimersdahl
+#
+
+
+if __name__ == '__main__':
+    import chefkoch
+    import sys
+    from logging import *
+    from arghandler import *
+
+    REMOTES = "remotes"
+    TOKEN = "token"
+    ARG_VERBOSE = {
+        TOKEN: ("-v", "--verbose"),
+        "action": "store_true",
+        "help": "Increase verbosity of output."
+    }
+    ARG_DEBUG = {
+        TOKEN: ("-d", "--debug"),
+        "action": "store_true",
+        "help": "Output debug messages."
+    }
+
+    args = None
+
+    def env_add_arguments(parser, *args):
+        """Wrapper to call parser.add_argument(*arg) for each arg in args"""
+        for arg in args:
+            arg = arg.copy()
+            token = arg.pop(TOKEN, ())
+            parser.add_argument(*token, **arg)
+
+    def env_parse_and_apply(parser, context, arguments):
+        """
+        Setup global arguments, parse them and set up environment accordingly.
+
+        Installs the `--verbose` and `--debug-level` command line options and
+        evaluates them. The evaluated arguments will be put into global
+        variable `args` and furthre evaluated. Creates a global `logging`
+        object in the global namespace and configures it according to the
+        corresponding command line settings.
+
+        Args:
+            parser (ArgumentParser): argument parser to expand and evaluate
+            context: context object as supplied by ArgumentHandler
+            input_args (list): List of command line arguments to parse
+
+        Returns:
+            None
+        """
+        global args
+        env_add_arguments(parser, ARG_VERBOSE, ARG_DEBUG)
+        args = parser.parse_args(arguments)
+        args.verbose = args.verbose or context.verbose
+        args.debug = args.debug or context.debug
+        logger = getLogger()
+        logger.setLevel(
+            DEBUG if args.debug else INFO if args.verbose else WARNING
+        )
+
+    HELP_COOK = "Cook something from the scope of your recipe"
+    @subcmd("cook", help=HELP_COOK)
+    def cmd_cook(parser, context, arguments):
+        parser.description = HELP_COOK
+        env_parse_and_apply(parser, context, arguments)
+        return #something
+
+    HELP_CHECK = "Check if cooking results are consistent"
+    @subcmd("check", help=HELP_CHECK)
+    def cmd_check(parser, context, arguments):
+        parser.description = HELP_CHECK
+        env_parse_and_apply(parser, context, arguments)
+
+    HELP_INSPECT = "Inspect cooking results"
+    @subcmd("inspect", help=HELP_INSPECT)
+    def cmd_inspect(parser, context, arguments):
+        parser.description = HELP_INSPECT
+        env_parse_and_apply(parser, context, arguments)
+
+    HELP_VERSION = "Report who I am"
+    @subcmd("version", help=HELP_VERSION)
+    def cmd_version(parser, context, arguments):
+        parser.description = HELP_VERSION
+        env_parse_and_apply(parser, context, arguments)
+
+        print(
+            ("Chefkoch %s\n" +
+             " -- %s\n\n" +
+             "Published under the Apache 2.0 license. See LICENSE.\n" +
+             "Visit chefkoch at http://github.com/EMS-TU-Ilmenau/chefkoch\n\n" +
+             "(2019) EMS Research Group TU Ilmenau\n" +
+             "       http://github.com/EMS-TU-Ilmenau\n"
+             "       https://www.tu-ilmenau.de/it-ems") %(
+                chefkoch.version,
+                handler.description
+            )
+        )
+
+    handler = ArgumentHandler(
+        enable_autocompletion=True,
+        use_subcommand_help=True
+    )
+    handler.description = ("A compute cluster cuisine for distributed " +
+                           "scientific computing in python.")
+    env_add_arguments(handler, ARG_VERBOSE, ARG_DEBUG)
+    # if invoked with no arguments, print help output
+    handler.run(sys.argv[1:] if len(sys.argv) > 1 else ['-h'])
