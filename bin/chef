@@ -28,6 +28,7 @@
 if __name__ == '__main__':
     import chefkoch
     import sys
+    import json
     from logging import *
     from arghandler import *
 
@@ -81,7 +82,17 @@ if __name__ == '__main__':
             DEBUG if args.debug else INFO if args.verbose else WARNING
         )
 
-   
+    def readjson(filename): 
+        """
+        Opens a JSON file and parses it into a dictionary. The dictionary is defined by the content of the JSON, so 'Name' and 'Version' might not work.
+        """
+        with open(filename, 'r') as f:
+            linuxes_dict = json.load(f)                 # That's the whole file at once. Hope files dont get too big
+
+        for distribution in linuxes_dict:
+            print(distribution['Name'] + ' ' + distribution['Version'])
+
+
     """
     HELP_NAME is a variable that holds the help explanation. 
     @subcmd adds a subcommand with first token, then help message. 
@@ -133,6 +144,13 @@ if __name__ == '__main__':
         env_parse_and_apply(parser, context, arguments)
         print("Hello, have a nice day, mighty developer!")
     
+    HELP_READ = "Reads in a file, whose filepath is given as second argument."
+    @subcmd("read", help=HELP_READ)
+    def cmd_read(parser, context, arguments):
+        parser.description = HELP_READ
+        readjson(arguments.pop())
+        # env_parse_and_apply(parser, context, arguments)
+
 
     handler = ArgumentHandler(
         enable_autocompletion=True,

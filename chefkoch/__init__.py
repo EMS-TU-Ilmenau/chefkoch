@@ -24,7 +24,7 @@ Please tune in soon for an update.
 import os
 import io
 import platform
-import xxhash
+# import xxhash
 
 # define package version (gets overwritten by setup script)
 from .version import __version__ as version
