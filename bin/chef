@@ -28,7 +28,6 @@
 if __name__ == '__main__':
     import chefkoch
     import sys
-    import json
     from logging import *
     from arghandler import *
 
@@ -81,16 +80,6 @@ if __name__ == '__main__':
         logger.setLevel(
             DEBUG if args.debug else INFO if args.verbose else WARNING
         )
-
-    def readjson(filename): 
-        """
-        Opens a JSON file and parses it into a dictionary. The dictionary is defined by the content of the JSON, so 'Name' and 'Version' might not work.
-        """
-        with open(filename, 'r') as f:
-            linuxes_dict = json.load(f)                 # That's the whole file at once. Hope files dont get too big
-
-        for distribution in linuxes_dict:
-            print(distribution['Name'] + ' ' + distribution['Version'])
 
 
     """
@@ -148,8 +137,8 @@ if __name__ == '__main__':
     @subcmd("read", help=HELP_READ)
     def cmd_read(parser, context, arguments):
         parser.description = HELP_READ
-        readjson(arguments.pop())
-        # env_parse_and_apply(parser, context, arguments)
+        chefkoch.readjson(arguments.pop())
+        # env_parse_and_apply(parser, context, arguments)   # need to know what it does and why it does not work in this context
 
 
     handler = ArgumentHandler(
