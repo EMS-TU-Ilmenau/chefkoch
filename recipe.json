@@ -4,7 +4,7 @@
       "name": "rectangle_area", 
       "inputs": {"d": "flavour.d", "b": "flavour.b"}, 
       "outputs": {"a": "area"},
-      "stepsource": true
+      "stepsource": "rectangle_area.py"
     },
     {
       "name": "prisma_volume",
@@ -14,9 +14,9 @@
     },
     {
       "name": "volume_to_area",
-      "inputs": {"v": 3, "s": "space"},
+      "inputs": {"v": "volume", "s": "space"},
       "outputs": {"h": "height"},
-      "stepsource": null
+      "stepsource": "volume_to_area.py"
     },
     {
       "name": "collect_volume",
