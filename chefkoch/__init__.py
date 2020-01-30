@@ -95,31 +95,35 @@ def readjson(filename):
     Outputs:
         None
     """
-    jsonData = openjson(filename)
-    recipe = jsonToRecipe(jsonData)
+    jsonData, err = openjson(filename)
+    if err != None:
+        print(err)
+        return
+    recipe, err = jsonToRecipe(jsonData)
+    if err != None:
+        print(err)
+        return
     printRecipe(recipe)
 
-def openjson(filename):
+def openjson(filename):                   # todo also work with strings as input
     """
     Opens a JSON file, makes sure it is valid JSON and the file exists at the given path.
     Inputs:
         filename    string
     Outputs:
         data        dictionary or list depending on the outer structure of the JSON file
+        err         Error message string, None if everything worked fine
     """
     try:
         f = open(filename, 'r')
         data = json.load(f)                 # That's the whole file at once. Hope files dont get too big
-        print(data)
         f.close()
-    except IOError:                         # TODO somehow this does not catch a file does not exist error
-       print("The file path or file name is incorrect.")
-       return
-    except ValueError:
-       print("This is no valid JSON file. Try deleting comments.")
-       return
+    except IOError as err:                         # TODO somehow this does not catch a file does not exist error
+        return (None, "The file path or file name is incorrect.")      
+    except ValueError as err:
+        return (None, "This is no valid JSON file. Try deleting comments.")
 
-    return data               
+    return (data, None)               
 
 def jsonToRecipe(data):
     """
@@ -128,20 +132,22 @@ def jsonToRecipe(data):
         data        dictionary or list depending on the outer structure of the JSON file
     Outputs:
         recipe      object of class Recipe
+        err         Error message string, None if everything worked fine
     """
+    if not isinstance(data, dict):
+        return (None, 'Function jsonToRecipe expects dictionary as input.')
     recipe = Recipe([])                     # Do not initialise with None because None has no type and therefore no append
+        
     for node in data['nodes']:
         try:
             newNode = Node(node['name'], node['inputs'], node['outputs'], node['stepsource'])
             recipe.nodes.append(newNode)
         except TypeError as errorMessage:
-            print(errorMessage)
-            return
-        except:
-            pass
-            return
+            return (None, errorMessage)
+        except Exception as err:
+           return (None, 'An error occured.')
 
-    return recipe
+    return (recipe, None)
 
 def printRecipe(recipe):
     """
