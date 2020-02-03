@@ -53,6 +53,65 @@ class Recipe:
         except:
             raise TypeError("Class Recipe expects a list to be initialised with.")
 
+    def inputIntegrity(self):
+        """
+        Tests if there is exactly one incoming edge to every input. Warns, if there is no incoming edge. Excludes nodes from recipe, that have no
+        incoming edge for a node or have uncomputable inputs because of missing inputs in parent nodes.
+        Inputs:
+             -
+        Outputs:
+            err         String. "" if everything was correct. Else error message.
+            warn        String. "" if everything was correct. Else error message.
+        """
+        err = ''
+        warn = ''
+        # 1. make unique list of outputs
+        outputs_of_all_nodes = []
+        for node in self.nodes:
+            for key in node.outputs:
+                output = node.outputs[key]
+                if output in outputs_of_all_nodes:
+                    err = err + 'The output ' + output + ' of node ' + node.name + ' has the same name as an output decalred before. '
+                else:
+                    outputs_of_all_nodes.append(output)
+        # 2. see if inputs are from flavour, are file paths to existing files or are in output list
+        try_again = True
+        while try_again == True:
+            unreachable_nodes = []    
+            for node in self.nodes:
+                nodeIsValid = True
+                for key in node.inputs:
+                    input = node.inputs[key]
+                    inputIsValid = False
+                    if input in outputs_of_all_nodes or input.startswith('flavour.'):
+                        inputIsValid = True
+                    else:
+                        try:
+                            with open(input) as f:
+                                forget = file.readline(f)
+                                inputIsValid = True
+                        except IOError:
+                            pass
+                    if not inputIsValid:
+                        nodeIsValid = False
+                if not nodeIsValid:
+                    unreachable_nodes.append(node)
+                
+        # 3. Delete unreachable nodes and unreachable outputs and do it all over again.
+            try_again = (len(unreachable_nodes)>0)
+            for node in unreachable_nodes:
+                warn = warn + 'Node ' + node.name + ' or one of its previous nodes has an invalid input and therefore cannot be computed. '
+                for key in node.outputs:
+                    output = node.outputs[key]
+                    outputs_of_all_nodes.remove(output)
+                self.nodes.remove(node)         
+
+        # 4. Loop until all nodes are reachable
+        return err, warn
+
+
+
+
 class Node:
     """
     A node encapsules a simulation step within a recipe. The step can be realised by a python file, a sub-recipe or a build-in function.
@@ -104,6 +163,7 @@ def readjson(filename):
         print(err)
         return
     printRecipe(recipe)
+    recipe.inputIntegrity()
 
 def openjson(filename):                   # todo also work with strings as input
     """
