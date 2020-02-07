@@ -2,7 +2,7 @@
   "nodes": [ 
     {
       "name": "rectangle_area", 
-      "inputs": {"d": "flavour.d", "b": "flavour.b"}, 
+      "inputs": {"d": "flavour.a", "b": "flavour.b"},
       "outputs": {"a": "area"},
       "stepsource": "rectangle_area.py"
     },
