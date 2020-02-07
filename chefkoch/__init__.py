@@ -158,7 +158,8 @@ class Recipe:
                 if not input.startswith("flavour."):
                     isRootNode = False
                     break
-            rootNodes.append(node)
+            if isRootNode:
+                rootNodes.append(node)
 
         print("Root Nodes:")
         # 2. Start depth-first-search for every such node.
@@ -206,6 +207,8 @@ class Recipe:
                     if self.recursiveDFS(nextNode, nodesOnTheWay):
                         return True # a circle was found
                     # else continue with next node
+        # after all outgoing edges where tested, remove current node
+        nodesOnTheWay.remove(node)    
         # if there is no circle from none of the outputs
         return False
 
@@ -303,7 +306,7 @@ def openjson(filename):
         data        dict or list depending on JSON structure
         err         Error message string, None if everything worked fine
     """
-    try:
+    try:    # os.fileexists() oder sowas
         f = open(filename, 'r')
         data = json.load(f)
         # That's the whole file at once. Hope files dont get too big

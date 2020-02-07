@@ -204,36 +204,33 @@ class TestChefkoch(unittest.TestCase):
 #    #def test_findCircles():
 #
 #
-#
-#    #def test_recursiveDFS(self):
-#        # recipe with no loop
-#        data = {
-#            "nodes": [{
-#                "name": "A",
-#                "inputs": {"a": "flavour.a"},
-#                "outputs": {"b": "outOfA"},
-#                "stepsource": "somesource.py"
-#                },
-#                {
-#                "name": "B",
-#                "inputs": {},
-#                "outputs": {"final": "outOfB"},
-#                "stepsource": "somesource.py"
-#                },
-#                {
-#                "name": "C",
-#                "inputs": {"1": "outOfA", "2": "outOfB"},
-#                "outputs": {"c": "outOfC"},
-#                "stepsource": "somesource.py"
-#                },
-#                {
-#                "name": "D",
-#                "inputs": {"1": "outOfC", "2": "outOfB"},
-#                "outputs": {"c": "outOfD"},
-#                "stepsource": "somesource.py"
-#                }]
-#            }
-#        recipe, err = chefkoch.jsonToRecipe(data)
-#        self.assertIsNone(err)
-#        result = recipe.findCircles()
-#        print(result)
+
+    def test_recursiveDFS(self):
+        # recipe with no loop
+        data = {
+            "nodes": [{
+                "name": "A",
+                "inputs": {"a": "flavour.a"},
+                "outputs": {"b": "outOfA"},
+                "stepsource": "somesource.py"
+            }, {
+                "name": "B",
+                "inputs": {},
+                "outputs": {"final": "outOfB"},
+                "stepsource": "somesource.py"
+            }, {
+                "name": "C",
+                "inputs": {"1": "outOfA", "2": "outOfB"},
+                "outputs": {"c": "outOfC"},
+                "stepsource": "somesource.py"
+            }, {
+                "name": "D",
+                "inputs": {"1": "outOfC", "2": "outOfB"},
+                "outputs": {"c": "outOfD"},
+                "stepsource": "somesource.py"
+            }]
+        }
+        recipe, err = chefkoch.jsonToRecipe(data)
+        self.assertIsNone(err)
+        result = recipe.findCircles()
+        print(result)
