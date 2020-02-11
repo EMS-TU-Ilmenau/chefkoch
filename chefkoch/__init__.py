@@ -27,6 +27,7 @@ import platform
 import json
 # import xxhash
 
+
 # define package version (gets overwritten by setup script)
 from .version import __version__ as version
 
@@ -58,8 +59,9 @@ class Recipe:
             self.nodes.append(emptyNode)
             self.nodes.pop()
         except Exception as exc:         # mit Klasse
-            raise TypeError("""Class Recipe expects a list to be
-                initialised with.""")
+            print(exc)
+            #raise TypeError("""Class Recipe expects a list to be
+            #    initialised with.""")
 
     def inputIntegrity(self):
         """
@@ -104,7 +106,8 @@ class Recipe:
                     # chef analyse (from log)
                     inputIsValid = False
                     if (input in outputs_of_all_nodes or
-                            input.startswith('flavour.')):    # use name class
+                            input.startswith('flavour.') or
+                            input.endswith('.json')):    # use name class
                         inputIsValid = True
                     else:
                         try:                # os.path os.isfile ?
@@ -223,27 +226,20 @@ class Node:
     is the name the step uses, the value is the name under which the
     output is available to other nodes in the recipe (the same name used
     as value in another inputdict).
+
+    Outputs:
+        err         Error Message String
+    TODO:           Raise Exceptions instead to prevent forgetting an err
     """
     def __init__(self, name, inputdict, outputdict, stepsource):
-        # testing the name to be a string
-        # # todo Do Willi a favor and make name optional except subrecipes
-        if not (type(name) == unicode or type(name) == str):
-            # todo: checken, wie das in python gemacht werden sollte
-            # (python 2/3, unicode checks, ...). `six` kümmert sich um
-            # solche py2/3 kompatibilitäts-Geschichten und bietet für
-            # viele Fälle checks an
-            raise TypeError('The name of a node must be a string.')
-            # todo: lass den check die Name-Klasse machen, am Besten
-            # auch mit Prüfung, dass Namen nur aus einem engen
-            # Characterset kommen dürfen
-            return
-        self.name = name
+        # for empty name enter "" into recipe, unicode and string needed
+        try:
+            name_obj = Name(name)
+            self.name = name_obj.name # Willi, ist das wirklich so gemeint?
+        except TypeError as err:
+            return err
         # testing the input to be delivered in a dict
-        if not (type(inputdict) == dict):
-            # todo: 'if inputdict is not dict', allerdings auch
-            # problematisch weil das keine Vererbung erkennt.
-            # Besser: isinstance(inputdict, dict), um auch vererbte
-            # Dictionaries erkennen zu können
+        if not (isinstance(inputdict, dict)):
             raise TypeError('The input of node ' + str(name) +
                             ' must be of the format {\"name as in ' +
                             'step\": value, ...}')
@@ -257,16 +253,49 @@ class Node:
                             'step\": value, ...}')
             return
         self.outputs = outputdict
-        # testing if step is built-in or python function
-        if str(stepsource).endswith(".py"):
+        try:
+            step_obj = StepSource(stepsource)
+            self.step = step_obj.step
+        except TypeError as err:
+            return err
+
+class Name:
+    """
+    Name convention for the name of a node.
+    """
+    def is_ascii(self, name):
+        """
+        Checks if string consists of only ascii characters.
+        Inputs:
+            name        String
+        Outputs:
+            is_ascii    Boolean. True if so.
+        """
+        return all(ord(c) < 128 for c in name)
+
+    def __init__(self, name):
+        if not (isinstance(name, unicode) or isinstance(name, str)):
+            raise TypeError('The name of a node must be a string.')
+        if not self.is_ascii(name):
+            raise ValueError('The name of a node must be ascii.')
+        self.name = name
+
+
+class StepSource:
+    """
+    Specifies the function to be executed inside a node in the recipe.
+    """
+    def __init__(self, stepsource):
+    # testing if step is built-in or python function
+        extension = os.path.splitext(stepsource)[1]
+        if extension == ".py":
             self.step = stepsource
-            # todo asign a function as attribute (so that it can be
-            # accessed no matter where the object is used)
-        elif str(stepsource).endswith(".json"):
-            # todo: os.path.splitext(filename)[:-1]
+        elif extension == ".json":
             self.step = stepsource
         elif str(stepsource) in BUILT_INS:
             self.step = stepsource
+            # todo asign a function as attribute (so that it can be
+            # accessed no matter where the object is used)
         else:
             raise TypeError('Stepsource to node ' + str(name) +
                             ': ' + str(stepsource) +
@@ -296,27 +325,25 @@ def readjson(filename):
 
 
 def openjson(filename):
-    # todo also work with strings as input
     """
     Opens a JSON file, makes sure it is valid JSON and the file exists
-    at the given path.
+    at the given path. Loads the whole file at once. File should there-
+    fore not be too big.
     Inputs:
         filename    string
     Outputs:
         data        dict or list depending on JSON structure
         err         Error message string, None if everything worked fine
     """
-    try:    # os.fileexists() oder sowas
-        f = open(filename, 'r')
-        data = json.load(f)
-        # That's the whole file at once. Hope files dont get too big
-        f.close()
-    except IOError as err:
-        # TODO somehow this does not catch a file does not exist error
+    if not os.path.isfile(filename):
         return (None, "The file path or file name is incorrect.")
-    except ValueError as err:
-        return (None, "This is no valid JSON file. Try deleting comments.")
-
+    with open(filename) as f:
+        try:
+            data = json.load(f)
+            # That's the whole file at once. Hope files dont get too big
+        except ValueError as err:
+            return (None, "This is no valid JSON file. Try deleting comments.")
+        
     return (data, None)
 
 
