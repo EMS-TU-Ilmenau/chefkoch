@@ -87,7 +87,7 @@ class Recipe:
                     # exception überschreiben für warns
                     err = (("" if err is None else err) + 'The output ' +
                            output + ' of node ' + node.name +
-                           ' has the same name as an output decalred before. ')
+                           ' has the same name as an output declared before. ')
                 else:
                     outputs_of_all_nodes.append(output)
         # 2. see if inputs are from flavour, are file paths to existing files
@@ -105,9 +105,11 @@ class Recipe:
                     # interpretiert als string
                     # chef analyse (from log)
                     inputIsValid = False
+                    prefix = os.path.splitext(input)[0]
+                    extension = os.path.splitext(input)[1]
                     if (input in outputs_of_all_nodes or
-                            input.startswith('flavour.') or
-                            input.endswith('.json')):    # use name class
+                            prefix == 'flavour.' or
+                            extension == '.json'):
                         inputIsValid = True
                     else:
                         try:                # os.path os.isfile ?
@@ -226,10 +228,6 @@ class Node:
     is the name the step uses, the value is the name under which the
     output is available to other nodes in the recipe (the same name used
     as value in another inputdict).
-
-    Outputs:
-        err         Error Message String
-    TODO:           Raise Exceptions instead to prevent forgetting an err
     """
     def __init__(self, name, inputdict, outputdict, stepsource):
         # for empty name enter "" into recipe, unicode and string needed
@@ -237,7 +235,7 @@ class Node:
             name_obj = Name(name)
             self.name = name_obj.name # Willi, ist das wirklich so gemeint?
         except TypeError as err:
-            return err
+            pass
         # testing the input to be delivered in a dict
         if not (isinstance(inputdict, dict)):
             raise TypeError('The input of node ' + str(name) +
@@ -245,7 +243,7 @@ class Node:
                             'step\": value, ...}')
             return
         self.inputs = inputdict
-        # todo replace strings by values in flavour?
+        # later replace strings by values in flavour?
         # testing the output to be delivered in a dict
         if not (type(outputdict) == dict):
             raise TypeError('The output of node ' + str(name) +
@@ -257,7 +255,7 @@ class Node:
             step_obj = StepSource(stepsource)
             self.step = step_obj.step
         except TypeError as err:
-            return err
+            pass
 
 class Name:
     """
@@ -294,8 +292,9 @@ class StepSource:
             self.step = stepsource
         elif str(stepsource) in BUILT_INS:
             self.step = stepsource
-            # todo asign a function as attribute (so that it can be
-            # accessed no matter where the object is used)
+            # done: research on assigning functions as attributes
+            # (so that it can be accessed no matter where the object
+            # is used)
         else:
             raise TypeError('Stepsource to node ' + str(name) +
                             ': ' + str(stepsource) +
