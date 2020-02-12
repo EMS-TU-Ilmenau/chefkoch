@@ -7,37 +7,42 @@
 
 import unittest
 import sys
-sys.path.insert(0, '..')
-# oder irgendein Konstrukt aus os.path (z.B. von cwd ableiten, abspath, ...)
+sys.path.append('/mnt/c/Users/User/Documents/Hiwi@EMS/chefkoch/chefkoch')
 import chefkoch
+import recipe as backbone
 
 # todo: Konsultiere Fabian
 
-
 class TestChefkoch(unittest.TestCase):
+
+    def test_readrecipe(self):
+        err = chefkoch.readrecipe("../chefkoch/recipe.json")
+        self.assertIsNone(err)
+
+class TestRecipe(unittest.TestCase):
 
     def test_openjson(self):
         # test 1: valid JSON file.
-        result, err = chefkoch.openjson("../chefkoch/recipe.json")
+        result, err = backbone.openjson("../chefkoch/recipe.json")
         self.assertTrue(isinstance(result, dict))
         self.assertIs(err, None)
         self.assertEqual(result['nodes'][1]['name'], "prisma_volume")
 
         # test 2: broken JSON file.
-        result, err = chefkoch.openjson("../chefkoch/broken_for_testcase.json")
+        result, err = backbone.openjson("../chefkoch/broken_for_testcase.json")
         self.assertEquals(
             err,
             "This is no valid JSON file. Try deleting comments.")
         self.assertIs(result, None)
 
         # test 3: file path wrong/ file does not exist
-        result, err = chefkoch.openjson("NoFileHere.json")
+        result, err = backbone.openjson("NoFileHere.json")
         self.assertEquals(err, "The file path or file name is incorrect.")
         self.assertIs(result, None)
 
     def test_jsonToRecipe(self):
         # test 1: Not giving a dict as input to jsonToRecipe
-        result, err = chefkoch.jsonToRecipe(None)
+        result, err = backbone.jsonToRecipe(None)
         self.assertIs(result, None)
         self.assertEqual(
             err,
@@ -53,8 +58,8 @@ class TestChefkoch(unittest.TestCase):
                 "stepsource": "rectangle_area.py"
             }]
         }
-        result, err = chefkoch.jsonToRecipe(data)
-        self.assertIsInstance(result, chefkoch.Recipe)
+        result, err = backbone.jsonToRecipe(data)
+        self.assertIsInstance(result, backbone.Recipe)
         self.assertIsNone(err)
         self.assertEquals(result.nodes[0].inputs['b'], "flavour.b")
 
@@ -67,7 +72,7 @@ class TestChefkoch(unittest.TestCase):
                 "stepsource": "rectangle_area.py"
             }]
         }
-        result, err = chefkoch.jsonToRecipe(data)
+        result, err = backbone.jsonToRecipe(data)
         self.assertIsNone(result)
         self.assertEquals(err, 'An error occured.')
 
@@ -81,7 +86,7 @@ class TestChefkoch(unittest.TestCase):
                 "stepsource": "collect"
             }]
         }
-        result, err = chefkoch.jsonToRecipe(data)
+        result, err = backbone.jsonToRecipe(data)
         self.assertIsNotNone(result)
         self.assertIsNone(err)
 
@@ -94,7 +99,7 @@ class TestChefkoch(unittest.TestCase):
                 "stepsource": "no_build-in_function"
             }]
         }
-        result, err = chefkoch.jsonToRecipe(data)
+        result, err = backbone.jsonToRecipe(data)
         self.assertIsNone(result)
         self.assertIsNotNone(err)
 
@@ -116,7 +121,7 @@ class TestChefkoch(unittest.TestCase):
                 "stepsource": "source.py"
             }]
         }
-        recipe, err = chefkoch.jsonToRecipe(data)
+        recipe, err = backbone.jsonToRecipe(data)
         self.assertIsNone(err)
         err, warn = recipe.inputIntegrity()
         self.assertTrue(str(err).startswith('The output'))
@@ -146,7 +151,7 @@ class TestChefkoch(unittest.TestCase):
                 "stepsource": "collect"
             }]
         }
-        recipe, err = chefkoch.jsonToRecipe(data)
+        recipe, err = backbone.jsonToRecipe(data)
         self.assertIsNone(err)
         err, warn = recipe.inputIntegrity()
         self.assertIsNone(err)
@@ -177,7 +182,7 @@ class TestChefkoch(unittest.TestCase):
                 "stepsource": "collect"
             }]
         }
-        recipe, err = chefkoch.jsonToRecipe(data)
+        recipe, err = backbone.jsonToRecipe(data)
         self.assertIsNone(err)
         err, warn = recipe.inputIntegrity()
         self.assertIsNone(err)
@@ -193,7 +198,7 @@ class TestChefkoch(unittest.TestCase):
                 "stepsource": "somesource.py"
             }]
         }
-        recipe, err = chefkoch.jsonToRecipe(data)
+        recipe, err = backbone.jsonToRecipe(data)
         self.assertIsNone(err)
         err, warn = recipe.inputIntegrity()
         self.assertIsNone(err)
@@ -230,7 +235,7 @@ class TestChefkoch(unittest.TestCase):
                 "stepsource": "somesource.py"
             }]
         }
-        recipe, err = chefkoch.jsonToRecipe(data)
+        recipe, err = backbone.jsonToRecipe(data)
         self.assertIsNone(err)
         result = recipe.findCircles()
         print(result)

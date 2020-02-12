@@ -137,7 +137,7 @@ if __name__ == '__main__':
     @subcmd("read", help=HELP_READ)
     def cmd_read(parser, context, arguments):
         parser.description = HELP_READ
-        chefkoch.readjson(arguments.pop())
+        chefkoch.readrecipe(arguments.pop())
         # env_parse_and_apply(parser, context, arguments)   # need to know what it does and why it does not work in this context
 
 

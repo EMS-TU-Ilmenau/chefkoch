@@ -14,7 +14,7 @@
     },
     {
       "name": "volume_to_area",
-      "inputs": {"v": "volume", "s": "space"},
+      "inputs": {"v": "volume", "s": "flavour.space"},
       "outputs": {"h": "height"},
       "stepsource": "volume_to_area.py"
     },
