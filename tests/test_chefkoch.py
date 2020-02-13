@@ -5,31 +5,38 @@
 # python -m unittest test_chefkoch
 # (maybe test_chefkoch.py depending on python and linux version)
 
+import os
 import unittest
+import chefkoch.recipe as backbone
 import sys
 sys.path.append('/mnt/c/Users/User/Documents/Hiwi@EMS/chefkoch/chefkoch')
 import chefkoch
-import recipe as backbone
 
 # todo: Konsultiere Fabian
+
+def path_to_recipe():
+    thisfilepath = os.path.dirname(os.path.abspath(__file__))
+    folderup = os.path.split(thisfilepath)[0]
+    recipe_file_path = os.path.abspath(os.path.join(folderup, "recipe.json"))
+    return recipe_file_path
 
 class TestChefkoch(unittest.TestCase):
 
     def test_readrecipe(self):
-        err = chefkoch.readrecipe("../chefkoch/recipe.json")
+        err = chefkoch.readrecipe(path_to_recipe())
         self.assertIsNone(err)
 
 class TestRecipe(unittest.TestCase):
 
     def test_openjson(self):
         # test 1: valid JSON file.
-        result, err = backbone.openjson("../chefkoch/recipe.json")
+        result, err = backbone.openjson(path_to_recipe())
         self.assertTrue(isinstance(result, dict))
         self.assertIs(err, None)
         self.assertEqual(result['nodes'][1]['name'], "prisma_volume")
 
         # test 2: broken JSON file.
-        result, err = backbone.openjson("../chefkoch/broken_for_testcase.json")
+        result, err = backbone.openjson("../../chefkoch/broken_for_testcase.json")
         self.assertEquals(
             err,
             "This is no valid JSON file. Try deleting comments.")

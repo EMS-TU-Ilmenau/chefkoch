@@ -103,8 +103,8 @@ class Recipe:
                 nodeIsValid = True
                 for key in node.inputs:
                     input = node.inputs[key]
-                    # to do: Werte direkt zulassen, nicht nur über flavour
-                    # WARN schmeißen
+                    # to do: Werte direkt zulassen, nicht nur ?ber flavour
+                    # WARN schmei?en
                     # python logs verwenden: kein flavour, kein output, also
                     # interpretiert als string
                     # chef analyse (from log)

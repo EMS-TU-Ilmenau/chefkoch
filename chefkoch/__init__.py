@@ -26,7 +26,7 @@ import io
 import platform
 import json
 # import xxhash
-import recipe
+import chefkoch.recipe
 
 
 # define package version (gets overwritten by setup script)
