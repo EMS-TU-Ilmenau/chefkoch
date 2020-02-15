@@ -14,29 +14,23 @@ import chefkoch
 
 # todo: Konsultiere Fabian
 
-def path_to_recipe():
-    thisfilepath = os.path.dirname(os.path.abspath(__file__))
-    folderup = os.path.split(thisfilepath)[0]
-    recipe_file_path = os.path.abspath(os.path.join(folderup, "recipe.json"))
-    return recipe_file_path
-
 class TestChefkoch(unittest.TestCase):
 
     def test_readrecipe(self):
-        err = chefkoch.readrecipe(path_to_recipe())
+        result, err = chefkoch.readrecipe('../recipe.json')
         self.assertIsNone(err)
 
 class TestRecipe(unittest.TestCase):
 
     def test_openjson(self):
-        # test 1: valid JSON file.
-        result, err = backbone.openjson(path_to_recipe())
+        # test 1: valid JSON recipe file.
+        result, err = backbone.openjson('../recipe.json')
         self.assertTrue(isinstance(result, dict))
-        self.assertIs(err, None)
+        self.assertIsNone(err)
         self.assertEqual(result['nodes'][1]['name'], "prisma_volume")
 
-        # test 2: broken JSON file.
-        result, err = backbone.openjson("../../chefkoch/broken_for_testcase.json")
+        # test 2: broken JSON recipe file.
+        result, err = backbone.openjson("../broken_for_testcase.json")
         self.assertEquals(
             err,
             "This is no valid JSON file. Try deleting comments.")
@@ -45,7 +39,8 @@ class TestRecipe(unittest.TestCase):
         # test 3: file path wrong/ file does not exist
         result, err = backbone.openjson("NoFileHere.json")
         self.assertEquals(err, "The file path or file name is incorrect.")
-        self.assertIs(result, None)
+        self.assertIsNone(result)
+
 
     def test_jsonToRecipe(self):
         # test 1: Not giving a dict as input to jsonToRecipe
@@ -81,7 +76,7 @@ class TestRecipe(unittest.TestCase):
         }
         result, err = backbone.jsonToRecipe(data)
         self.assertIsNone(result)
-        self.assertEquals(err, 'An error occured.')
+        self.assertEquals(err, 'Error while parsing json data into recipe object.')
 
         # test 4: Annoying the Node class:
         # list of inputs is interpreted as value for a
@@ -246,3 +241,15 @@ class TestRecipe(unittest.TestCase):
         self.assertIsNone(err)
         result = recipe.findCircles()
         print(result)
+
+class TestRecipe(unittest.TestCase):
+
+    def test_readjson(self):
+        # test 4: valid JSON flavour file.
+        result, err = backbone.openjson("../flavour.json")
+        self.assertIsNone(err)
+        self.assertEqual(result['fS'], 9.22e9)
+        self.assertEqual(result['subsample'][0]['type'], 'range')
+        self.assertEqual(result['average'][2], 64)
+        self.assertEqual(result['tx_lfsr_tap'], "0x8F1")
+

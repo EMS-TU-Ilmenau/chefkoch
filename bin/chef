@@ -133,11 +133,19 @@ if __name__ == '__main__':
         env_parse_and_apply(parser, context, arguments)
         print("Hello, have a nice day, mighty developer!")
     
-    HELP_READ = "Reads in a file, whose filepath is given as second argument."
+    HELP_READ = "Choose between chef read recipe and chef read flavour and add file path."
     @subcmd("read", help=HELP_READ)
     def cmd_read(parser, context, arguments):
         parser.description = HELP_READ
-        chefkoch.readrecipe(arguments.pop())
+        filepath = arguments.pop()
+        filetype = arguments.pop()
+        if filetype == 'recipe':
+            chefkoch.readrecipe(filepath)
+        elif filetype == 'flavour':
+            chefkoch.readflavour(filepath)
+        else:
+            print("This is no known command.")
+            print(HELP_READ)
         # env_parse_and_apply(parser, context, arguments)   # need to know what it does and why it does not work in this context
 
 

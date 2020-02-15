@@ -32,5 +32,17 @@ import chefkoch.recipe
 # define package version (gets overwritten by setup script)
 from .version import __version__ as version
 
+# called by typing "chef read /file/path/.."
+def readjson(type, filename):
+    if type == "recipe":
+        return recipe.readrecipe(filename)
+    if type == "flavour":
+        return recipe.readflavour(filename)
+
+# use all functionality within the recipe module to read a json and return a recipe object
 def readrecipe(filename):
-    return recipe.readjson(filename)
+    return recipe.readrecipe(filename)
+
+# use all functionality within the recipe module that handles flavour files
+def readflavour(filename):
+    return recipe.readflavour(filename)

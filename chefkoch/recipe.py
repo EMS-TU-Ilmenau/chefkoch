@@ -1,45 +1,23 @@
 # -*- coding: utf-8 -*-
 
 r"""
-Module Description todo
+The recipe file entered by the user declares all the steps taken in the simulation,
+i.e. functions, and the dependencies in form of exchanged data between the steps.
+The Recipe Module concerning all classes and functions needed to parse a json file
+into a recipe object and check integrity.
 """
-# classes to put json data into
+# classes to put recipe json data into
 
 import os
 import io
 import platform
 import json
-import logging
+# logs need to be imported this way to not write logs.logger all the time
+from chefkoch.logs import *
 
 # constants
 # built-in functions that can be called as a simulation step inside a node
 BUILT_INS = ["collect"]
-
-# Set up logging for everything inside this module
-logger = logging.getLogger(__name__)
-# this is important when importing modules
-# a logger can only be configured once within a project
-# so we need a new logger in each module
-# __name__ is either "main" or the name of the module if imported
-logger.setLevel(logging.DEBUG) 
-# log levels are ascending: debug, info, warn, err, crit
-# setting lvl to debug basically says log everything
-# logging.basicConfig configues the root Looger. Never share root Logger.
-
-formatter = logging.Formatter('%(levelname)s:%(asctime)s:line %(lineno)d:%(message)s')
-
-file_handler = logging.FileHandler('test.log')
-file_handler.setLevel(logging.ERROR) # only write logs that are error or worse
-file_handler.setFormatter(formatter)
-
-# to output errs and warns into file, but debug to console, do:
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-# no lvl specified -> print every log to console
-
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
-
 
 
 class Recipe:
@@ -307,36 +285,194 @@ class StepSource:
                             '. Must be a Python file, another recipe ' +
                             'or a build-in function.')
 
+class Flavour(dict):  # todo: class Flavour extends dictionary
+    """
+    The flavour file is the collection of all paramters needed for the simulation and all
+    their values the simulation should be executed with. The goal is to find the best
+    parameter combination. Paramter can have a contant value, a list of values or a range.
+    They can also be files.
+    """
+    #self = {}
 
-def readjson(filename):
+    #def __init__(self, paramlist):
+    #    self.params = paramlist
+        # Making sure that paramlist is a list of type Param
+
+    #def __setitem__(self, key, value):
+    #    self.params[key] = value
+    #    return
+
+    #def __getitem__(self, key):
+    #    return self.params[key]
+
+    def tostring(self):
+        content = "The flavour file contains: "
+        for key in self:
+            content += "\n  " + str(key) + ": " + self[key].tostring()
+        return content
+
+
+class FileParamValue:
+    """
+    A possible value of a parameter of the simulation can be a file.
+    """
+    def __init__(self, filepath, key):
+        logger.debug("Creating new FileParamValue")
+        logger.debug("Filepath (dict): " + filepath)
+        logger.debug("Key (dict): " + key)
+        self.key = key
+        logger.debug("Key: " + self.key)
+        if os.path.isfile(filepath):
+            self.file = filepath
+            logger.debug("Filepath: " + self.filepath)
+        else:
+            logger.warn("The following filepath does not exist: " + filepath)
+            raise IOError("The file " + filepath + " does not exist.")
+            return
+
+    def tostring(self):
+        """
+        Returns string that can be printed.
+        """
+        content = "Value is following file: \n  "
+        content+= self.filename + "\n  Key: " + self.key
+        return content
+
+
+class Param:
+    """
+    A parameter with all values attached to it.
+    """
+    values = []
+    file = None
+
+    def appendFileParam(self, entry):
+        logger.debug("Why the heck does it never enter appendFileParam?" + str(entry))
+        try:
+            newValue = FileParamValue(entry['file'], entry['key'])
+            self.values.append(newValue)
+            logger.debug("Appending " + str(newValue) + newValue.tostring())
+        except KeyError as err:
+            # todo: different possible exceptions
+            logger.exception("Either the file or the key field of the entry are missing.")
+            print("TODO: catch " + str(err))
+            pass
+        except IOError as err:
+            logger.warn(err)
+            pass
+
+    def appendValuesFromRange(self, entry):
+        logger.debug("More values are given by a range.")
+        try:
+            i = entry['start']
+            # add all values within range
+            while i <= entry['stop']:
+                logger.debug("Adding value " + str(i))
+                self.values.append(i)
+                i = i + entry['step']
+                # alternative: value = ParameterRange(start, stop, stepsize)
+        except Exception as err:
+            logger.exception(err)
+            print("TODO: catch " + err)
+            return
+
+    def appendEntry(self, entry):
+        try:
+            logger.debug("It is of type " + entry['type'])
+            if entry['type'] == 'mat-file': # make more file cases here
+                logger.debug("The value of the parameter is a mat-file.")
+                try:
+                    self.appendFileParam(entry)
+                except IOError as err:
+                    logging.warn("The entry " + entry + " is not included as parameter.")
+                except Exception as typo:
+                    logger.debug(typo)
+                    print(typo)
+            elif entry['type'] == 'range':
+                self.appendValuesFromRange(entry)
+        except TypeError as typo:
+            if type(entry) in [str, int, float, bool, unicode]:
+                logger.debug("Appending " + str(entry))
+                self.values.append(entry)
+            else:
+                raise TypeError('The flavour file holds an entry that is not supported.')
+
+
+    def __init__(self, name, entry):
+        logger.debug("Creating a new parameter " + str(name))
+        self.name = name
+        if type(entry) is not list: # a single value so to say
+            logger.debug("It has a single value: " + str(entry))
+            self.appendEntry(entry)    
+        else:
+            logger.debug("It has more than one value.")
+            for sub_entry in entry: # the entry in the json file
+                self.appendEntry(sub_entry)
+        logger.debug("Fin.")    
+
+
+    def tostring(self):
+        content = "Parameter name: " + self.name
+        for value in self.values:
+            if type(value) is FileParamValue:
+                content += "\n  " + value.tostring()
+            else:
+                content += "\n  " + str(value)
+        return content
+
+
+def readrecipe(filename):
     """
     Opens a JSON file and parses it into a recipe object. Then outputs
     the data inside the recipe.
     Inputs:
-        filename    string
+        filename    file path string
     Outputs:
-        None
+        recipe      object of type recipe
+        err         error message string
     """
     jsonData, err = openjson(filename)
     if err is not None:
         logger.error(err)
-        return err
+        return (None, err)
     recipe, err = jsonToRecipe(jsonData)
     if err is not None:
         logger.error(err)
-        return err
+        return (None, err)
     printRecipe(recipe)
     err, warn = recipe.inputIntegrity()
     if err is not None:
         logger.error(err)
-        return(err)
+        return(None, err)
     if warn is not None:
         logger.warning(warn)
     err = recipe.findCircles()
     if err is not "":
         logger.error(err)
+        return (None, err)
+    return (recipe, None)
+
+
+def readflavour(filename):
+    """
+    Opens a JSON file and parses it into a flavour object. Then outputs
+    the data inside the flavour file.
+    Inputs:
+        filename    file path string
+    Outputs:
+        flavour     object of type flavour. if error occured, it holds the error
+    """
+    jsonData, err = openjson(filename)
+    if err is not None:
+        logger.error(err)
         return err
-    return
+    flavour, err = jsonToFlavour(jsonData)
+    if err is not None:
+        logger.error(err)
+        return err
+    #print(flavour.tostring())
+    # todo: input Integrity checks
+    return flavour
 
 
 def openjson(filename):
@@ -386,10 +522,37 @@ def jsonToRecipe(data):
         except TypeError as errorMessage:
             return (None, errorMessage)
         except Exception as err:
-            return (None, 'An error occured.')
+            return (None, 'Error while parsing json data into recipe object.')
 
     return (recipe, None)
 
+
+def jsonToFlavour(data):
+    """
+    Turns data loaded from a json file into a flavour object.
+    Inputs:
+        data        dict or list depending on json file.
+    Outputs:
+        flavour     object of class flavour
+        err         Error message string, None if everything worked fine
+    """
+    if not isinstance(data, dict):
+        return(None,'Function jsonToFlavour expects a dictionary as input.')
+    flavour = Flavour({})
+    for param in data:
+        try:
+            newParam = Param(
+                param,      # name which is also key
+                data[param] # indifferent shit will be handled in Param init
+                )
+            flavour[param] = newParam   # new entry to dict
+        except TypeError as errorMessage:
+            return (None, errorMessage)
+        except Exception as err:
+            logger.exception(err)
+            return (None, 'Error while parsing json data into flavour object.')
+
+    return (flavour, None)
 
 def printRecipe(recipe):
     """
