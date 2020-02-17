@@ -347,6 +347,13 @@ class Param:
     file = None
 
     def appendFileParam(self, entry):
+        """
+        Appends a file parameter given in the JSON data to the Param.values list.
+        Inputs:
+            entry       dict with fields type, file and key
+        Outputs:
+            -
+        """
         logger.debug("Why the heck does it never enter appendFileParam?" + str(entry))
         try:
             newValue = FileParamValue(entry['file'], entry['key'])
@@ -362,6 +369,13 @@ class Param:
             pass
 
     def appendValuesFromRange(self, entry):
+        """
+        Appends all values within a range given in the JSON data to Param.values
+        Inputs:
+            entry       dict with fields start, stop and step.
+        Outputs:
+            -
+        """
         logger.debug("More values are given by a range.")
         try:
             i = entry['start']
@@ -377,6 +391,13 @@ class Param:
             return
 
     def appendEntry(self, entry):
+        """
+        Appends an entry within the JSON data received from the flavour file.
+        Inputs:
+            entry       mat-file or range or any other value
+        Outputs:
+            -
+        """
         try:
             logger.debug("It is of type " + entry['type'])
             if entry['type'] == 'mat-file': # make more file cases here
@@ -392,6 +413,8 @@ class Param:
                 self.appendValuesFromRange(entry)
         except TypeError as typo:
             if type(entry) in [str, int, float, bool, unicode]:
+                # todo: allow everything else by default,
+                # value could also be a list
                 logger.debug("Appending " + str(entry))
                 self.values.append(entry)
             else:
@@ -399,6 +422,14 @@ class Param:
 
 
     def __init__(self, name, entry):
+        """
+        Creates a new paramter from the JSON data gotten from the flavour file.
+        Inputs:
+            name        name as provided as in flavour file
+            entry       if the falvour file was a dict, it was flavour['name']
+        Outputs:
+            -
+        """
         logger.debug("Creating a new parameter " + str(name))
         self.name = name
         if type(entry) is not list: # a single value so to say
@@ -412,6 +443,14 @@ class Param:
 
 
     def tostring(self):
+        """
+        Returns a printable and formatted string that shows the Parameter
+        and its values.
+        Inputs:
+            -
+        Outputs:
+            -
+        """
         content = "Parameter name: " + self.name
         for value in self.values:
             if type(value) is FileParamValue:
