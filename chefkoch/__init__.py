@@ -14,6 +14,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# any time you change the init, make sure to re-install the chef command with pip
 
 r"""
 Introduction
@@ -21,16 +22,22 @@ Introduction
 
 Please tune in soon for an update.
 """
+
 import os
 import io
 import platform
 import json
 # import xxhash
-import chefkoch.recipe
+import sys
+sys.path.append('../chefkoch')
+import recipe
 
 
 # define package version (gets overwritten by setup script)
 from .version import __version__ as version
+
+def foo():
+    print("At least something works here.")
 
 # called by typing "chef read /file/path/.."
 def readjson(type, filename):

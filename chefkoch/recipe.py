@@ -8,12 +8,16 @@ into a recipe object and check integrity.
 """
 # classes to put recipe json data into
 
+
+from __future__ import unicode_literals
 import os
 import io
 import platform
 import json
+import sys
+sys.path.append('../../chefkoch/chefkoch')
 # logs need to be imported this way to not write logs.logger all the time
-from chefkoch.logs import *
+from logs import *
 
 # constants
 # built-in functions that can be called as a simulation step inside a node
@@ -256,7 +260,15 @@ class Name:
         return all(ord(c) < 128 for c in name)
 
     def __init__(self, name):
-        if not (isinstance(name, unicode) or isinstance(name, str)):
+        is_unicode = False
+        try:
+            is_unicode = isinstance(name, unicode)
+        except NameError as mimimi:
+            # You are using python3 but don't worry. It works anyway.
+            # logger.debug(mimimi)
+            # logger.debug("You are using python 3, but don't worry, we make it work.")
+            pass
+        if not (isinstance(name, str) or is_unicode):
             raise TypeError('The name of a node must be a string.')
         if not self.is_ascii(name):
             raise ValueError('The name of a node must be ascii.')
@@ -413,6 +425,7 @@ class Param:
                 self.appendValuesFromRange(entry)
         except TypeError as typo:
             if type(entry) in [str, int, float, bool, unicode]:
+                # todo: python3 does not know unicode and python2 needs unicode
                 # todo: allow everything else by default,
                 # value could also be a list
                 logger.debug("Appending " + str(entry))
