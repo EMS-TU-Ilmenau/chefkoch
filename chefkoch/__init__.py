@@ -14,7 +14,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# any time you change the init, make sure to re-install the chef command with pip
+# any time you change the init, make sure to re-install the chef command
+# with pip
 
 r"""
 Introduction
@@ -35,6 +36,7 @@ import recipe
 
 # define package version (gets overwritten by setup script)
 from .version import __version__ as version
+
 
 # called by typing "chef read /file/path/.."
 def readjson(type, filename):

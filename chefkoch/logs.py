@@ -16,12 +16,13 @@ logger = logging.getLogger(__name__)
 # a logger can only be configured once within a project
 # so we need a new logger in each module
 # __name__ is either "main" or the name of the module if imported
-logger.setLevel(logging.INFO) 
+logger.setLevel(logging.INFO)
 # log levels are ascending: debug, info, warn, err, crit
 # setting lvl to debug basically says log everything
 # logging.basicConfig configues the root Looger. Never share root Logger.
 
-formatter = logging.Formatter('%(levelname)s:%(asctime)s:%(lineno)d:%(message)s')
+formatter = logging.Formatter(
+    '%(levelname)s:%(asctime)s:%(lineno)d:%(message)s')
 
 file_handler = logging.FileHandler('test.log')
 file_handler.setLevel(logging.ERROR) # only write logs that are error or worse

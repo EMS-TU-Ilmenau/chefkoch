@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 r"""
-The recipe file entered by the user declares all the steps taken in the simulation,
-i.e. functions, and the dependencies in form of exchanged data between the steps.
-The Recipe Module concerning all classes and functions needed to parse a json file
-into a recipe object and check integrity.
+The recipe file entered by the user declares all the steps taken in the
+simulation, i.e. functions, and the dependencies in form of exchanged data
+between the steps. The Recipe Module concerning all classes and functions
+needed to parse a json file into a recipe object and check integrity.
 """
 # classes to put recipe json data into
 
@@ -178,7 +178,7 @@ class Recipe:
         for nodeOTW in nodesOnTheWay:
             namesOnTheWay = namesOnTheWay + " " + nodeOTW.name
         logger.debug("Executing rDFS for " + node.name + " and " +
-              namesOnTheWay)
+                     namesOnTheWay)
         if node in nodesOnTheWay:
             logger.warn("The recipe contains a circle along " +
                         namesOnTheWay + node.name + " and can therefore" +
@@ -196,12 +196,12 @@ class Recipe:
                 invertedInputDict = dict(map(reversed, nextNode.inputs.items()))
                 if output in invertedInputDict:
                     logger.debug("Taking the edge from " + node.name + " to " +
-                          nextNode.name)
+                                 nextNode.name)
                     if self.recursiveDFS(nextNode, nodesOnTheWay):
                         return True # a circle was found
                     # else continue with next node
         # after all outgoing edges where tested, remove current node
-        nodesOnTheWay.remove(node)    
+        nodesOnTheWay.remove(node)
         # if there is no circle from none of the outputs
         return False
 
@@ -245,6 +245,7 @@ class Node:
         except TypeError as err:
             pass
 
+
 class Name:
     """
     Name convention for the name of a node.
@@ -266,7 +267,8 @@ class Name:
         except NameError as mimimi:
             # You are using python3 but don't worry. It works anyway.
             # logger.debug(mimimi)
-            # logger.debug("You are using python 3, but don't worry, we make it work.")
+            # logger.debug("You are using python 3, but don't worry,
+            # we make it work.")
             pass
         if not (isinstance(name, str) or is_unicode):
             raise TypeError('The name of a node must be a string.')
@@ -280,7 +282,11 @@ class StepSource:
     Specifies the function to be executed inside a node in the recipe.
     """
     def __init__(self, stepsource):
-    # testing if step is built-in or python function
+        """
+        Tests the step source if it is a recipe, a python executable or
+        a built-in function and initialises it if so.
+        """
+        # testing if step is built-in; JSON file or python function
         extension = os.path.splitext(stepsource)[1]
         if extension == ".py":
             self.step = stepsource
@@ -297,13 +303,14 @@ class StepSource:
                             '. Must be a Python file, another recipe ' +
                             'or a build-in function.')
 
-class Flavour(dict):  
+
+class Flavour(dict):
     """
-    The Flavour class extends the dictionary class and holds the parsed flavour file.
-    The flavour file is the collection of all paramters needed for the simulation and all
-    their values the simulation should be executed with. The goal is to find the best
-    parameter combination. Paramter can have a contant value, a list of values or a range.
-    They can also be files.
+    The Flavour class extends the dictionary class and holds the parsed flavour
+    file. The flavour file is the collection of all paramters needed for the
+    simulation and all their values the simulation should be executed with. The
+    goal is to find the best parameter combination. Paramter can have a contant
+    value, a list of values or a range. They can also be files.
     """
 
     def tostring(self):
@@ -349,20 +356,21 @@ class Param:
 
     def appendFileParam(self, entry):
         """
-        Appends a file parameter given in the JSON data to the Param.values list.
+        Appends a file parameter given in the JSON data to the Param.values
+        list.
         Inputs:
             entry       dict with fields type, file and key
         Outputs:
             -
         """
-        logger.debug("Why the heck does it never enter appendFileParam?" + str(entry))
         try:
             newValue = FileParamValue(entry['file'], entry['key'])
             self.values.append(newValue)
             logger.debug("Appending " + str(newValue) + newValue.tostring())
         except KeyError as err:
             # todo: different possible exceptions
-            logger.exception("Either the file or the key field of the entry are missing.")
+            logger.exception("Either the file or the key field of the " +
+                             "entry are missing.")
             print("TODO: catch " + str(err))
             pass
         except IOError as err:
@@ -406,7 +414,8 @@ class Param:
                 try:
                     self.appendFileParam(entry)
                 except IOError as err:
-                    logging.warn("The entry " + entry + " is not included as parameter.")
+                    logging.warn("The entry " +
+                                 entry + " is not included as parameter.")
                 except Exception as typo:
                     logger.debug(typo)
                     print(typo)
@@ -420,8 +429,8 @@ class Param:
                 logger.debug("Appending " + str(entry))
                 self.values.append(entry)
             else:
-                raise TypeError('The flavour file holds an entry that is not supported.')
-
+                raise TypeError(
+                    'The flavour file holds an entry that is not supported.')
 
     def __init__(self, name, entry):
         """
@@ -437,13 +446,12 @@ class Param:
         self.name = name
         if type(entry) is not list: # a single value so to say
             logger.debug("It has a single value: " + str(entry))
-            self.appendEntry(entry)    
+            self.appendEntry(entry)
         else:
             logger.debug("It has more than one value.")
             for sub_entry in entry: # the entry in the json file
                 self.appendEntry(sub_entry)
-        logger.debug("Fin.")    
-
+        logger.debug("Fin.")
 
     def tostring(self):
         """
@@ -537,7 +545,7 @@ def openjson(filename):
             # That's the whole file at once. Hope files dont get too big
         except ValueError as err:
             return (None, "This is no valid JSON file. Try deleting comments.")
-        
+
     return (data, None)
 
 
@@ -580,14 +588,14 @@ def jsonToFlavour(data):
         err         Error message string, None if everything worked fine
     """
     if not isinstance(data, dict):
-        return(None,'Function jsonToFlavour expects a dictionary as input.')
+        return(None, 'Function jsonToFlavour expects a dictionary as input.')
     flavour = Flavour({})
     for param in data:
         try:
             newParam = Param(
                 param,      # name which is also key
                 data[param] # indifferent shit will be handled in Param init
-                )
+            )
             flavour[param] = newParam   # new entry to dict
         except TypeError as errorMessage:
             return (None, errorMessage)
@@ -596,6 +604,7 @@ def jsonToFlavour(data):
             return (None, 'Error while parsing json data into flavour object.')
 
     return (flavour, None)
+
 
 def printRecipe(recipe):
     """
