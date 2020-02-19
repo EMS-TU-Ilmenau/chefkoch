@@ -139,10 +139,8 @@ if __name__ == '__main__':
         parser.description = HELP_READ
         filepath = arguments.pop()
         filetype = arguments.pop()
-        if filetype == 'recipe':
-            chefkoch.readrecipe(filepath)
-        elif filetype == 'flavour':
-            chefkoch.readflavour(filepath)
+        if filetype in ['recipe', 'flavour']:
+            chefkoch.readjson(filetype, filepath)
         else:
             print("This is no known command.")
             print(HELP_READ)

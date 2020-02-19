@@ -17,8 +17,8 @@ import chefkoch
 
 class TestChefkoch(unittest.TestCase):
 
-    def test_readrecipe(self):
-        result, err = chefkoch.readrecipe('../recipe.json')
+    def test_readjson(self):
+        result, err = chefkoch.readjson('recipe', '../recipe.json')
         self.assertIsNone(err)
 
 class TestRecipe(unittest.TestCase):

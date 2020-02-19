@@ -15,7 +15,7 @@ import io
 import platform
 import json
 import sys
-sys.path.append('../../chefkoch/chefkoch')
+sys.path.append('../chefkoch')
 # logs need to be imported this way to not write logs.logger all the time
 from logs import *
 
@@ -297,30 +297,19 @@ class StepSource:
                             '. Must be a Python file, another recipe ' +
                             'or a build-in function.')
 
-class Flavour(dict):  # todo: class Flavour extends dictionary
+class Flavour(dict):  
     """
+    The Flavour class extends the dictionary class and holds the parsed flavour file.
     The flavour file is the collection of all paramters needed for the simulation and all
     their values the simulation should be executed with. The goal is to find the best
     parameter combination. Paramter can have a contant value, a list of values or a range.
     They can also be files.
     """
-    #self = {}
-
-    #def __init__(self, paramlist):
-    #    self.params = paramlist
-        # Making sure that paramlist is a list of type Param
-
-    #def __setitem__(self, key, value):
-    #    self.params[key] = value
-    #    return
-
-    #def __getitem__(self, key):
-    #    return self.params[key]
 
     def tostring(self):
         content = "The flavour file contains: "
         for key in self:
-            content += "\n  " + str(key) + ": " + self[key].tostring()
+            content += "\n  " + self[key].tostring()
         return content
 
 
@@ -338,7 +327,7 @@ class FileParamValue:
             self.file = filepath
             logger.debug("Filepath: " + self.filepath)
         else:
-            logger.warn("The following filepath does not exist: " + filepath)
+            logger.warn("The file " + filepath + " does not exist.")
             raise IOError("The file " + filepath + " does not exist.")
             return
 
@@ -377,7 +366,7 @@ class Param:
             print("TODO: catch " + str(err))
             pass
         except IOError as err:
-            logger.warn(err)
+            # some file does not exist and user was warned already
             pass
 
     def appendValuesFromRange(self, entry):
@@ -443,6 +432,7 @@ class Param:
         Outputs:
             -
         """
+        self.values = []
         logger.debug("Creating a new parameter " + str(name))
         self.name = name
         if type(entry) is not list: # a single value so to say
@@ -462,14 +452,15 @@ class Param:
         Inputs:
             -
         Outputs:
-            -
+            content     string that holds the content of the parameter
         """
-        content = "Parameter name: " + self.name
+        content = "Parameter name: " + self.name + "\n  "
         for value in self.values:
             if type(value) is FileParamValue:
-                content += "\n  " + value.tostring()
+                for line in value.tostring.split():
+                    content += "  " + value.tostring()
             else:
-                content += "\n  " + str(value)
+                content += "  " + str(value) + "\n  "
         return content
 
 
@@ -522,7 +513,7 @@ def readflavour(filename):
     if err is not None:
         logger.error(err)
         return err
-    #print(flavour.tostring())
+    print(flavour.tostring())
     # todo: input Integrity checks
     return flavour
 
