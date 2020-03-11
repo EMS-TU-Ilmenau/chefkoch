@@ -1,4 +1,18 @@
 # -*- coding: utf-8 -*-
+# Copyright 2019 Christoph Wagner
+#     https://www.tu-ilmenau.de/it-ems/
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 r"""
 The recipe file entered by the user declares all the steps taken in the
@@ -15,9 +29,9 @@ import io
 import platform
 import json
 import sys
-sys.path.append('../chefkoch')
+
 # logs need to be imported this way to not write logs.logger all the time
-from logs import *
+from .logs import *
 
 # constants
 # built-in functions that can be called as a simulation step inside a node
@@ -69,7 +83,6 @@ class Recipe:
             for key in node.outputs:
                 output = node.outputs[key]
                 if output in outputs_of_all_nodes:
-                    #  ("" if err is None else err) + "bla"
                     # overwrite exception class to generate warns
                     err = (("" if err is None else err) + 'The output ' +
                            output + ' of node ' + node.name +
@@ -98,12 +111,8 @@ class Recipe:
                             extension == '.json'):
                         inputIsValid = True
                     else:
-                        try:                # todo os.path os.isfile ?
-                            with open(input) as f:
-                                forget = file.readline(f)
-                                inputIsValid = True
-                        except IOError:
-                            pass
+                        if (os.path.isfile(input)):
+                            inputIsValid = True
                     if not inputIsValid:
                         nodeIsValid = False
                 if not nodeIsValid:
@@ -180,7 +189,7 @@ class Recipe:
         logger.debug("Executing rDFS for " + node.name + " and " +
                      namesOnTheWay)
         if node in nodesOnTheWay:
-            logger.warn("The recipe contains a circle along " +
+            logger.warning("The recipe contains a circle along " +
                         namesOnTheWay + node.name + " and can therefore" +
                         " not be executed.")
             return True
@@ -248,8 +257,24 @@ class Node:
 
 class Name:
     """
-    Name convention for the name of a node.
+    Name convention for the name of a node inside the recipe.
     """
+    def __init__(self, name):
+        is_unicode = False
+        try:
+            is_unicode = isinstance(name, unicode)
+        except NameError as mimimi:
+            # You are using python3 but don't worry. It works anyway.
+            logger.debug(mimimi)
+            logger.debug("You are using python 3, but don't worry," +
+                         "we make it work.")
+            pass
+        if not (isinstance(name, str) or is_unicode):
+            raise TypeError('The name of a node must be a string.')
+        if not self.is_ascii(name):
+            raise ValueError('The name of a node must be ascii.')
+        self.name = name
+    
     def is_ascii(self, name):
         """
         Checks if string consists of only ascii characters.
@@ -259,22 +284,6 @@ class Name:
             is_ascii    Boolean. True if so.
         """
         return all(ord(c) < 128 for c in name)
-
-    def __init__(self, name):
-        is_unicode = False
-        try:
-            is_unicode = isinstance(name, unicode)
-        except NameError as mimimi:
-            # You are using python3 but don't worry. It works anyway.
-            # logger.debug(mimimi)
-            # logger.debug("You are using python 3, but don't worry,
-            # we make it work.")
-            pass
-        if not (isinstance(name, str) or is_unicode):
-            raise TypeError('The name of a node must be a string.')
-        if not self.is_ascii(name):
-            raise ValueError('The name of a node must be ascii.')
-        self.name = name
 
 
 class StepSource:
@@ -324,15 +333,21 @@ class FileParamValue:
     """
     A possible value of a parameter of the simulation can be a file.
     """
+    key = ""
+    file = ""
+
     def __init__(self, filepath, key):
         logger.debug("Creating new FileParamValue")
-        logger.debug("Filepath (dict): " + filepath)
-        logger.debug("Key (dict): " + key)
+        logger.debug("Filepath (dict): " + str(filepath))
+        logger.debug("Key (dict): " + str(key))
         self.key = key
-        logger.debug("Key: " + self.key)
+        logger.debug("Key: " + str(self.key))
+        if filepath is None:
+            raise IOError("The filepath is None.")
+            return
         if os.path.isfile(filepath):
             self.file = filepath
-            logger.debug("Filepath: " + self.filepath)
+            logger.debug("Filepath: " + str(self.file))
         else:
             logger.warn("The file " + filepath + " does not exist.")
             raise IOError("The file " + filepath + " does not exist.")
@@ -343,7 +358,7 @@ class FileParamValue:
         Returns string that can be printed.
         """
         content = "Value is following file: \n  "
-        content+= self.filename + "\n  Key: " + self.key
+        content+= self.file + "\n  Key: " + str(self.key)
         return content
 
 
@@ -353,85 +368,7 @@ class Param:
     """
     values = []
     file = None
-
-    def appendFileParam(self, entry):
-        """
-        Appends a file parameter given in the JSON data to the Param.values
-        list.
-        Inputs:
-            entry       dict with fields type, file and key
-        Outputs:
-            -
-        """
-        try:
-            newValue = FileParamValue(entry['file'], entry['key'])
-            self.values.append(newValue)
-            logger.debug("Appending " + str(newValue) + newValue.tostring())
-        except KeyError as err:
-            # todo: different possible exceptions
-            logger.exception("Either the file or the key field of the " +
-                             "entry are missing.")
-            print("TODO: catch " + str(err))
-            pass
-        except IOError as err:
-            # some file does not exist and user was warned already
-            pass
-
-    def appendValuesFromRange(self, entry):
-        """
-        Appends all values within a range given in the JSON data to Param.values
-        Inputs:
-            entry       dict with fields start, stop and step.
-        Outputs:
-            -
-        """
-        logger.debug("More values are given by a range.")
-        try:
-            i = entry['start']
-            # add all values within range
-            while i <= entry['stop']:
-                logger.debug("Adding value " + str(i))
-                self.values.append(i)
-                i = i + entry['step']
-                # alternative: value = ParameterRange(start, stop, stepsize)
-        except Exception as err:
-            logger.exception(err)
-            print("TODO: catch " + err)
-            return
-
-    def appendEntry(self, entry):
-        """
-        Appends an entry within the JSON data received from the flavour file.
-        Inputs:
-            entry       mat-file or range or any other value
-        Outputs:
-            -
-        """
-        try:
-            logger.debug("It is of type " + entry['type'])
-            if entry['type'] == 'mat-file': # make more file cases here
-                logger.debug("The value of the parameter is a mat-file.")
-                try:
-                    self.appendFileParam(entry)
-                except IOError as err:
-                    logging.warn("The entry " +
-                                 entry + " is not included as parameter.")
-                except Exception as typo:
-                    logger.debug(typo)
-                    print(typo)
-            elif entry['type'] == 'range':
-                self.appendValuesFromRange(entry)
-        except TypeError as typo:
-            if type(entry) in [str, int, float, bool, unicode]:
-                # todo: python3 does not know unicode and python2 needs unicode
-                # todo: allow everything else by default,
-                # value could also be a list
-                logger.debug("Appending " + str(entry))
-                self.values.append(entry)
-            else:
-                raise TypeError(
-                    'The flavour file holds an entry that is not supported.')
-
+    
     def __init__(self, name, entry):
         """
         Creates a new paramter from the JSON data gotten from the flavour file.
@@ -453,6 +390,89 @@ class Param:
                 self.appendEntry(sub_entry)
         logger.debug("Fin.")
 
+    def appendFileParam(self, entry):
+        """
+        Appends a file parameter given in the JSON data to the Param.values
+        list.
+        Inputs:
+            entry       dict with fields type, file and key
+        Outputs:
+            -
+        """
+        try:
+            newValue = FileParamValue(entry['file'], entry['key'])
+            self.values.append(newValue)
+            logger.debug("Appending " + str(newValue) + newValue.tostring())
+        except KeyError as err:
+            # KeyError because the key-field is missing, in this case ignore
+            # todo: different possible exceptions
+            logger.exception("Either the file or the key field of the " +
+                             "entry are missing.")
+            # only abort if the file is missing. Missing keyword is possible.
+            try:
+                forgetfile = entry['file']
+            except KeyError as err:
+                raise ValueError("There is no file given to the file param!")
+                # todo: is it important to have a value error or can I change
+                # it to KeyError?
+            pass
+        except IOError as err:
+            # given filepath does not exist, so stop execution
+            raise ValueError("The filepath to the file param does not exist.")
+            # todo ValueError is catched somewhere. Rename to IOError there!
+
+    def appendValuesFromRange(self, entry):
+        """
+        Appends all values within a range given in the JSON data to Param.values
+        Inputs:
+            entry       dict with fields start, stop and step.
+        Outputs:
+            -
+        """
+        logger.debug("More values are given by a range.")
+        try:
+            i = entry['start']
+            # add all values within range
+            while i <= entry['stop']:
+                logger.debug("Adding value " + str(i))
+                self.values.append(i)
+                i = i + entry['step']
+                # alternative: value = ParameterRange(start, stop, stepsize)
+        except KeyError as err:
+            logger.exception("The start, stop or step field of " + str(entry) +
+                            "are missing.")
+        except Exception as err:
+            logger.exception("TODO: Catch " + err)
+            return
+
+    def appendEntry(self, entry):
+        """
+        Appends an entry within the JSON data received from the flavour file.
+        Inputs:
+            entry       file or range or any other value
+        Outputs:
+            -
+        """
+        try:
+            logger.debug("It is of type " + entry['type'])
+            if entry['type'] == 'file': # make more file cases here
+                logger.debug("The value of the parameter is a file.")
+                try:
+                    self.appendFileParam(entry)
+                except IOError as err:
+                    logging.warning("The entry " +
+                                 entry + " is not included as parameter.")
+                    raise ValueError(err)
+                except Exception as typo:
+                    logger.debug(typo)
+                    print(typo)
+            elif entry['type'] == 'range':
+                self.appendValuesFromRange(entry)
+        except TypeError as typo:
+            # allow everything else by default, value could also be a list
+            logger.debug("Appending " + str(entry))
+            self.values.append(entry)
+            
     def tostring(self):
         """
         Returns a printable and formatted string that shows the Parameter
@@ -627,3 +647,10 @@ def printRecipe(recipe):
         print("Executes:")
         print("  " + str(node.step))
         print("\n")
+
+# called by typing "chef read /file/path/.."
+def readjson(type, filename):
+    if type == "recipe":
+        return readrecipe(filename)
+    if type == "flavour":
+        return readflavour(filename)

@@ -24,6 +24,9 @@
 #
 #  Author: Christoph Wagner, Sophie Altenburg, Johannes van Reimersdahl
 #
+#  How to use: Write chef help into command line.
+#
+#  =======
 
 if __name__ == '__main__':
     import chefkoch
@@ -132,17 +135,27 @@ if __name__ == '__main__':
         parser.description = HELP_HELLO
         env_parse_and_apply(parser, context, arguments)
         print("Hello, have a nice day, mighty developer!")
+
+    HELP_PYTHON = "Prints Python Version"
+    @subcmd("python", help=HELP_PYTHON)
+    def cmd_python(parser, context, arguments):
+        parser.description = HELP_PYTHON
+        env_parse_and_apply(parser, context, arguments)
+        print(sys.version)
     
     HELP_READ = "Choose between chef read recipe and chef read flavour and add file path."
     @subcmd("read", help=HELP_READ)
     def cmd_read(parser, context, arguments):
         parser.description = HELP_READ
         filepath = arguments.pop()
-        filetype = arguments.pop()
-        if filetype in ['recipe', 'flavour']:
-            chefkoch.readjson(filetype, filepath)
-        else:
-            print("This is no known command.")
+        try:
+            filetype = arguments.pop()
+            if filetype in ['recipe', 'flavour']:
+                chefkoch.readjson(filetype, filepath)
+            else:
+                print("This is no known command.")
+                print(HELP_READ)
+        except:
             print(HELP_READ)
         # env_parse_and_apply(parser, context, arguments)   # need to know what it does and why it does not work in this context
 

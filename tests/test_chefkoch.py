@@ -9,8 +9,7 @@
 import os
 import unittest
 import sys
-sys.path.append('../chefkoch')
-import recipe as backbone
+import chefkoch.recipe as backbone
 import chefkoch
 
 # todo: Konsultiere Fabian
@@ -18,7 +17,7 @@ import chefkoch
 class TestChefkoch(unittest.TestCase):
 
     def test_readjson(self):
-        result, err = chefkoch.readjson('recipe', '../recipe.json')
+        result, err = chefkoch.readjson('recipe', 'recipe.json')
         self.assertIsNone(err)
 
 class TestRecipe(unittest.TestCase):
@@ -26,14 +25,14 @@ class TestRecipe(unittest.TestCase):
     def test_openjson(self):
         # test 1: valid JSON recipe file.
         with self.subTest("test 1: Valid JSON recipe file."):
-            result, err = backbone.openjson('../recipe.json')
+            result, err = backbone.openjson('recipe.json')
             self.assertTrue(isinstance(result, dict))
             self.assertIsNone(err)
             self.assertEqual(result['nodes'][1]['name'], "prisma_volume")
 
         # test 2: broken JSON recipe file.
         with self.subTest("test 2: broken JSON recipe file."):
-            result, err = backbone.openjson("../broken_for_testcase.json")
+            result, err = backbone.openjson("broken_for_testcase.json")
             self.assertEqual(
                 err,
                 "This is no valid JSON file. Try deleting comments.")
@@ -208,7 +207,7 @@ class TestRecipe(unittest.TestCase):
             data = {
                 "nodes": [{
                     "name": "A",
-                    "inputs": {"a": "../chefkoch/recipe.json"},
+                    "inputs": {"a": "recipe.json"},
                     "outputs": {"c": "outOfA"},
                     "stepsource": "somesource.py"
                 }]
@@ -262,10 +261,161 @@ class TestFlavour(unittest.TestCase):
     def test_readjson(self):
         # test 1: valid JSON flavour file.
         with self.subTest("test 1: valid JSON flavour file."):
-            result, err = backbone.openjson("../flavour.json")
+            result, err = backbone.openjson("flavour.json")
             self.assertIsNone(err)
             self.assertEqual(result['fS'], 9.22e9)
             self.assertEqual(result['subsample'][0]['type'], 'range')
             self.assertEqual(result['average'][2], 64)
             self.assertEqual(result['tx_lfsr_tap'], "0x8F1")
 
+    def test_Flavour_tostring(self):
+        # only test: correct comparison string
+        flavour = backbone.readflavour("flavour.json")
+        with open("flavour_tostring.txt", "r") as f:
+            comparisonStr = f.read()
+            testedStr = flavour.tostring()
+            self.assertEqual(testedStr, comparisonStr)
+
+    def test_FileParamValue(self):
+        # variables
+        key = "RandomPasswordForFile"
+
+        # test 1: valid input
+        with self.subTest("test 1: valid file parameter"):
+            filepath = "test.log"
+            file_param = backbone.FileParamValue(filepath, key)
+
+        # test 2: invalid filepath
+        with self.subTest("test 2: invalid filepath"):
+            filepath = "none_existing"
+            with self.assertRaises(IOError):
+                file_param = backbone.FileParamValue(filepath, key)
+
+    def test_FileParamValue_tostring(self):
+        # only test: correct comparison string
+        file_param = backbone.FileParamValue("test.log", "no key")
+        with open("file_param_tostring.txt", "r") as f:
+            comparisonStr = f.read()
+            testedStr = file_param.tostring()
+            self.assertEqual(testedStr, comparisonStr)
+
+    def test_Param(self):
+        # variables
+        # expected values of the parameters above for comparison
+        fileparamvalue = backbone.FileParamValue("test.log", "")
+        # test_entries contain name, entry, values, no_of_values, type
+        test_entries = [
+            { # entry 0
+                "name": "file_entry",
+                "entry": {
+                    "type": "file",
+                    "file": "resources/realtime-moving_DIV_4096.mat",
+                    "key": "data"
+                },
+                "values": [fileparamvalue]
+            },
+            { # entry 1
+                "name": "range_entry",
+                "entry": {
+                    "type": "range",
+                    "start": 1,
+                    "stop": 6,
+                    "step": 1
+                },
+                "values": [1,2,3,4,5,6]
+            },
+            { # entry 2
+                "name": "simple_entry",
+                "entry": 9.22e9,
+                "values": [9.22e9]
+            },
+            { # entry 3
+                "name": "list_entry",
+                "entry": [32, 64, 128],
+                "values": [32, 64, 128]
+            },
+            { # entry 4
+                "name": "composed_entry",
+                "entry": [
+                    {
+                        "type": "range",
+                        "start": 1,
+                        "stop": 6,
+                        "step": 1
+                    },
+                    32,
+                    64,
+                    128
+                ],
+                "values": [1, 2, 3, 4, 5, 6, 32, 64, 128]
+            },
+            { # entry 3
+                "name": "list_entry",
+                "entry": None,
+                "values": []
+            }
+        ]
+
+        # tests 0-4: all entry types, correct inputs, exceptions only occure in
+        # the helper functions called by Param
+        for nr in range(0,4):
+            entry = test_entries[nr]
+            param = backbone.Param(entry["name"], entry["entry"])
+            for i in range(0, len(entry["values"])-1):
+                with self.subTest(TestNr = nr, entryName = entry["name"], i = i):
+                    self.assertEqual(param.values[i], entry["values"][i]) 
+
+    def test_appendFileParam(self):
+        # variables
+        test_entries = [
+            { # entry 0
+                "file": "test.log",
+                "key": "R4nd0m_P4ssw0rd",
+            },
+            { # entry 1
+                "file": "test.log",
+                "key": "",
+            },
+            { # entry 2
+                "file": "test.log",
+                "key": None,
+            },
+            { # entry 3
+                "file": "test.log",
+                "no_key_field": "",
+            },
+            { # entry 4
+                "file": None,
+                "key": "",
+            },
+            { # entry 5
+                "file": "thisDoesNotExist.txt",
+                "key": "R4nd0m_P4ssw0rd",
+            },    
+            { # entry 6
+                "no_file_field": "",
+                "key": "R4nd0m_P4ssw0rd",
+            }
+        ]
+        no_file_entry = "There is no file given to the file param!"
+        false_path = "The filepath to the file param does not exist."
+        expected_outcomes = [
+            [None],                      # entry 0
+            [None],                      # entry 1
+            [None],                      # entry 2
+            [None],                      # entry 3
+            [ValueError, false_path],    # entry 4
+            [ValueError, false_path],    # entry 5
+            [ValueError, no_file_entry]  # entry 6
+        ]
+
+        for i in range(0, 6):
+            param = backbone.Param("Fresh empty param object", None)
+            entry = test_entries[i]
+            expect = expected_outcomes[i]
+            with self.subTest(TestNr = i):
+                if (expect[0] == None):
+                    param.appendFileParam(entry)
+                else:
+                    with self.assertRaisesRegex(expect[0], expect[1]):
+                        param.appendFileParam(entry)

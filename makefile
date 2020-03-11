@@ -87,7 +87,7 @@ ifeq ($(OS),Windows_NT)
 else
 
 # STYLE_FILES specifies the files touched during coding style operations
-STYLE_FILES=chefkoch/*.py *.py
+STYLE_FILES=bin/chef chefkoch/*.py tests/*.py *.py
 
 # STYLE_IGNORES lists the errors to be skipped during style check
 STYLE_IGNORES=E26,E116,E203,E221,E222,E225,E227,E241,E402,E731,W504

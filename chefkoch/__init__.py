@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 # Copyright 2019 Christoph Wagner
 #     https://www.tu-ilmenau.de/it-ems/
 #
@@ -30,17 +30,8 @@ import platform
 import json
 # import xxhash
 import sys
-sys.path.append('../chefkoch')
-import recipe
 
+from .recipe import *
 
 # define package version (gets overwritten by setup script)
 from .version import __version__ as version
-
-
-# called by typing "chef read /file/path/.."
-def readjson(type, filename):
-    if type == "recipe":
-        return recipe.readrecipe(filename)
-    if type == "flavour":
-        return recipe.readflavour(filename)
