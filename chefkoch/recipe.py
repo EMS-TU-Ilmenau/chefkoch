@@ -432,22 +432,41 @@ class Param:
         logger.debug("More values are given by a range.")
         try:
             i = entry['start']
+            stop = entry['stop']
+            step = entry['step']
+        except KeyError as err:
+            raise KeyError("The start, stop or step field of " + str(entry) +
+                            "are missing.")
+        valid_start = isinstance(i, int) or isinstance(i, float)
+        valid_stop = isinstance(stop, int) or isinstance(stop, float)
+        valid_step = isinstance(step, int) or isinstance(step, float)
+        valid = valid_start and valid_step and valid_stop
+        if not valid:
+            logger.warning("The start, step and stop value of a parameter range" +
+                           " need to by of type int or float, so an empty list" + 
+                           "was appended! Check for correctness!")
+            return
+        # get the direction of the range before using <= or >=
+        if i < stop and step > 0:
             # add all values within range
-            while i <= entry['stop']:
+            while i <= stop:
                 logger.debug("Adding value " + str(i))
                 self.values.append(i)
-                i = i + entry['step']
-                # alternative: value = ParameterRange(start, stop, stepsize)
-        except KeyError as err:
-            logger.exception("The start, stop or step field of " + str(entry) +
-                            "are missing.")
-        except Exception as err:
-            logger.exception("TODO: Catch " + err)
-            return
+                i = i + step
+        elif i > stop and step < 0:
+            # add all values within range
+            while i >= stop:
+                logger.debug("Adding value " + str(i))
+                self.values.append(i)
+                i = i + step
+        else:
+            logger.warning("The start " + str(i) + ", stop " + str(stop) + " and step " +
+                           str(step) + " of the range leave an empty list for" +
+                          " this paramter. Please check if this is intended.")
 
     def appendEntry(self, entry):
         """
-        Appends an entry within the JSON data received from the flavour file.
+        Appends a single entry within the JSON data received from the flavour file.
         Inputs:
             entry       file or range or any other value
         Outputs:

@@ -299,7 +299,7 @@ class TestFlavour(unittest.TestCase):
             testedStr = file_param.tostring()
             self.assertEqual(testedStr, comparisonStr)
 
-    def test_Param(self):
+    def test_Param_and_appendEntry(self):
         # variables
         # expected values of the parameters above for comparison
         fileparamvalue = backbone.FileParamValue("test.log", "")
@@ -330,11 +330,16 @@ class TestFlavour(unittest.TestCase):
                 "values": [9.22e9]
             },
             { # entry 3
+                "name": "empty_entry",
+                "entry": None,
+                "values": []
+            },
+            { # entry 4
                 "name": "list_entry",
                 "entry": [32, 64, 128],
                 "values": [32, 64, 128]
             },
-            { # entry 4
+            { # entry 5
                 "name": "composed_entry",
                 "entry": [
                     {
@@ -348,23 +353,30 @@ class TestFlavour(unittest.TestCase):
                     128
                 ],
                 "values": [1, 2, 3, 4, 5, 6, 32, 64, 128]
-            },
-            { # entry 3
-                "name": "list_entry",
-                "entry": None,
-                "values": []
             }
         ]
 
-        # tests 0-4: all entry types, correct inputs, exceptions only occure in
-        # the helper functions called by Param
-        for nr in range(0,4):
+        # tests 0-4: Param constructor, all entry types, correct inputs
+        # exceptions only occure in the helper functions called by Param
+        for nr in range(0,5):
             entry = test_entries[nr]
             param = backbone.Param(entry["name"], entry["entry"])
             for i in range(0, len(entry["values"])-1):
                 with self.subTest(TestNr = nr, entryName = entry["name"], i = i):
                     self.assertEqual(param.values[i], entry["values"][i]) 
+            # I don't want to declare the same test_entries again, so here comes
+            # test_appendEntry
+        for nr in range(0,3):
+            entry = test_entries[nr]
+            param = backbone.Param("Fresh param object", [])
+            for i in range(0, len(entry["values"])-1):
+                with self.subTest(TestNr = nr, entryName = entry["name"], i = i):
+                    param.appendEntry(entry["entry"]) 
+                    self.assertEqual(param.values[i], entry["values"][i])
 
+        
+        
+        
     def test_appendFileParam(self):
         # variables
         test_entries = [
@@ -419,3 +431,78 @@ class TestFlavour(unittest.TestCase):
                 else:
                     with self.assertRaisesRegex(expect[0], expect[1]):
                         param.appendFileParam(entry)
+
+    def test_appendValuesFromRange(self):
+        # test cases
+        test_entries = [
+            { # entry 0
+                "start": 1,
+                "stop": 6,
+                "step": 1,
+                "expect": 6
+            },
+            { # entry 1
+                "start": -1,
+                "stop": -6,
+                "step": -1,
+                "expect": 6
+            },
+            { # entry 2
+                "start": -10,
+                "stop": 20,
+                "step": 1,
+                "expect": 31
+            },
+            { # entry 3
+                "start": 10,
+                "stop": -10,
+                "step": -1,
+                "expect": 21
+            },
+            { # entry 4
+                "start": -3,
+                "stop": 3,
+                "step": 0.5,
+                "expect": 13
+            },
+            { # entry 5
+                "start": 0,
+                "stop": 1,
+                "step": 0.125,
+                "expect": 9
+            },
+            # invalid values from here:
+            { # entry 6
+                "start": "hell",
+                "stop": "hellooooooooo",
+                "step": "o",
+                "expect": 0
+            },
+            { # entry 7
+                "start": "a",
+                "stop": "f",
+                "step": 1,
+                "expect": 0
+            },
+            { # entry 8
+                "start": -1,
+                "stop": -6,
+                "step": 1,
+                "expect": 0
+            },
+            { # entry 9
+                "start": 1,
+                "stop": 10,
+                "step": -1,
+                "expect": 0
+            }
+        ]
+
+        for i in range(0,9):
+            entry = test_entries[i]
+            entry['type'] = "range"
+            param = backbone.Param("Fresh empty param object", [])
+            with self.subTest(TestNr = i, start = entry["start"], stop = entry["stop"], step = entry["step"]):
+                param.appendValuesFromRange(entry)
+                self.assertEqual(len(param.values), entry['expect'])
+
