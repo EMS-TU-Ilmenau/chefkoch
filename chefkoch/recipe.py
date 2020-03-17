@@ -328,6 +328,10 @@ class Flavour(dict):
             content += "\n  " + self[key].tostring()
         return content
 
+    # todo overwrite return of the parameter values list so that
+    # flavour["param_name"] returns flavour["param_name"][0] if there is only
+    # one element in the list
+
 
 class FileParamValue:
     """
@@ -349,7 +353,7 @@ class FileParamValue:
             self.file = filepath
             logger.debug("Filepath: " + str(self.file))
         else:
-            logger.warn("The file " + filepath + " does not exist.")
+            logger.warning("The file " + filepath + " does not exist.")
             raise IOError("The file " + filepath + " does not exist.")
             return
 
@@ -366,6 +370,7 @@ class Param:
     """
     A parameter with all values attached to it.
     """
+    # todo: extend list so that Param returns Param.values
     values = []
     file = None
     
@@ -444,7 +449,7 @@ class Param:
         if not valid:
             logger.warning("The start, step and stop value of a parameter range" +
                            " need to by of type int or float, so an empty list" + 
-                           "was appended! Check for correctness!")
+                           " was appended! Check for correctness!")
             return
         # get the direction of the range before using <= or >=
         if i < stop and step > 0:
@@ -551,18 +556,19 @@ def readflavour(filename):
         filename    file path string
     Outputs:
         flavour     object of type flavour. if error occured, it holds the error
+        err         error if one occures
     """
     jsonData, err = openjson(filename)
     if err is not None:
         logger.error(err)
-        return err
+        return None, err
     flavour, err = jsonToFlavour(jsonData)
     if err is not None:
         logger.error(err)
-        return err
+        return None, err
     print(flavour.tostring())
     # todo: input Integrity checks
-    return flavour
+    return flavour, None
 
 
 def openjson(filename):

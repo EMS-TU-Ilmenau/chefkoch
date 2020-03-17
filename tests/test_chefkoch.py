@@ -20,18 +20,18 @@ class TestChefkoch(unittest.TestCase):
         result, err = chefkoch.readjson('recipe', 'recipe.json')
         self.assertIsNone(err)
 
-class TestRecipe(unittest.TestCase):
-
-    def test_openjson(self):
+    def check_openjson(self, file, comparisonFunc):
+        # not executed by the test runner but by the test_openjson functions
+        # inside the TestRecipe class and the TestFlavour class
         # test 1: valid JSON recipe file.
-        with self.subTest("test 1: Valid JSON recipe file."):
-            result, err = backbone.openjson('recipe.json')
+        with self.subTest("test 1: Valid JSON file.", file = file):
+            result, err = backbone.openjson(file)
             self.assertTrue(isinstance(result, dict))
             self.assertIsNone(err)
-            self.assertEqual(result['nodes'][1]['name'], "prisma_volume")
+            comparisonFunc(result)
 
         # test 2: broken JSON recipe file.
-        with self.subTest("test 2: broken JSON recipe file."):
+        with self.subTest("test 2: broken JSON file."):
             result, err = backbone.openjson("broken_for_testcase.json")
             self.assertEqual(
                 err,
@@ -44,6 +44,17 @@ class TestRecipe(unittest.TestCase):
             self.assertEqual(err, "The file path or file name is incorrect.")
             self.assertIsNone(result)
 
+class TestRecipe(unittest.TestCase):
+
+    def assert_openjson(self, result):
+        # this is used to reuse the check_openjson both in the TestRecipe and
+        # TestFlavour class without copy-pasting
+        self.assertEqual(result['nodes'][1]['name'], "prisma_volume")
+    
+    def test_openjson(self):
+        # test 1: valid JSON recipe file.
+        test_chefkoch = TestChefkoch()
+        test_chefkoch.check_openjson("recipe.json", self.assert_openjson)
 
     def test_jsonToRecipe(self):
         # test 1: Not giving a dict as input to jsonToRecipe
@@ -270,7 +281,8 @@ class TestFlavour(unittest.TestCase):
 
     def test_Flavour_tostring(self):
         # only test: correct comparison string
-        flavour = backbone.readflavour("flavour.json")
+        flavour, err = backbone.readflavour("flavour.json")
+        self.assertIsNone(err)
         with open("flavour_tostring.txt", "r") as f:
             comparisonStr = f.read()
             testedStr = flavour.tostring()
@@ -372,10 +384,7 @@ class TestFlavour(unittest.TestCase):
             for i in range(0, len(entry["values"])-1):
                 with self.subTest(TestNr = nr, entryName = entry["name"], i = i):
                     param.appendEntry(entry["entry"]) 
-                    self.assertEqual(param.values[i], entry["values"][i])
-
-        
-        
+                    self.assertEqual(param.values[i], entry["values"][i])        
         
     def test_appendFileParam(self):
         # variables
@@ -506,3 +515,27 @@ class TestFlavour(unittest.TestCase):
                 param.appendValuesFromRange(entry)
                 self.assertEqual(len(param.values), entry['expect'])
 
+    def test_readflavour(self):
+        # only test: parsing the whole file
+         with self.subTest("test 1: valid JSON flavour file."):
+            flavour, err = backbone.readflavour("flavour.json")
+            self.assertIsNone(err)
+            self.assertEqual(flavour['fS'].values[0], 9.22e9)
+            self.assertEqual(len(flavour['subsample'].values), 19)
+            self.assertEqual(flavour['average'].values[2], 3)
+            self.assertEqual(flavour['tx_lfsr_tap'].values[0], "0x8F1")
+        # todo: some day flavour['fS'] should return flavour['fS'].values[0] if there's
+        # only one entry to the parameter fS
+        # todo: some day flavour['fS'] should return flavour['fS'].values if there is more
+        # then one entry to the parameter fS
+
+
+    def assert_openjson(self, result):
+        # this is used to reuse the check_openjson both in the TestRecipe and
+        # TestFlavour class without copy-pasting
+        self.assertEqual(result['data']['type'], "file")
+    
+    def test_openjson(self):
+        # test 1: valid JSON recipe file.
+        test_chefkoch = TestChefkoch()
+        test_chefkoch.check_openjson("flavour.json", self.assert_openjson)
