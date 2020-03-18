@@ -478,25 +478,34 @@ class Param:
             -
         """
         try:
-            logger.debug("It is of type " + entry['type'])
-            if entry['type'] == 'file': # make more file cases here
-                logger.debug("The value of the parameter is a file.")
-                try:
-                    self.appendFileParam(entry)
-                except IOError as err:
-                    logging.warning("The entry " +
-                                 entry + " is not included as parameter.")
-                    raise ValueError(err)
-                except Exception as typo:
-                    logger.debug(typo)
-                    print(typo)
-            elif entry['type'] == 'range':
-                self.appendValuesFromRange(entry)
-        except TypeError as typo:
-            # allow everything else by default, value could also be a list
-            logger.debug("Appending " + str(entry))
+            type = entry['type']
+        except KeyError as err:
+            logger.debug("There is no type specified to this entry. It will" +
+                         " be interpreted and appended as a dictionary.")
             self.values.append(entry)
-            
+            return
+        except TypeError as err:
+            # entry is not a dictionary
+            logger.debug("The entry is not a dictionary. It is appended normally.")
+            self.values.append(entry)
+            return
+        # if there is a type to the entry, test if it is known
+        logger.debug("It is of type " + type)
+        if type == 'file':
+            try:
+                self.appendFileParam(entry)
+            # todo: capture and handle this exception inside appenFileParam
+            except ValueError as err:
+                pass
+        elif type == 'range':
+            self.appendValuesFromRange(entry)
+        else:
+            # allow everything else by default, value could also be a list
+            logger.warning("There is a type specified to " + str(entry) +
+                           ", but neither 'range' nor 'file'. It will be " +
+                           "appended as a dictionary.")
+            self.values.append(entry)
+           
     def tostring(self):
         """
         Returns a printable and formatted string that shows the Parameter
@@ -632,6 +641,9 @@ def jsonToFlavour(data):
         flavour     object of class flavour
         err         Error message string, None if everything worked fine
     """
+    # todo: if the flavour file has an entry that misses the "type" field, there
+    # should be a warning and this parameter should be skipped instead of 
+    # having a random key error
     if not isinstance(data, dict):
         return(None, 'Function jsonToFlavour expects a dictionary as input.')
     flavour = Flavour({})

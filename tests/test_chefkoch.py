@@ -57,6 +57,16 @@ class TestRecipe(unittest.TestCase):
         test_chefkoch.check_openjson("recipe.json", self.assert_openjson)
 
     def test_jsonToRecipe(self):
+        # correct data to be changed in every subtest
+        correct_data = {
+            "nodes": [{
+                "name": "rectangle_area",
+                "inputs": {"d": "flavour.d", "b": "flavour.b"},
+                "unneccessary": "and of no interest",
+                "outputs": {"a": "area"},
+                "stepsource": "rectangle_area.py"
+            }]
+        }
         # test 1: Not giving a dict as input to jsonToRecipe
         with self.subTest("test 1: Not giving a dict as input to jsonToRecipe"):
             result, err = backbone.jsonToRecipe(None)
@@ -67,30 +77,15 @@ class TestRecipe(unittest.TestCase):
 
         # test 2: correct format with additional information still works
         with self.subTest("test 2: correct format with additional information still works"):
-            data = {
-                "nodes": [{
-                    "name": "rectangle_area",
-                    "inputs": {"d": "flavour.d", "b": "flavour.b"},
-                    "unneccessary": "and of no interest",
-                    "outputs": {"a": "area"},
-                    "stepsource": "rectangle_area.py"
-                }]
-            }
-            result, err = backbone.jsonToRecipe(data)
+            result, err = backbone.jsonToRecipe(correct_data)
             self.assertIsInstance(result, backbone.Recipe)
             self.assertIsNone(err)
             self.assertEqual(result.nodes[0].inputs['b'], "flavour.b")
 
         # test 3: incorrect format
         with self.subTest("test 3: incorrect format"):
-            data = {
-                "nodes": [{
-                    "name": "rectangle_area",
-                    "missing": {},
-                    "outputs": {"a": "area"},
-                    "stepsource": "rectangle_area.py"
-                }]
-            }
+            data = correct_data
+            data['nodes'][0].pop("inputs")
             result, err = backbone.jsonToRecipe(data)
             self.assertIsNone(result)
             self.assertEqual(err, 'Error while parsing json data into recipe object.')
@@ -98,34 +93,19 @@ class TestRecipe(unittest.TestCase):
         # test 4: Annoying the Node class:
         # list of inputs is interpreted as value for parameter "a"
         with self.subTest("list of inputs is interpreted as value for parameter \"a\""):
-            data = {
-                "nodes": [{
-                    "name": "fancy",
-                    "inputs": {"a": ["first", "second"]},
-                    "outputs": {"a": "area"},
-                    "stepsource": "collect"
-                }]
-            }
+            data = correct_data
+            data['nodes'][0]['inputs'] = {"a": ["first", "second"]}
             result, err = backbone.jsonToRecipe(data)
             self.assertIsNotNone(result)
             self.assertIsNone(err)
 
         # test 4: Annoying the Node class
         with self.subTest("test 4: Annoying the Node class"):
-            data = {
-                "nodes": [{
-                    "name": "fancy",
-                    "inputs": {"a": "first"},
-                    "outputs": {"a": "area"},
-                    "stepsource": "no_build-in_function"
-                }]
-            }
+            data = correct_data
+            data['nodes'][0]['stepsource'] = "no_built-in_function"
             result, err = backbone.jsonToRecipe(data)
             self.assertIsNone(result)
             self.assertIsNotNone(err)
-
-        # todo: versions of var data in object with expected result
-        # and err value attached to it and loop for test execution!
 
     def test_inputIntegrity(self):
         # recipe with two outputs with same name
@@ -529,13 +509,83 @@ class TestFlavour(unittest.TestCase):
         # todo: some day flavour['fS'] should return flavour['fS'].values if there is more
         # then one entry to the parameter fS
 
-
     def assert_openjson(self, result):
         # this is used to reuse the check_openjson both in the TestRecipe and
         # TestFlavour class without copy-pasting
         self.assertEqual(result['data']['type'], "file")
     
     def test_openjson(self):
-        # test 1: valid JSON recipe file.
+        # using three tests in TestChefkoch
         test_chefkoch = TestChefkoch()
         test_chefkoch.check_openjson("flavour.json", self.assert_openjson)
+
+    def test_jsonToFlavour(self):
+        # correct data to be changed in every subtest
+        # TODO! copy correct_data into data, do not hand over the link!
+        data = {
+            "singleVal": 10.33e3,
+            "fileVal": {
+                "type": "file",
+                "file": "test.log",
+                "key": "",
+                "unnecessary": "something"
+            },
+            "listVal": [32, 64, 128],
+            "rangeVal": {
+                "type": "range",
+                "start": 1,
+                "stop": 5,
+                "step": 1
+            }
+        }
+        # test 1: Not giving a dict as input to jsonToRecipe
+        with self.subTest("test 1: Not giving a dict as input to jsonToRecipe"):
+            result, err = backbone.jsonToFlavour(None)
+            self.assertIs(result, None)
+            self.assertEqual(
+                err,
+                'Function jsonToFlavour expects a dictionary as input.')
+
+        # test 2: correct format with additional information still works
+        with self.subTest("test 2: correct format with additional information still works"):
+            result, err = backbone.jsonToFlavour(data)
+            self.assertIsInstance(result, backbone.Flavour)
+            self.assertIsNone(err)
+            self.assertEqual(result["singleVal"].values[0], 10.33e3)
+            self.assertEqual(result["fileVal"].values[0].file, "test.log")
+            self.assertEqual(len(result["rangeVal"].values), 5)
+
+        # test 3: File does not exist
+        with self.subTest("test 3: File does not exist"):
+            data['fileVal']['file'] = "no_existing_file.txt"
+            result, err = backbone.jsonToFlavour(data)
+            self.assertIsNotNone(result)
+            self.assertIsNone(result['fileVal'].file)
+            self.assertIsNone(err)
+            # todo how can I check if there was a warning?
+            # todo delete empty parameters until following:
+            #with self.assertRaises(KeyError):
+            #    result['fileVal']
+
+        # test 4: Annoying the Input integrity tests
+        with self.subTest("test 4: Giving no known name as type"):
+            data['fileVal']['type'] = "no actual type"
+            result, err = backbone.jsonToFlavour(data)
+            self.assertIsNotNone(result)
+            self.assertIsNone(err)
+            # todo catch warning
+            #with self.assertRaises(KeyError):
+            #    result['fileVal']
+
+        # test 3: incorrect format
+        with self.subTest("test 5: Having no type field"):
+            data['fileVal'].pop("type")
+            result, err = backbone.jsonToFlavour(data)
+            self.assertIsNotNone(result)
+            self.assertIsNone(err)
+            # todo: delete empty parameters afterwards!
+            #with self.assertRaises(KeyError):
+            #    result['fileVal']
+
+        
+        
