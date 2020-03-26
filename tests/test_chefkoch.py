@@ -560,12 +560,11 @@ class TestFlavour(unittest.TestCase):
             data['fileVal']['file'] = "no_existing_file.txt"
             result, err = backbone.jsonToFlavour(data)
             self.assertIsNotNone(result)
-            self.assertIsNone(result['fileVal'].file)
             self.assertIsNone(err)
             # todo how can I check if there was a warning?
             # todo delete empty parameters until following:
-            #with self.assertRaises(KeyError):
-            #    result['fileVal']
+            with self.assertRaises(KeyError):
+                result['fileVal']
 
         # test 4: Annoying the Input integrity tests
         with self.subTest("test 4: Giving no known name as type"):
@@ -574,8 +573,6 @@ class TestFlavour(unittest.TestCase):
             self.assertIsNotNone(result)
             self.assertIsNone(err)
             # todo catch warning
-            #with self.assertRaises(KeyError):
-            #    result['fileVal']
 
         # test 3: incorrect format
         with self.subTest("test 5: Having no type field"):
@@ -583,9 +580,4 @@ class TestFlavour(unittest.TestCase):
             result, err = backbone.jsonToFlavour(data)
             self.assertIsNotNone(result)
             self.assertIsNone(err)
-            # todo: delete empty parameters afterwards!
-            #with self.assertRaises(KeyError):
-            #    result['fileVal']
-
-        
         

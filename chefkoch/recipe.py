@@ -645,15 +645,21 @@ def jsonToFlavour(data):
     # should be a warning and this parameter should be skipped instead of 
     # having a random key error
     if not isinstance(data, dict):
-        return(None, 'Function jsonToFlavour expects a dictionary as input.')
+        err = 'Function jsonToFlavour expects a dictionary as input.'
+        logger.error(err)
+        return(None, err)
     flavour = Flavour({})
     for param in data:
         try:
             newParam = Param(
                 param,      # name which is also key
-                data[param] # indifferent shit will be handled in Param init
+                data[param] # will be handled in Param init
             )
-            flavour[param] = newParam   # new entry to dict
+            if len(newParam.values) > 0:
+                flavour[param] = newParam   # new entry to dict
+            else:
+                logger.warning("The parameter " + param + " has no valid" +
+                               " value and will be excluded from the flavour.")
         except TypeError as errorMessage:
             return (None, errorMessage)
         except Exception as err:
