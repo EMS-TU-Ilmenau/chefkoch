@@ -1,0 +1,38 @@
+{
+  "nodes": [
+    {
+      // chefkoch.openjson() should abort when there are syntax flaws in the json
+      "name": "rectangle_area",
+      "inputs": {
+        "d": "flavour.d",
+        "b": "flavour.b"
+      },
+      "outputs": { "a": "area" },
+      "stepsource": "rectangle_area.py"
+    },
+    {
+      "name": "prisma_volume",
+      "inputs": {"groundspace": "area", "height": "flavour.h"},
+      "outputs": {"v": "volume"},
+      "stepsource": "prisma_volume.py"
+    },
+    {
+      "name": "volume_to_area",
+      "inputs": {"v": "volume", "s": "space"},
+      "outputs": {"h": "height"},
+      "stepsource": "volume_to_area.py"
+    },
+    {
+      "name": "collect_volume",
+      "inputs": {"collect": "volume", "by": "flavour.h"}, 
+      "outputs": {"collected": "volumes_for_h"},
+      "stepsource": "collect"
+    },
+    {
+      "name": "average_volume",
+      "inputs": {"list": "volumes_for_h"},
+      "outputs": {"av": "average_volume"},
+      "stepsource": "average_volume.py"
+    }
+  ]
+}

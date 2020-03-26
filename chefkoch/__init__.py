@@ -1,5 +1,5 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 # Copyright 2019 Christoph Wagner
 #     https://www.tu-ilmenau.de/it-ems/
 #
@@ -14,6 +14,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# any time you change the init, make sure to re-install the chef command
+# with pip
 
 r"""
 Introduction
@@ -21,10 +23,15 @@ Introduction
 
 Please tune in soon for an update.
 """
+
 import os
 import io
 import platform
-import xxhash
+import json
+# import xxhash
+import sys
+
+from .recipe import *
 
 # define package version (gets overwritten by setup script)
 from .version import __version__ as version

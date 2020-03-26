@@ -1,0 +1,3 @@
+Value is following file: 
+  test.log
+  Key: no key
