@@ -130,7 +130,7 @@ else
 endif
 
 
-# target 'compile': Comile package locally.
+# target 'compile': Compile package locally.
 .PHONY: compile
 compile:
 	$(info * compiling package locally)
