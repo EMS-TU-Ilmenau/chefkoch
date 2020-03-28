@@ -1,0 +1,7 @@
+dask
+dask-jobqueue
+sphinx
+sphinxcontrib.tikz
+numpydoc
+sphinx_rtd_theme
+-U Sphinx

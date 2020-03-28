@@ -1,4 +1,4 @@
-# chefkoch
+﻿# chefkoch
 [![Version](https://img.shields.io/pypi/v/chefkoch.svg)](https://pypi.python.org/pypi/chefkoch)
 [![Status](https://img.shields.io/pypi/status/chefkoch.svg)](https://pypi.python.org/pypi/chefkoch)
 [![Python wheels](https://img.shields.io/pypi/wheel/chefkoch.svg)](https://pypi.python.org/pypi/chefkoch)
@@ -18,6 +18,10 @@ A compute cluster cuisine for distributed scientific computing in python
 ### Dependencies
 - Python >= 2.7 or >=3.5
 - dask 
+
+### Dependencies for development
+- are found in requirements-dev.txt
+- use pip install -r requirements-dev.txt
 
 ### Authors & Contact Information
 - Christoph Wagner | christoph.wagner@tu-ilmenau.de
