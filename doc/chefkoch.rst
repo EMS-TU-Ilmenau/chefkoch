@@ -1,6 +1,15 @@
 chefkoch package
 ================
 
+Module contents
+---------------
+
+.. automodule:: chefkoch
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :noindex:
+
 Submodules
 ----------
 
@@ -37,11 +46,3 @@ chefkoch.version module
    :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: chefkoch
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :noindex:

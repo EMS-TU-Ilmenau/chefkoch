@@ -1,7 +1,13 @@
-test\_chefkoch module
+tests module
 =====================
 
-.. automodule:: tests
+Submodules
+----------
+
+chefkoch.logs module
+--------------------
+
+.. automodule:: tests.test_chefkoch
    :members:
    :undoc-members:
    :show-inheritance:

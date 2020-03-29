@@ -16,8 +16,8 @@
 
 r"""
 The recipe file entered by the user declares all the steps taken in the
-simulation, i.e. functions, and the dependencies in form of exchanged data
-between the steps. The Recipe Module concerning all classes and functions
+simulation and the dependencies in form of exchanged data
+between the steps. The Recipe module holds all classes and functions
 needed to parse a json file into a recipe object and check integrity.
 """
 # classes to put recipe json data into
@@ -48,6 +48,12 @@ class Recipe:
     nodes = []
 
     def __init__(self, nodelist):
+        """
+        Initialises a recipe by appending the `nodelist` to `nodes`.
+
+        :param nodelist: list of simulation steps (nodes)
+        :type nodelist: Node[]
+        """
         self.nodes = nodelist
         # Making sure, that nodelist is a list of type Node
         try:
@@ -180,7 +186,7 @@ class Recipe:
                                 be visited by going deeper into the graph, \
                                 there is a circle.
         :type nodesOnTheWay:    Node[]
-        :returns:               True if there is a circle. False elsewise.
+        :returns:               `True` if there is a circle. False elsewise.
         """
         namesOnTheWay = ""
         for nodeOTW in nodesOnTheWay:
@@ -344,7 +350,7 @@ class Flavour(dict):
     The Flavour class extends the dictionary class and holds the parsed flavour
     file. The flavour file is the collection of all paramters needed for the
     simulation and all their values the simulation should be executed with. The
-    goal is to find the best parameter combination. Paramter can have a contant
+    goal is to find the best parameter combination. Paramter can have a constant
     value, a list of values or a range. They can also be files.
     """
 
@@ -367,7 +373,7 @@ class Flavour(dict):
 
 class FileParamValue:
     """
-    One parameter value which is a file, defined by filepath and optional
+    A single parameter value which is a file, defined by filepath and optional
     key/passphrase to the file.
     """
 
@@ -381,7 +387,7 @@ class FileParamValue:
         :param filepath: file path as given in flavour.json
         :type filepath: string
         :param key: optional key or passphrase to the file
-        :type key: string
+        :type key: string or None
         :raises IOError: In case, the filepath is None or the path does not
             exist, there is an IOError raised and the functions returns.
         """
@@ -615,7 +621,7 @@ def readflavour(filename):
     :type filename: string
     :returns:
         flavour - object of type flavour. if error occured, it holds the
-                  error \n
+        error \n
         err - error if one occures
     :rtype: (Flavour, Error)
     """
@@ -744,7 +750,22 @@ def printRecipe(recipe):
 
 # called by typing "chef read /file/path/.."
 def readjson(type, filename):
+    """
+    Wrapper function that calls either `readrecipe` or `readflavour`
+    depending on the parameter `type`.
+
+    :param type: Type of JSON-file that should be converted into
+                 a dictionary: {"recipe", "flavour"}
+    :type type: string
+    :raises TypeError: If type is none of the above.
+    :returns: Dictionary or list of data inside the file, depending on
+              the outer structure of the JSON. 
+    :rtype: dict or list
+    """
     if type == "recipe":
         return readrecipe(filename)
     if type == "flavour":
         return readflavour(filename)
+    else:
+        raise TypeError("The function readjson only takes 'recipe' or" +
+                        "'flavour' as type.")

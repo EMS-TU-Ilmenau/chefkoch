@@ -13,6 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""
+The namespace submodule holds key names or otherwise specific names, so
+that accidental spelling mistakes in the other modules don't go unnoticed.
+Changes to keys or specific names can be made by changing one line in the
+namespace module instead of changing them everywhere, they occure and
+accidentally forgetting some appearances.
+"""
 
 # ##################################### Consts
 class NAME_RECIPE(object):
