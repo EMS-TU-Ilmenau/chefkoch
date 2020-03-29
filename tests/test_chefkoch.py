@@ -560,7 +560,7 @@ class TestFlavour(unittest.TestCase):
             data['fileVal']['file'] = "no_existing_file.txt"
             result, err = backbone.jsonToFlavour(data)
             self.assertIsNotNone(result)
-            self.assertIsNone(result['fileVal'].file)
+            self.assertEqual(len(result['fileVal'].values), 0)
             self.assertIsNone(err)
             # todo how can I check if there was a warning?
             # todo delete empty parameters until following:
