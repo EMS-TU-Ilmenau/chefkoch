@@ -50,6 +50,7 @@ except ImportError:
 # global package constants
 packageName     = 'chefkoch'
 packageVersion  = '0.0'              # provide a version tag as fallback
+author          = 'EMS group, TU Ilmenau, 2020'
 fullVersion     = packageVersion
 strVersionFile  = "%s/version.py" %(packageName)
 
@@ -206,7 +207,7 @@ if __name__ == '__main__':
         description=('A compute cluster cuisine for distributed scientific ' +
                      'computing in python'),
         long_description=longDescription,
-        author='Christoph Wagner, EMS group TU Ilmenau',
+        author=author,
         author_email='christoph.wagner@tu-ilmenau.de',
         url='https://ems-tu-ilmenau.github.io/ćhefkoch/',
         license='Apache Software License',
@@ -242,10 +243,13 @@ if __name__ == '__main__':
         scripts=['bin/chef'],
         cmdclass={'build_doc': doc_opts()},
         command_options={
-            'build_doc': {
-                'project': ('setup.py', packageName),
-                'version': ('setup.py', packageVersion),
-                'release': ('setup.py', fullVersion),
-                'copyright': ('setup.py', '2019, ' + packageName)
-            }}
+                "build_sphinx": {
+                    "project": ("setup.py", packageName),
+                    "copyright": ("setup.py", author),
+                    "version": ("setup.py", fullVersion),
+                    "release": ("setup.py", packageVersion),
+                    "source_dir": ("setup.py", "doc"),
+                    "build_dir": ("setup.py", "build/doc"),
+                }
+            },
     )
