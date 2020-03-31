@@ -16,8 +16,8 @@
 
 r"""
 The recipe file entered by the user declares all the steps taken in the
-simulation, i.e. functions, and the dependencies in form of exchanged data
-between the steps. The Recipe Module concerning all classes and functions
+simulation and the dependencies in form of exchanged data
+between the steps. The Recipe module holds all classes and functions
 needed to parse a json file into a recipe object and check integrity.
 """
 # classes to put recipe json data into
@@ -48,6 +48,12 @@ class Recipe:
     nodes = []
 
     def __init__(self, nodelist):
+        """
+        Initialises a recipe by appending the `nodelist` to `nodes`.
+
+        :param nodelist: list of simulation steps (nodes)
+        :type nodelist: Node[]
+        """
         self.nodes = nodelist
         # Making sure, that nodelist is a list of type Node
         try:
@@ -69,11 +75,10 @@ class Recipe:
         Warns, if there is no incoming edge. Excludes nodes from recipe,
         that have no incoming edge for a node or have uncomputable inputs
         because of missing inputs in parent nodes.
-        Inputs:
-             -
-        Outputs:
-            err         String. None if correct. Else error message.
-            warn        String. None if correct. Else error message.
+        
+        :returns:
+            err - String. None if correct. Else error message. \n
+            warn - String. None if correct. Else error message.
         """
         err = None
         warn = None
@@ -144,10 +149,9 @@ class Recipe:
         Makes list of all nodes, that have only flavour parameters as inputs.
         Then starts depth-first search for every root node. If there is a way
         back to a previously visited node, there is a warning about a circle.
-        Inputs:
-            none
-        Outputs:
-            err         String about circle or "" if everything is correct
+        
+        :returns:
+            err - String about circle or "" if everything is correct
         """
         rootNodes = []
         # 1. Make list of all nodes that only have flavour inputs.
@@ -175,13 +179,14 @@ class Recipe:
     def recursiveDFS(self, node, nodesOnTheWay):
         """
         Recursive Depth First Search finding circles.
-        Inputs:
-            node            The node, the DFS starts in.
-            nodesOnTheWay   Previously visited nodes. If a node in there can
-                            be visited by going deeper into the graph,
-                            there is a circle.
-        Outputs:
-            bool            True if there is a circle. False elsewise.
+        
+        :param node:            The node, the DFS starts in.
+        :type node:             Node
+        :param nodesOnTheWay:   Previously visited nodes. If a node in there can
+                                be visited by going deeper into the graph, \
+                                there is a circle.
+        :type nodesOnTheWay:    Node[]
+        :returns:               `True` if there is a circle. False elsewise.
         """
         namesOnTheWay = ""
         for nodeOTW in nodesOnTheWay:
@@ -227,7 +232,21 @@ class Node:
     as value in another inputdict).
     """
     def __init__(self, name, inputdict, outputdict, stepsource):
-        # for empty name enter "" into recipe, unicode and string needed
+        """
+        Initializes a node of the recipe. A node represents a simulation
+        step.
+
+        :param name: Name of the simulation step.
+        :type name: string or unicode
+        :param inputdict: Dictionary of all inputs needed to execute this step.
+        :type inputdict: dictionary
+        :param outputdict: Dictionary of all outputs of the simulation step.
+        :type outputdict: dictionary
+        :param stepsource: Information on how to execute this step.
+        :type stepsource: string
+        """
+        # for empty name enter "" into recipe
+        # unicode and string needed
         try:
             name_obj = Name(name)
             self.name = name_obj.name # Willi, ist das wirklich so gemeint?
@@ -252,7 +271,7 @@ class Node:
             step_obj = StepSource(stepsource)
             self.step = step_obj.step
         except TypeError as err:
-            pass
+            pass # todo abort and throw warning/error, ignore whole node
 
 
 class Name:
@@ -260,11 +279,18 @@ class Name:
     Name convention for the name of a node inside the recipe.
     """
     def __init__(self, name):
+        """
+        Takes a string or unicode and saves it if it is pure ascii.
+
+        :param name: Name to be chacked and saved
+        :type name: string or unicode
+        :raises TypeError: If `name` is has another type.
+        :raises ValueError: If `name` contains non-ascii characters.
+        """
         is_unicode = False
         try:
             is_unicode = isinstance(name, unicode)
         except NameError as mimimi:
-            # You are using python3 but don't worry. It works anyway.
             logger.debug(mimimi)
             logger.debug("You are using python 3, but don't worry," +
                          "we make it work.")
@@ -278,10 +304,11 @@ class Name:
     def is_ascii(self, name):
         """
         Checks if string consists of only ascii characters.
-        Inputs:
-            name        String
-        Outputs:
-            is_ascii    Boolean. True if so.
+
+        :param name: string
+        :type name: string or unicode
+        :return: 
+            `True`, if name only contains ascii characters.
         """
         return all(ord(c) < 128 for c in name)
 
@@ -294,6 +321,11 @@ class StepSource:
         """
         Tests the step source if it is a recipe, a python executable or
         a built-in function and initialises it if so.
+
+        :param stepsource: file path to a sub-recipe, a python executable
+            or the name of a built-in function
+        :type stepsource: string
+        :raises TypeError: If the string does not match any of the above.
         """
         # testing if step is built-in; JSON file or python function
         extension = os.path.splitext(stepsource)[1]
@@ -318,11 +350,17 @@ class Flavour(dict):
     The Flavour class extends the dictionary class and holds the parsed flavour
     file. The flavour file is the collection of all paramters needed for the
     simulation and all their values the simulation should be executed with. The
-    goal is to find the best parameter combination. Paramter can have a contant
+    goal is to find the best parameter combination. Paramter can have a constant
     value, a list of values or a range. They can also be files.
     """
 
     def tostring(self):
+        """
+        Converts the data held inside the flavour object into a string.
+
+        :returns:
+            string - Holds structured content of the flavour object
+        """
         content = "The flavour file contains: "
         for key in self:
             content += "\n  " + self[key].tostring()
@@ -335,12 +373,24 @@ class Flavour(dict):
 
 class FileParamValue:
     """
-    A possible value of a parameter of the simulation can be a file.
+    A single parameter value which is a file, defined by filepath and optional
+    key/passphrase to the file.
     """
-    key = ""
-    file = ""
+
+    key = ""   #: Saves optional passphrase to the given file, defaults to "".
+    file = ""  #: Saves the filepath, if the given file exists, defaults to "".
 
     def __init__(self, filepath, key):
+        """
+        Initialises a new parameter value, that holds a file.
+
+        :param filepath: file path as given in flavour.json
+        :type filepath: string
+        :param key: optional key or passphrase to the file
+        :type key: string or None
+        :raises IOError: In case, the filepath is None or the path does not
+            exist, there is an IOError raised and the functions returns.
+        """
         logger.debug("Creating new FileParamValue")
         logger.debug("Filepath (dict): " + str(filepath))
         logger.debug("Key (dict): " + str(key))
@@ -359,7 +409,11 @@ class FileParamValue:
 
     def tostring(self):
         """
-        Returns string that can be printed.
+        Returns a printable and formatted string that shows the
+        FileParamValue and its values.
+
+        :returns:
+            string - Holds structured information on the FileParamValue
         """
         content = "Value is following file: \n  "
         content+= self.file + "\n  Key: " + str(self.key)
@@ -370,18 +424,17 @@ class Param:
     """
     A parameter with all values attached to it.
     """
-    # todo: extend list so that Param returns Param.values
-    values = []
-    file = None
+    # todo: make Param class extend list so that Param returns Param.values
+    values = [] #: All possible values of the parameter
     
     def __init__(self, name, entry):
         """
         Creates a new paramter from the JSON data gotten from the flavour file.
-        Inputs:
-            name        name as provided as in flavour file
-            entry       if the falvour file was a dict, it was flavour['name']
-        Outputs:
-            -
+        
+        :param name:        name as provided as in flavour file
+        :type name:         string
+        :param entry:       if the falvour file was a dict, it was flavour['name']
+        :type entry:        dictionary
         """
         self.values = []
         logger.debug("Creating a new parameter " + str(name))
@@ -399,10 +452,11 @@ class Param:
         """
         Appends a file parameter given in the JSON data to the Param.values
         list.
-        Inputs:
-            entry       dict with fields type, file and key
-        Outputs:
-            -
+        
+        :param entry:    dict with fields type, file and key
+        :type entry:     dictionary
+        :raises ValueError: If there is no 'file' field to the entry or if the
+            given file path does not exist
         """
         try:
             newValue = FileParamValue(entry['file'], entry['key'])
@@ -429,10 +483,10 @@ class Param:
     def appendValuesFromRange(self, entry):
         """
         Appends all values within a range given in the JSON data to Param.values
-        Inputs:
-            entry       dict with fields start, stop and step.
-        Outputs:
-            -
+        
+        :param entry:       dict with fields start, stop and step.
+        :type entry:        dictionary
+        :raises KeyError: If a field of the entry is missing.
         """
         logger.debug("More values are given by a range.")
         try:
@@ -472,10 +526,9 @@ class Param:
     def appendEntry(self, entry):
         """
         Appends a single entry within the JSON data received from the flavour file.
-        Inputs:
-            entry       file or range or any other value
-        Outputs:
-            -
+        
+        :param entry:       file or range or any other value
+        :type entry:        dictionary
         """
         try:
             type = entry['type']
@@ -510,10 +563,10 @@ class Param:
         """
         Returns a printable and formatted string that shows the Parameter
         and its values.
-        Inputs:
-            -
-        Outputs:
-            content     string that holds the content of the parameter
+        
+        :returns:
+            content - Holds the content of the parameter
+        :rtype: string
         """
         content = "Parameter name: " + self.name + "\n  "
         for value in self.values:
@@ -529,11 +582,13 @@ def readrecipe(filename):
     """
     Opens a JSON file and parses it into a recipe object. Then outputs
     the data inside the recipe.
-    Inputs:
-        filename    file path string
-    Outputs:
-        recipe      object of type recipe
-        err         error message string
+    
+    :param filename: file path
+    :type filename: string
+    :returns:
+        recipe - object of type recipe \n
+        err - error message string
+    :rtype: (Recipe, Error)
     """
     jsonData, err = openjson(filename)
     if err is not None:
@@ -561,11 +616,14 @@ def readflavour(filename):
     """
     Opens a JSON file and parses it into a flavour object. Then outputs
     the data inside the flavour file.
-    Inputs:
-        filename    file path string
-    Outputs:
-        flavour     object of type flavour. if error occured, it holds the error
-        err         error if one occures
+    
+    :param filename: file path
+    :type filename: string
+    :returns:
+        flavour - object of type flavour. if error occured, it holds the
+        error \n
+        err - error if one occures
+    :rtype: (Flavour, Error)
     """
     jsonData, err = openjson(filename)
     if err is not None:
@@ -585,11 +643,13 @@ def openjson(filename):
     Opens a JSON file, makes sure it is valid JSON and the file exists
     at the given path. Loads the whole file at once. File should there-
     fore not be too big.
-    Inputs:
-        filename    string
-    Outputs:
-        data        dict or list depending on JSON structure
-        err         Error message string, None if everything worked fine
+    
+    :param filename: file path
+    :type filename: string
+    :returns:
+        data - dict or list depending on JSON structure \n
+        err - Error message string, None if everything worked fine
+    :rtype: (dict or list, Error)
     """
     if not os.path.isfile(filename):
         return (None, "The file path or file name is incorrect.")
@@ -607,11 +667,13 @@ def jsonToRecipe(data):
     """
     Takes a dictionary or list of interpreted JSON and parses it into an object
     of class Recipe.
-    Inputs:
-        data        dict or list depending on the outer structure of JSON file
-    Outputs:
-        recipe      object of class Recipe
-        err         Error message string, None if everything worked fine
+    
+    :param data:    dict or list depending on the outer structure of JSON file
+    :type data:     dict or list
+    :returns:
+        recipe - object of class Recipe \n
+        err - Error message string, None if everything worked fine
+    :rtype: (Recipe, Error)
     """
     if not isinstance(data, dict):
         return (None, 'Function jsonToRecipe expects dictionary as input.')
@@ -635,11 +697,13 @@ def jsonToRecipe(data):
 def jsonToFlavour(data):
     """
     Turns data loaded from a json file into a flavour object.
-    Inputs:
-        data        dict or list depending on json file.
-    Outputs:
-        flavour     object of class flavour
-        err         Error message string, None if everything worked fine
+    
+    :param data:    dict or list depending on json file.
+    :type data:     dict or list
+    :returns:
+        flavour - object of class flavour \n
+        err - Error message string, None if everything worked fine
+    :rtype: (Flavour, Error)
     """
     # todo: if the flavour file has an entry that misses the "type" field, there
     # should be a warning and this parameter should be skipped instead of 
@@ -671,11 +735,10 @@ def jsonToFlavour(data):
 
 def printRecipe(recipe):
     """
-    Prints the information held inside a Recipe object.
-    Inputs:
-        recipe      object of class Recipe
-    Outputs:
-        console output
+    Prints the information held inside a Recipe object to the console.
+    
+    :param recipe:    object of class Recipe
+    :type recipe:     Recipe
     """
     print(recipe.nodes)
     for node in recipe.nodes:
@@ -693,7 +756,22 @@ def printRecipe(recipe):
 
 # called by typing "chef read /file/path/.."
 def readjson(type, filename):
+    """
+    Wrapper function that calls either `readrecipe` or `readflavour`
+    depending on the parameter `type`.
+
+    :param type: Type of JSON-file that should be converted into
+                 a dictionary: {"recipe", "flavour"}
+    :type type: string
+    :raises TypeError: If type is none of the above.
+    :returns: Dictionary or list of data inside the file, depending on
+              the outer structure of the JSON. 
+    :rtype: Recipe or Flavour object depending on `type`
+    """
     if type == "recipe":
         return readrecipe(filename)
     if type == "flavour":
         return readflavour(filename)
+    else:
+        raise TypeError("The function readjson only takes 'recipe' or" +
+                        "'flavour' as type.")

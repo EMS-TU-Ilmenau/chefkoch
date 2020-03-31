@@ -1,10 +1,37 @@
 # -*- coding: utf-8 -*-
-# This file holds unit tests for all functions inside the chefkoch module to
-# ease the development process.
-# Execute this file by typing into a linux console in same directory:
-# python3 -m unittest test_chefkoch
-# subtests are only available from python 3.4 on
-# (maybe test_chefkoch.py depending on python and linux version)
+# Copyright 2019 Christoph Wagner
+#     https://www.tu-ilmenau.de/it-ems/
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+r"""
+This file holds unit tests for all functions inside the chefkoch module to
+ease the development process.
+Execute this file by typing into a linux console in same directory:
+
+python3 -m unittest test_chefkoch 
+
+(test_chefkoch.py depending on python and linux version)
+The test runner executes all functions that start with test_[functionname].
+Functions that start with check_[functionname] are helper functions.
+The checks are for the recipe and flavour class and called by their tests.
+Functions that start with assert_[functionname] are parameters used to
+call a check function. They encapsulate the asserts of test results.
+
+The test functions are using subtests to print the exact test case that
+threw an error. Subtests are only available from python 3.4 on. 
+"""
+
 
 import os
 import unittest
@@ -15,12 +42,16 @@ import chefkoch
 # todo: Konsultiere Fabian
 
 class TestChefkoch(unittest.TestCase):
+    """
+    This class includes functions that test both recipe and flavour class
+    functions or are called by recipe or flavour tests. 
+    """
 
     def test_readjson(self):
         result, err = chefkoch.readjson('recipe', 'recipe.json')
         self.assertIsNone(err)
 
-    def check_openjson(self, file, comparisonFunc):
+    def check_openjson(self, file, assertionFunc):
         # not executed by the test runner but by the test_openjson functions
         # inside the TestRecipe class and the TestFlavour class
         # test 1: valid JSON recipe file.
@@ -28,7 +59,7 @@ class TestChefkoch(unittest.TestCase):
             result, err = backbone.openjson(file)
             self.assertTrue(isinstance(result, dict))
             self.assertIsNone(err)
-            comparisonFunc(result)
+            assertionFunc(result)
 
         # test 2: broken JSON recipe file.
         with self.subTest("test 2: broken JSON file."):
@@ -560,6 +591,7 @@ class TestFlavour(unittest.TestCase):
             data['fileVal']['file'] = "no_existing_file.txt"
             result, err = backbone.jsonToFlavour(data)
             self.assertIsNotNone(result)
+            self.assertEqual(len(result['fileVal'].values), 0)
             self.assertIsNone(err)
             # todo how can I check if there was a warning?
             # todo delete empty parameters until following:

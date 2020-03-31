@@ -19,9 +19,19 @@
 
 r"""
 Introduction
-------------
+============
 
-Please tune in soon for an update.
+Chefkoch is currently under development. The tool is aiming to help with
+structuring simulation code. Chefkoch takes a "recipe" and a "flavour"
+file. The recipe is the general workflow of the simulation. It
+contains simulation steps and the dependencies between the steps. The
+flavour file holds possible parameter sets to execute the simulation with.
+Chefkoch takes care of the execution of the simulations with all parameters
+and of saving the results consistently.
+
+Read about the general design of chefkoch in our :ref:`architecture` section.
+A detailed descriptions of the classes will soon appear in out :ref:`classes`
+section.
 """
 
 import os

@@ -16,11 +16,15 @@
 
 r"""
 Settings for logging in whole project. Include with
-from logs import *
+
+`from logs import *`
+
 so that the code is copied into each module and the __name__ variable
 references the module name. This way, each module has it's own logger.
 Using the normal import would set __name__ to "logs" each time.
-TODO: Explain why one logger is not sufficient.
+Having seperate loggers for each submodule enables to set for
+example different logging levels for each module and other explicit
+settings.
 """
 import logging
 

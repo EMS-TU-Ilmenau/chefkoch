@@ -2,3 +2,8 @@ dask
 dask-jobqueue
 sphinxcontrib-tikz
 xxhash
+sphinx
+sphinxcontrib.tikz
+numpydoc
+sphinx_rtd_theme
+-U Sphinx

@@ -19,23 +19,11 @@
     :hidden:
 
     architecture
+    modules
     classes
     examples
 
 .. automodule:: chefkoch
-
-.. _chefkoch:
-
-Introduction
-============
-
-Chefkoch under development
---------------------------
-
-Read about the general design of chefkoch in our :ref:`architecture` section. A detailed descriptions of the classes will soon appear in out :ref:`classes` section.
-
-Please tune in soon for more details.
-
 
 .. _contributions:
 
