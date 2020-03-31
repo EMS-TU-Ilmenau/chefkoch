@@ -13,7 +13,7 @@ test: | stylecheck
 
 .PHONY: black
 black:
-	black -l79 demo/*.py eadf/*.py test/*.py *.py
+	black -l79 chefkoch/*.py tests/*.py *.py # this is a lower case L 79
 
 .PHONY: doc
 doc:
@@ -21,7 +21,7 @@ doc:
 
 .PHONY: stylecheck
 stylecheck:
-	pycodestyle --max-line-length=80 --statistics --ignore=E203,W503 eadf/*.py test/*.py demo/*.py *.py
+	pycodestyle --max-line-length=80 --statistics --ignore=E203,W503 chefkoch/*.py tests/*.py *.py
 
 .PHONY: all
 all: black test doc
