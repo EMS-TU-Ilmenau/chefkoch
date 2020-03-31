@@ -2,8 +2,6 @@ The flavour file contains:
   Parameter name: fS
     9220000000.0
   
-  Parameter name: data
-  
   Parameter name: subsample
     1
     2

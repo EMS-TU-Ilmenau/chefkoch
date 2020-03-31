@@ -84,8 +84,9 @@ if __name__ == '__main__':
             DEBUG if args.debug else INFO if args.verbose else WARNING
         )
 
-
     """
+    USAGE: Command definition syntax
+
     HELP_NAME is a variable that holds the help explanation. 
     @subcmd adds a subcommand with first token, then help message. 
     def cmd_name is the method which is called when name is typed into the command line.
