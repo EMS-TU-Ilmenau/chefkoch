@@ -21,9 +21,10 @@ namespace module instead of changing them everywhere, they occure and
 accidentally forgetting some appearances.
 """
 
+
 # ##################################### Consts
 class NAME_RECIPE(object):
-    NODE = 'nodes'
+    NODE = "nodes"
 
 
 # ##################################### Helper functions

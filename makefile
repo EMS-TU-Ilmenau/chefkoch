@@ -6,6 +6,7 @@
 # make all: builds all of the above targets
 
 PYTHON=python3
+FILES=chefkoch/*.py bin/* tests/*.py *.py
 
 .PHONY: test
 test: | stylecheck
@@ -13,7 +14,7 @@ test: | stylecheck
 
 .PHONY: black
 black:
-	black -l79 demo/*.py eadf/*.py test/*.py *.py
+	black -l79 $(FILES)
 
 .PHONY: doc
 doc:
@@ -21,7 +22,7 @@ doc:
 
 .PHONY: stylecheck
 stylecheck:
-	pycodestyle --max-line-length=80 --statistics --ignore=E203,W503 eadf/*.py test/*.py demo/*.py *.py
+	pycodestyle --max-line-length=80 --statistics --ignore=E203,W503 $(FILES)
 
 .PHONY: all
 all: black test doc

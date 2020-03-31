@@ -40,10 +40,11 @@ logger.setLevel(logging.INFO)
 # logging.basicConfig configues the root Looger. Never share root Logger.
 
 formatter = logging.Formatter(
-    '%(levelname)s:%(asctime)s:%(lineno)d:%(message)s')
+    "%(levelname)s:%(asctime)s:%(lineno)d:%(message)s"
+)
 
-file_handler = logging.FileHandler('test.log')
-file_handler.setLevel(logging.ERROR) # only write logs that are error or worse
+file_handler = logging.FileHandler("test.log")
+file_handler.setLevel(logging.ERROR)  # only write logs that are error or worse
 file_handler.setFormatter(formatter)
 
 # to output errs and warns into file, but debug to console, do:
