@@ -1,3 +1,4 @@
 dask
 dask-jobqueue
+sphinxcontrib-tikz
 xxhash
