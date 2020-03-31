@@ -760,7 +760,7 @@ def readjson(type, filename):
     :raises TypeError: If type is none of the above.
     :returns: Dictionary or list of data inside the file, depending on
               the outer structure of the JSON. 
-    :rtype: dict or list
+    :rtype: Recipe or Flavour object depending on `type`
     """
     if type == "recipe":
         return readrecipe(filename)
