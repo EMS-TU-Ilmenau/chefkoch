@@ -13,7 +13,7 @@ test: | stylecheck
 
 .PHONY: black
 black:
-	black -l79 demo/*.py eadf/*.py test/*.py *.py
+	black -l79 chefkoch/*.py bin/* tests/*.py *.py
 
 .PHONY: doc
 doc:
