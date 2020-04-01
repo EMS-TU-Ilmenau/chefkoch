@@ -28,6 +28,7 @@ import io
 import platform
 import json
 import sys
+import warnings
 
 # logs need to be imported this way to not write logs.logger all the time
 from .logs import *
@@ -205,7 +206,7 @@ class Recipe:
             "Executing rDFS for " + node.name + " and " + namesOnTheWay
         )
         if node in nodesOnTheWay:
-            logger.warning(
+            Warning.warn(
                 "The recipe contains a circle along "
                 + namesOnTheWay
                 + node.name
