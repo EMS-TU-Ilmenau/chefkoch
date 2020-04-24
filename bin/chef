@@ -28,7 +28,7 @@
 #
 #  =======
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import chefkoch
     import sys
     from logging import *
@@ -39,12 +39,12 @@ if __name__ == '__main__':
     ARG_VERBOSE = {
         TOKEN: ("-v", "--verbose"),
         "action": "store_true",
-        "help": "Increase verbosity of output."
+        "help": "Increase verbosity of output.",
     }
     ARG_DEBUG = {
         TOKEN: ("-d", "--debug"),
         "action": "store_true",
-        "help": "Output debug messages."
+        "help": "Output debug messages.",
     }
 
     args = None
@@ -85,53 +85,58 @@ if __name__ == '__main__':
         )
         return args
 
-    """
-    USAGE: Command definition syntax
+    # USAGE: Command definition syntax
+    #
+    # HELP_NAME is a variable that holds the help explanation.
+    # @subcmd adds a subcommand with first token, then help message.
+    # def cmd_name is the method which is called when name is typed into the
+    # command line.
 
-    HELP_NAME is a variable that holds the help explanation. 
-    @subcmd adds a subcommand with first token, then help message. 
-    def cmd_name is the method which is called when name is typed into the command line.
-    """
-    
     HELP_COOK = "Cook something from the scope of your recipe"
+
     @subcmd("cook", help=HELP_COOK)
     def cmd_cook(parser, context, arguments):
         parser.description = HELP_COOK
         env_parse_and_apply(parser, context, arguments)
-        return #something
+        return  # something
 
     HELP_CHECK = "Check if cooking results are consistent"
+
     @subcmd("check", help=HELP_CHECK)
     def cmd_check(parser, context, arguments):
         parser.description = HELP_CHECK
         env_parse_and_apply(parser, context, arguments)
 
     HELP_INSPECT = "Inspect cooking results"
+
     @subcmd("inspect", help=HELP_INSPECT)
     def cmd_inspect(parser, context, arguments):
         parser.description = HELP_INSPECT
         env_parse_and_apply(parser, context, arguments)
 
     HELP_VERSION = "Report who I am"
+
     @subcmd("version", help=HELP_VERSION)
     def cmd_version(parser, context, arguments):
         parser.description = HELP_VERSION
         env_parse_and_apply(parser, context, arguments)
 
         print(
-            ("Chefkoch %s\n" +
-             " -- %s\n\n" +
-             "Published under the Apache 2.0 license. See LICENSE.\n" +
-             "Visit chefkoch at http://github.com/EMS-TU-Ilmenau/chefkoch\n\n" +
-             "(2019) EMS Research Group TU Ilmenau\n" +
-             "       http://github.com/EMS-TU-Ilmenau\n"
-             "       https://www.tu-ilmenau.de/it-ems") %(
-                chefkoch.version,
-                handler.description
+            (
+                "Chefkoch %s\n"
+                + " -- %s\n\n"
+                + "Published under the Apache 2.0 license. See LICENSE.\n"
+                + "Visit chefkoch at "
+                + "http://github.com/EMS-TU-Ilmenau/chefkoch\n\n"
+                + "(2019) EMS Research Group TU Ilmenau\n"
+                + "       http://github.com/EMS-TU-Ilmenau\n"
+                "       https://www.tu-ilmenau.de/it-ems"
             )
+            % (chefkoch.version, handler.description)
         )
 
     HELP_HELLO = "Prints Hello World"
+
     @subcmd("hello", help=HELP_HELLO)
     def cmd_hello(parser, context, arguments):
         parser.description = HELP_HELLO
@@ -139,13 +144,18 @@ if __name__ == '__main__':
         print("Hello, have a nice day, mighty developer!")
 
     HELP_PYTHON = "Prints Python Version"
+
     @subcmd("python", help=HELP_PYTHON)
     def cmd_python(parser, context, arguments):
         parser.description = HELP_PYTHON
         env_parse_and_apply(parser, context, arguments)
         print(sys.version)
-    
-    HELP_READ = "Choose between chef read recipe and chef read flavour and add file path."
+
+    HELP_READ = (
+        "Choose between chef read recipe and chef read "
+        + "flavour and add file path."
+    )
+
     @subcmd("read", help=HELP_READ)
     def cmd_read(parser, context, arguments):
         parser.description = HELP_READ
@@ -164,11 +174,12 @@ if __name__ == '__main__':
         print(args.text1, args.text2)
 
     handler = ArgumentHandler(
-        enable_autocompletion=True,
-        use_subcommand_help=True
+        enable_autocompletion=True, use_subcommand_help=True
     )
-    handler.description = ("A compute cluster cuisine for distributed " +
-                           "scientific computing in python.")
+    handler.description = (
+        "A compute cluster cuisine for distributed "
+        + "scientific computing in python."
+    )
     env_add_arguments(handler, ARG_VERBOSE, ARG_DEBUG)
     # if invoked with no arguments, print help output
-    handler.run(sys.argv[1:] if len(sys.argv) > 1 else ['-h'])
+    handler.run(sys.argv[1:] if len(sys.argv) > 1 else ["-h"])

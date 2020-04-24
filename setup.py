@@ -63,9 +63,15 @@ VERSION_PY = """
 __version__ = '%s'
 """
 
+<<<<<<< HEAD
 ##############################################################################
 # function and class declaration section. DO NOT PUT SCRIPT CODE IN BETWEEN
 ##############################################################################
+=======
+# #############################################################################
+# ## function and class declaration section. DO NOT PUT SCRIPT CODE IN BETWEEN
+# #############################################################################
+>>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
 
 
 def getCurrentVersion():
@@ -173,9 +179,15 @@ def doc_opts():
     return OwnDoc
 
 
+<<<<<<< HEAD
 ##############################################################################
 # The actual script. KEEP THE `import filter` ALIVE AT ALL TIMES
 ##############################################################################
+=======
+# #############################################################################
+# ## The actual script. KEEP THE `import filter` ALIVE AT ALL TIMES
+# #############################################################################
+>>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
 
 if __name__ == "__main__":
     # get version from git and update chefkoch/__init__.py accordingly
