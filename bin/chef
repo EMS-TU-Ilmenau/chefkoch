@@ -83,6 +83,7 @@ if __name__ == '__main__':
         logger.setLevel(
             DEBUG if args.debug else INFO if args.verbose else WARNING
         )
+        return args
 
     """
     USAGE: Command definition syntax
@@ -150,7 +151,7 @@ if __name__ == '__main__':
         parser.description = HELP_READ
         parser.add_argument('filetype', type=str, choices=['recipe', 'flavour'])
         parser.add_argument('filepath', type=str)
-        args = parser.parse_args(arguments)
+        args = env_parse_and_apply(parser, context, arguments)
         chefkoch.readjson(args.filetype, args.filepath)
         # env_parse_and_apply(parser, context, arguments)   # need to know what it does and why it does not work in this context
 
