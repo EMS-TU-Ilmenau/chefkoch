@@ -148,18 +148,19 @@ if __name__ == '__main__':
     @subcmd("read", help=HELP_READ)
     def cmd_read(parser, context, arguments):
         parser.description = HELP_READ
-        filepath = arguments.pop()
-        try:
-            filetype = arguments.pop()
-            if filetype in ['recipe', 'flavour']:
-                chefkoch.readjson(filetype, filepath)
-            else:
-                print("This is no known command.")
-                print(HELP_READ)
-        except:
-            print(HELP_READ)
+        parser.add_argument('filetype', type=str, choices=['recipe', 'flavour'])
+        parser.add_argument('filepath', type=str)
+        args = parser.parse_args(arguments)
+        chefkoch.readjson(args.filetype, args.filepath)
         # env_parse_and_apply(parser, context, arguments)   # need to know what it does and why it does not work in this context
 
+    HELP_ECHO = "This command is just for learning purposes. That's how you use @subcmd."
+    @subcmd('echo', help=HELP_ECHO)
+    def echo(parser, context, args):
+        parser.add_argument('text1', type=str)
+        parser.add_argument('text2', type=str)
+        args = parser.parse_args(args)
+        print(args.text1, args.text2)
 
     handler = ArgumentHandler(
         enable_autocompletion=True,
