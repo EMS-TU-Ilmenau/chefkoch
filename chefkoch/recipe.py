@@ -129,13 +129,8 @@ class Recipe:
                         nodeIsValid = False
                 if not nodeIsValid:
                     unreachable_nodes.append(node)
-
-<<<<<<< HEAD
-            # 3. Delete unreachable nodes and their outputs and do it again.
-=======
             # 3. Delete unreachable nodes and unreachable outputs and do
             # it again.
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
             try_again = len(unreachable_nodes) > 0
             for node in unreachable_nodes:
                 warn = (
@@ -212,11 +207,7 @@ class Recipe:
             "Executing rDFS for " + node.name + " and " + namesOnTheWay
         )
         if node in nodesOnTheWay:
-<<<<<<< HEAD
-            Warning.warn(
-=======
-            logger.warning(
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
+            warnings.warn(
                 "The recipe contains a circle along "
                 + namesOnTheWay
                 + node.name
@@ -478,17 +469,10 @@ class Param:
         """
         Creates a new paramter from the JSON data gotten from the flavour file.
 
-<<<<<<< HEAD
-        :param name:        name as provided as in flavour file
-        :type name:         string
-        :param entry:       for example flavour['name']
-        :type entry:        dictionary
-=======
         :param name:    name as provided as in flavour file
         :type name:     string
         :param entry:   if the falvour file was a dict, it was flavour['name']
         :type entry:    dictionary
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
         """
         self.values = []
         logger.debug("Creating a new parameter " + str(name))
@@ -560,11 +544,7 @@ class Param:
         valid_step = isinstance(step, int) or isinstance(step, float)
         valid = valid_start and valid_step and valid_stop
         if not valid:
-<<<<<<< HEAD
             warnings.warn(
-=======
-            logger.warning(
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
                 "The start, step and stop value of a parameter range"
                 + " need to by of type int or float, so an empty list"
                 + " was appended! Check for correctness!"
@@ -584,11 +564,7 @@ class Param:
                 self.values.append(i)
                 i = i + step
         else:
-<<<<<<< HEAD
-            warning.warn(
-=======
-            logger.warning(
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
+            warnings.warn(
                 "The start "
                 + str(i)
                 + ", stop "
@@ -634,12 +610,8 @@ class Param:
         elif type == "range":
             self.appendValuesFromRange(entry)
         else:
-            # allow everything else by default, value could also be a list
-<<<<<<< HEAD
-            warning.warn(
-=======
-            logger.warning(
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
+            # allow everything else by default, value could also be a list.
+            warnings.warn(
                 "There is a type specified to "
                 + str(entry)
                 + ", but neither 'range' nor 'file'. It will be "
@@ -692,7 +664,7 @@ def readrecipe(filename):
         logger.error(err)
         return (None, err)
     if warn is not None:
-        warning.warn(warn)
+        warnings.warn(warn)
     err = recipe.findCircles()
     if err is not "":
         logger.error(err)
@@ -811,11 +783,7 @@ def jsonToFlavour(data):
             if len(newParam.values) > 0:
                 flavour[param] = newParam  # new entry to dict
             else:
-<<<<<<< HEAD
                 warnings.warn(
-=======
-                logger.warning(
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
                     "The parameter "
                     + param
                     + " has no valid"
