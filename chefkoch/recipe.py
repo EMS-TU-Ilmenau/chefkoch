@@ -544,7 +544,7 @@ class Param:
         valid_step = isinstance(step, int) or isinstance(step, float)
         valid = valid_start and valid_step and valid_stop
         if not valid:
-            logger.warning(
+            warnings.warn(
                 "The start, step and stop value of a parameter range"
                 + " need to by of type int or float, so an empty list"
                 + " was appended! Check for correctness!"
@@ -564,7 +564,7 @@ class Param:
                 self.values.append(i)
                 i = i + step
         else:
-            logger.warning(
+            warning.warn(
                 "The start "
                 + str(i)
                 + ", stop "
@@ -611,7 +611,7 @@ class Param:
             self.appendValuesFromRange(entry)
         else:
             # allow everything else by default, value could also be a list
-            logger.warning(
+            warning.warn(
                 "There is a type specified to "
                 + str(entry)
                 + ", but neither 'range' nor 'file'. It will be "
@@ -664,7 +664,7 @@ def readrecipe(filename):
         logger.error(err)
         return (None, err)
     if warn is not None:
-        logger.warning(warn)
+        warning.warn(warn)
     err = recipe.findCircles()
     if err is not "":
         logger.error(err)
