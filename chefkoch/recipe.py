@@ -33,6 +33,7 @@ import warnings
 # logs need to be imported this way to not write logs.logger all the time
 from .logs import *
 
+
 # constants
 # built-in functions that can be called as a simulation step inside a node
 BUILT_INS = ["collect"]
@@ -439,7 +440,7 @@ class FileParamValue:
             self.file = filepath
             logger.debug("Filepath: " + str(self.file))
         else:
-            logger.warning("The file " + filepath + " does not exist.")
+            warnings.warn("The file " + filepath + " does not exist.")
             raise IOError("The file " + filepath + " does not exist.")
             return
 
@@ -782,7 +783,7 @@ def jsonToFlavour(data):
             if len(newParam.values) > 0:
                 flavour[param] = newParam  # new entry to dict
             else:
-                logger.warning(
+                warnings.warn(
                     "The parameter "
                     + param
                     + " has no valid"
