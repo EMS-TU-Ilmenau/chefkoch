@@ -57,17 +57,9 @@ class Recipe:
         :type nodelist: Node[]
         """
         self.nodes = nodelist
-        # Making sure, that nodelist is a list of type Node
-        try:
-            emptyNode = Node(
-                "nodeName", {"i": "input"}, {"o": "output"}, "collect"
-            )
-            self.nodes.append(emptyNode)
-            self.nodes.pop()
-        except Exception as exc:  # mit Klasse
-            logger.exception(exc)
-            # raise TypeError("""Class Recipe expects a list to be
-            #    initialised with.""")
+        # TODO: Making sure, that nodelist is a list of type Node
+        # TODO: Therefore initialise each Node in nodelist as an
+        # instance of class Node.
 
     def inputIntegrity(self):
         """
@@ -76,12 +68,8 @@ class Recipe:
         that have no incoming edge for a node or have uncomputable inputs
         because of missing inputs in parent nodes.
 
-        :returns:
-            err - String. None if correct. Else error message. \n
-            warn - String. None if correct. Else error message.
+        :raises NameError: If two or more outputs share the same name.
         """
-        err = None
-        warn = None
         # 1. make unique list of outputs
         outputs_of_all_nodes = []
         for node in self.nodes:
@@ -89,12 +77,8 @@ class Recipe:
                 output = node.outputs[key]
                 if output in outputs_of_all_nodes:
                     # overwrite exception class to generate warns
-                    err = (
-                        ("" if err is None else err)
-                        + "The output "
-                        + output
-                        + " of node "
-                        + node.name
+                    raise NameError(
+                        "The output " + output + " of node " + node.name
                         + " has the same name as an output declared before. "
                     )
                 else:
@@ -133,10 +117,8 @@ class Recipe:
             # it again.
             try_again = len(unreachable_nodes) > 0
             for node in unreachable_nodes:
-                warn = (
-                    ("" if warn is None else warn)
-                    + "Node "
-                    + node.name
+                warnings.warn(
+                    + "Node " + node.name
                     + " or one of its previous nodes has an invalid input"
                     + " and therefore cannot be computed. "
                 )
@@ -153,7 +135,7 @@ class Recipe:
                 self.nodes.remove(node)
 
         # 4. Loop until all nodes are reachable
-        return err, warn
+        return None, None
 
     def findCircles(self):
         """
@@ -161,8 +143,8 @@ class Recipe:
         Then starts depth-first search for every root node. If there is a way
         back to a previously visited node, there is a warning about a circle.
 
-        :returns:
-            err - String about circle or "" if everything is correct
+        :raises RecursionError: If there is a circle in the recipe that would
+            cause an endless recursion.
         """
         rootNodes = []
         # 1. Make list of all nodes that only have flavour inputs.
@@ -183,10 +165,10 @@ class Recipe:
             nodesOnTheWay = []
             # do recursive depth-first search
             if self.recursiveDFS(node, nodesOnTheWay):
-                return str(
+                raise RecursionError(
                     "The recipe contains a circle reachable from " + node.name
                 )
-        return ""
+        return
 
     def recursiveDFS(self, node, nodesOnTheWay):
         """
@@ -209,9 +191,7 @@ class Recipe:
         if node in nodesOnTheWay:
             warnings.warn(
                 "The recipe contains a circle along "
-                + namesOnTheWay
-                + node.name
-                + " and can therefore"
+                + namesOnTheWay + node.name + " and can therefore"
                 + " not be executed."
             )
             return True
@@ -268,6 +248,8 @@ class Node:
         :type outputdict: dictionary
         :param stepsource: Information on how to execute this step.
         :type stepsource: string
+        :raises TypeError: If the input or output of a node are not given as
+            a dict.
         """
         # for empty name enter "" into recipe
         # unicode and string needed
@@ -297,11 +279,9 @@ class Node:
             )
             return
         self.outputs = outputdict
-        try:
-            step_obj = StepSource(stepsource)
-            self.step = step_obj.step
-        except TypeError as err:
-            pass  # todo abort and throw warning/error, ignore whole node
+        step_obj = StepSource(stepsource)
+        self.step = step_obj.step
+        # todo abort in higher level and ignore whole node
 
 
 class Name:
@@ -324,7 +304,7 @@ class Name:
         except NameError as mimimi:
             logger.debug(mimimi)
             logger.debug(
-                "You are using python 3, but don't worry," + "we make it work."
+                "You are using python 3, but don't worry, we make it work."
             )
             pass
         if not (isinstance(name, str) or is_unicode):
@@ -646,30 +626,15 @@ def readrecipe(filename):
     :param filename: file path
     :type filename: string
     :returns:
-        recipe - object of type recipe \n
-        err - error message string
+        recipe - object of type recipe
     :rtype: (Recipe, Error)
     """
-    jsonData, err = openjson(filename)
-    if err is not None:
-        logger.error(err)
-        return (None, err)
-    recipe, err = jsonToRecipe(jsonData)
-    if err is not None:
-        logger.error(err)
-        return (None, err)
+    jsonData = openjson(filename)
+    recipe = jsonToRecipe(jsonData)
+    recipe.inputIntegrity()
+    recipe.findCircles()
     printRecipe(recipe)
-    err, warn = recipe.inputIntegrity()
-    if err is not None:
-        logger.error(err)
-        return (None, err)
-    if warn is not None:
-        warnings.warn(warn)
-    err = recipe.findCircles()
-    if err is not "":
-        logger.error(err)
-        return (None, err)
-    return (recipe, None)
+    return recipe
 
 
 def readflavour(filename):
@@ -681,21 +646,13 @@ def readflavour(filename):
     :type filename: string
     :returns:
         flavour - object of type flavour. if error occured, it holds the
-        error \n
-        err - error if one occures
-    :rtype: (Flavour, Error)
+    :rtype: Flavour
     """
-    jsonData, err = openjson(filename)
-    if err is not None:
-        logger.error(err)
-        return None, err
-    flavour, err = jsonToFlavour(jsonData)
-    if err is not None:
-        logger.error(err)
-        return None, err
+    jsonData = openjson(filename)
+    flavour = jsonToFlavour(jsonData)
     print(flavour.tostring())
     # todo: input Integrity checks
-    return flavour, None
+    return flavour
 
 
 def openjson(filename):
@@ -707,20 +664,21 @@ def openjson(filename):
     :param filename: file path
     :type filename: string
     :returns:
-        data - dict or list depending on JSON structure \n
-        err - Error message string, None if everything worked fine
+        data - dict or list depending on JSON structure
     :rtype: (dict or list, Error)
+    :raises TypeError: If the file path or file name are incorrect.
+    :raises ValueError: If the given file is no valid JSON format.
     """
     if not os.path.isfile(filename):
-        return (None, "The file path or file name is incorrect.")
+        raise IOError("The file path or file name is incorrect.")
     with open(filename) as f:
         try:
             data = json.load(f)
             # That's the whole file at once. Hope files dont get too big
         except ValueError as err:
-            return (None, "This is no valid JSON file. Try deleting comments.")
+            raise ValueError("This is no valid JSON file. Try deleting comments.")
 
-    return (data, None)
+    return data
 
 
 def jsonToRecipe(data):
@@ -732,11 +690,10 @@ def jsonToRecipe(data):
     :type data:     dict or list
     :returns:
         recipe - object of class Recipe \n
-        err - Error message string, None if everything worked fine
-    :rtype: (Recipe, Error)
+    :rtype: Recipe
     """
     if not isinstance(data, dict):
-        return (None, "Function jsonToRecipe expects dictionary as input.")
+        raise TypeError("Function jsonToRecipe expects dictionary as input.")
     recipe = Recipe([])
     for node in data["nodes"]:
         try:
@@ -748,11 +705,11 @@ def jsonToRecipe(data):
             )
             recipe.nodes.append(newNode)
         except TypeError as errorMessage:
-            return (None, errorMessage)
+            raise TypeError(errorMessage)
         except Exception as err:
-            return (None, "Error while parsing json data into recipe object.")
+            raise Exception("Error while parsing json data into recipe object.")
 
-    return (recipe, None)
+    return recipe
 
 
 def jsonToFlavour(data):
@@ -762,17 +719,16 @@ def jsonToFlavour(data):
     :param data:    dict or list depending on json file.
     :type data:     dict or list
     :returns:
-        flavour - object of class flavour \n
-        err - Error message string, None if everything worked fine
-    :rtype: (Flavour, Error)
+        flavour - object of class flavour
+    :rtype: Flavour
+    :raises TypeError: If some data to the flavour file is missing.
+    :raises Exception: If some random error should occure.
     """
     # todo: if the flavour file has an entry that misses the "type" field, there
     # should be a warning and this parameter should be skipped instead of
     # having a random key error
     if not isinstance(data, dict):
-        err = "Function jsonToFlavour expects a dictionary as input."
-        logger.error(err)
-        return (None, err)
+        raise TypeError("Function jsonToFlavour expects a dictionary as input.")
     flavour = Flavour({})
     for param in data:
         try:
@@ -784,18 +740,15 @@ def jsonToFlavour(data):
                 flavour[param] = newParam  # new entry to dict
             else:
                 warnings.warn(
-                    "The parameter "
-                    + param
-                    + " has no valid"
+                    "The parameter " + param + " has no valid"
                     + " value and will be excluded from the flavour."
                 )
         except TypeError as errorMessage:
-            return (None, errorMessage)
+            raise TypeError(errorMessage)
         except Exception as err:
-            logger.exception(err)
-            return (None, "Error while parsing json data into flavour object.")
+            raise Exception("Error while parsing json data into flavour object.")
 
-    return (flavour, None)
+    return flavour
 
 
 def printRecipe(recipe):
