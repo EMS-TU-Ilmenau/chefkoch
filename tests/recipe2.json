@@ -1,0 +1,46 @@
+{
+  "nodes": [ 
+    {
+      "name": "A", 
+      "inputs": {"a": "flavour.a", "b": "unreachable"},
+      "outputs": {"c": "boo"},
+      "stepsource": "rectangle_area.py"
+    },
+    {
+      "name": "B",
+      "inputs": {},
+      "outputs": {},
+      "stepsource": "prisma_volume.py"
+    },
+    {
+      "name": "C",
+      "inputs": {"in": "boo"},
+      "outputs": {"out": "bees"},
+      "stepsource": "volume_to_area.py"
+    },
+    {
+      "name": "D",
+      "inputs": {"in": "bees"}, 
+      "outputs": {},
+      "stepsource": "collect"
+    },
+    {
+      "name": "E", 
+      "inputs": {"a": "flavour.a", "b": "unreachable"},
+      "outputs": {"c": "moo"},
+      "stepsource": "rectangle_area.py"
+    },
+    {
+      "name": "F",
+      "inputs": {"in": "moo"},
+      "outputs": {"out": "mees"},
+      "stepsource": "volume_to_area.py"
+    },
+    {
+      "name": "G",
+      "inputs": {"in": "mees"}, 
+      "outputs": {},
+      "stepsource": "collect"
+    }
+  ]
+}

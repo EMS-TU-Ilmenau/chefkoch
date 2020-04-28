@@ -71,27 +71,29 @@ class Recipe:
         :raises NameError: If two or more outputs share the same name.
         """
         # 1. make unique list of outputs
-        outputs_of_all_nodes = []
+        outputs_of_all_nodes = set([])
         for node in self.nodes:
-            for key in node.outputs:
-                output = node.outputs[key]
-                if output in outputs_of_all_nodes:
-                    # overwrite exception class to generate warns
-                    raise NameError(
-                        "The output " + output + " of node " + node.name
-                        + " has the same name as an output declared before. "
-                    )
-                else:
-                    outputs_of_all_nodes.append(output)
+            node_outputs = set(node.outputs.values())
+            # & is a logical and on sets which is the intersection of sets
+            if len(node_outputs & outputs_of_all_nodes) > 0:
+                raise NameError(
+                    "The output " + str(node_outputs & outputs_of_all_nodes) 
+                    + " of node " + node.name
+                    + " has the same name as an output declared before. "
+                )
+            else:
+                 outputs_of_all_nodes.update(node_outputs)
         # 2. see if inputs are from flavour, are file paths to existing files
         # or are in output list
         try_again = True
         while try_again:
-            unreachable_nodes = []
+            unreachable_nodes = set([])
             for node in self.nodes:
                 nodeIsValid = True
-                for key in node.inputs:
-                    input = node.inputs[key]
+                # TODO: do the same set thing
+                node_inputs = set(node.inputs.values())
+                # difference means set1 without elements from set2
+                for input in (node_inputs.difference(outputs_of_all_nodes)):
                     # to do: Werte direkt zulassen, nicht nur ?ber flavour
                     # WARN schmei?en
                     # python logs verwenden: kein flavour, kein output, also
@@ -100,11 +102,7 @@ class Recipe:
                     inputIsValid = False
                     prefix = os.path.splitext(input)[0]
                     extension = os.path.splitext(input)[1]
-                    if (
-                        input in outputs_of_all_nodes
-                        or prefix == "flavour"
-                        or extension == ".json"
-                    ):
+                    if (prefix == "flavour" or extension == ".json"):
                         inputIsValid = True
                     else:
                         if os.path.isfile(input):
@@ -112,26 +110,18 @@ class Recipe:
                     if not inputIsValid:
                         nodeIsValid = False
                 if not nodeIsValid:
-                    unreachable_nodes.append(node)
+                    unreachable_nodes.add(node)
             # 3. Delete unreachable nodes and unreachable outputs and do
             # it again.
             try_again = len(unreachable_nodes) > 0
             for node in unreachable_nodes:
                 warnings.warn(
-                    + "Node " + node.name
+                    "Node " + node.name
                     + " or one of its previous nodes has an invalid input"
                     + " and therefore cannot be computed. "
                 )
-                for key in node.outputs:
-                    output = node.outputs[key]
-                    outputs_of_all_nodes.remove(output)
-
-                # outputs_of_all_nodes.remove(node.outputs.values())
-                # # <-- if remove can remove a list of objects
-                # keys_to_remove = [val for val in node.outputs.values()
-                # if val in output_of_all_nodes]
-                # outputs_of_all_nodes = [oo for oo in outputs_of_all_nodes
-                # if oo not in node.outputs.values()]
+                node_outputs = set(node.outputs.values())
+                outputs_of_all_nodes.difference_update(node_outputs)
                 self.nodes.remove(node)
 
         # 4. Loop until all nodes are reachable
