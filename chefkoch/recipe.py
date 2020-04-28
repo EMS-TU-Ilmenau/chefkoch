@@ -61,6 +61,26 @@ class Recipe:
         # TODO: Therefore initialise each Node in nodelist as an
         # instance of class Node.
 
+    def inputIsValid(self, input):
+        """
+        Checks if a given input name is valid. An input is valid if it
+        can be found either in the flavour file or is a file itself.
+        It is also valid if it is an output name of another node, but this
+        will not be checked.
+
+        :param input: The input that is to be tested
+        :type input: str
+        :return: True if the input is valid.
+        :rtype: boolean
+        """
+        if os.path.isfile(input):
+             return True
+        prefix = os.path.splitext(input)[0]
+        if (prefix == "flavour"):
+            return True
+        else:
+            return False                    
+
     def inputIntegrity(self):
         """
         Tests if there is exactly one incoming edge to every input.
@@ -74,7 +94,7 @@ class Recipe:
         outputs_of_all_nodes = set([])
         for node in self.nodes:
             node_outputs = set(node.outputs.values())
-            # & is a logical and on sets which is the intersection of sets
+            # & is the intersection of sets
             if len(node_outputs & outputs_of_all_nodes) > 0:
                 raise NameError(
                     "The output " + str(node_outputs & outputs_of_all_nodes) 
@@ -90,24 +110,9 @@ class Recipe:
             unreachable_nodes = set([])
             for node in self.nodes:
                 nodeIsValid = True
-                # TODO: do the same set thing
                 node_inputs = set(node.inputs.values())
-                # difference means set1 without elements from set2
                 for input in (node_inputs.difference(outputs_of_all_nodes)):
-                    # to do: Werte direkt zulassen, nicht nur ?ber flavour
-                    # WARN schmei?en
-                    # python logs verwenden: kein flavour, kein output, also
-                    # interpretiert als string
-                    # chef analyse (from log)
-                    inputIsValid = False
-                    prefix = os.path.splitext(input)[0]
-                    extension = os.path.splitext(input)[1]
-                    if (prefix == "flavour" or extension == ".json"):
-                        inputIsValid = True
-                    else:
-                        if os.path.isfile(input):
-                            inputIsValid = True
-                    if not inputIsValid:
+                    if not self.inputIsValid(input):
                         nodeIsValid = False
                 if not nodeIsValid:
                     unreachable_nodes.add(node)
@@ -148,10 +153,10 @@ class Recipe:
             if isRootNode:
                 rootNodes.append(node)
 
-        logger.info("Root Nodes:")
+        logger.debug("Root Nodes:")
         # 2. Start depth-first-search for every such node.
         for node in rootNodes:
-            logger.info(node.name)
+            logger.debug(node.name)
             nodesOnTheWay = []
             # do recursive depth-first search
             if self.recursiveDFS(node, nodesOnTheWay):
