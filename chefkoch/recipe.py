@@ -53,8 +53,14 @@ class Recipe:
         """
         Initialises a recipe by appending the `nodelist` to `nodes`.
 
-        :param nodelist: list of simulation steps (nodes)
-        :type nodelist: Node[]
+        Parameters
+        ------------
+            nodelist:
+                list of simulation steps as Node[]
+
+        Returns
+        -------
+            nothign.
         """
         self.nodes = nodelist
         # TODO: Making sure, that nodelist is a list of type Node
