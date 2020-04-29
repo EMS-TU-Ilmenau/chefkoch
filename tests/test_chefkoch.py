@@ -216,12 +216,7 @@ class TestRecipe(unittest.TestCase):
 
         # recipe that has an unreachable node C that also makes D unreachable
         with self.subTest(
-<<<<<<< HEAD
             "recipe that has an unreachable node C which makes D unreachable"
-=======
-            "recipe that has an unreachable node C "
-            + "that also makes D unreachable"
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
         ):
             data = {
                 "nodes": [
@@ -384,19 +379,11 @@ class TestFlavour(unittest.TestCase):
                 "entry": {"type": "range", "start": 1, "stop": 6, "step": 1},
                 "values": [1, 2, 3, 4, 5, 6],
             },
-<<<<<<< HEAD
-            {
-                "name": "simple_entry",
-                "entry": 9.22e9,
-                "values": [9.22e9],
-            },  # entry 2
-=======
             {  # entry 2
                 "name": "simple_entry",
                 "entry": 9.22e9,
                 "values": [9.22e9],
             },
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
             {"name": "empty_entry", "entry": None, "values": []},  # entry 3
             {  # entry 4
                 "name": "list_entry",
@@ -441,19 +428,11 @@ class TestFlavour(unittest.TestCase):
             {"file": "test.log", "key": None, },  # entry 2
             {"file": "test.log", "no_key_field": "", },  # entry 3
             {"file": None, "key": "", },  # entry 4
-<<<<<<< HEAD
-            {
+            {  
                 "file": "thisDoesNotExist.txt",
                 "key": "R4nd0m_P4ssw0rd",
-            },  # entry 5
-            {"no_file_field": "", "key": "R4nd0m_P4ssw0rd", },
-=======
-            {  # entry 5
-                "file": "thisDoesNotExist.txt",
-                "key": "R4nd0m_P4ssw0rd",
-            },
+            }, # entry 5
             {"no_file_field": "", "key": "R4nd0m_P4ssw0rd", },  # entry 6
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
         ]
         no_file_entry = "There is no file given to the file param!"
         false_path = "The filepath to the file param does not exist."
@@ -577,10 +556,6 @@ class TestFlavour(unittest.TestCase):
             data["fileVal"]["file"] = "no_existing_file.txt"
             result, err = backbone.jsonToFlavour(data)
             self.assertIsNotNone(result)
-<<<<<<< HEAD
-=======
-            self.assertEqual(len(result["fileVal"].values), 0)
->>>>>>> 6bd14a202e4f8b7ae77b46144d2fa1bf0ec7e345
             self.assertIsNone(err)
             # todo how can I check if there was a warning?
             # todo delete empty parameters until following:
