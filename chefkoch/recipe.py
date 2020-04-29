@@ -134,7 +134,8 @@ class Recipe:
 
     def findCircles(self):
         """
-        Makes list of all nodes, that have only flavour parameters as inputs.
+        Makes list of all nodes, which are those who only have flavour
+        parameters as inputs.
         Then starts depth-first search for every root node. If there is a way
         back to a previously visited node, there is a warning about a circle.
 
@@ -142,17 +143,19 @@ class Recipe:
             cause an endless recursion.
         """
         rootNodes = []
-        # 1. Make list of all nodes that only have flavour inputs.
+        # 1. Make list of all root nodes
+        # 1.1. Make set of all inputs that refere to the flavour file
+        all_ins = set([])
         for node in self.nodes:
-            isRootNode = True
-            for key in node.inputs:
-                input = node.inputs[key]
-                if not input.startswith("flavour."):
-                    isRootNode = False
-                    break
-            if isRootNode:
+            all_ins.update(node.inputs.values())
+        flavour_inputs = set(i for i in all_ins if i.startswith("flavour."))
+        # TODO neue Möglichkeit für startswith auf Mengen finden
+        # 1.2. If all inputs of a node are in there, node is root node.
+        for node in self.nodes:
+            node_inputs = set(node.inputs.values())
+            if (node_inputs & flavour_inputs) == node_inputs:
+                # in that case all of node's inputs start with flavour.
                 rootNodes.append(node)
-
         logger.debug("Root Nodes:")
         # 2. Start depth-first-search for every such node.
         for node in rootNodes:
