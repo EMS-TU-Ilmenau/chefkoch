@@ -7,3 +7,4 @@ sphinxcontrib.tikz
 numpydoc
 sphinx_rtd_theme
 -U Sphinx
+pdflatex
