@@ -50,7 +50,7 @@ file_handler = logging.FileHandler("test.log")
 file_handler.setLevel(logging.ERROR)  # only write logs that are error or worse
 file_handler.setFormatter(formatter)
 
-#warn_handler = logging.captureWarnings(True)
+# warn_handler = logging.captureWarnings(True)
 
 # to output errs and warns into file, but debug to console, do:
 stream_handler = logging.StreamHandler()
@@ -59,7 +59,7 @@ stream_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
-#logger.addHandler(warn_handler)
+# logger.addHandler(warn_handler)
 
 # Integrating warning.warn to automatically log raised warnings
 logging.captureWarnings(True)

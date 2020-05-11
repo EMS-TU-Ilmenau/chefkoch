@@ -64,13 +64,17 @@ class TestChefkoch(unittest.TestCase):
         with self.subTest("test 2: broken JSON file."):
             with self.assertRaises(ValueError) as err:
                 result = backbone.openjson("broken_for_testcase.json")
-                self.assertEqual(err, "This is no valid JSON file. Try deleting comments.")
-            
+                self.assertEqual(
+                    err, "This is no valid JSON file. Try deleting comments."
+                )
+
         # test 3: file path wrong/ file does not exist
         with self.subTest("test 3: file path wrong/ file does not exist"):
             with self.assertRaises(IOError) as err:
                 result = backbone.openjson("NoFileHere.json")
-                self.assertEqual(err, "The file path or file name is incorrect.")
+                self.assertEqual(
+                    err, "The file path or file name is incorrect."
+                )
 
 
 class TestRecipe(unittest.TestCase):
@@ -134,14 +138,14 @@ class TestRecipe(unittest.TestCase):
             data["nodes"][0]["inputs"] = {"a": ["first", "second"]}
             result = backbone.jsonToRecipe(data)
             self.assertIsNotNone(result)
-            
+
         # test 4: Annoying the StepSource class
         with self.subTest("test 4: Annoying the Node class"):
             data = correct_data
             data["nodes"][0]["stepsource"] = "no_built-in_function"
             with self.assertRaises(TypeError):
                 result = backbone.jsonToRecipe(data)
-            
+
     def test_inputIntegrity(self):
         # recipe with two outputs with same name
         with self.subTest("recipe with two outputs with same name"):
@@ -165,7 +169,6 @@ class TestRecipe(unittest.TestCase):
             with self.assertRaises(NameError) as err:
                 recipe.inputIntegrity()
                 self.assertTrue(str(err).startswith("The output"))
-
 
         # recipe that should work correctly
         with self.subTest("Recipe that should work correctly"):
@@ -409,10 +412,10 @@ class TestFlavour(unittest.TestCase):
             {"file": "test.log", "key": None, },  # entry 2
             {"file": "test.log", "no_key_field": "", },  # entry 3
             {"file": None, "key": "", },  # entry 4
-            {  
+            {
                 "file": "thisDoesNotExist.txt",
                 "key": "R4nd0m_P4ssw0rd",
-            }, # entry 5
+            },  # entry 5
             {"no_file_field": "", "key": "R4nd0m_P4ssw0rd", },  # entry 6
         ]
         no_file_entry = "There is no file given to the file param!"
@@ -517,7 +520,8 @@ class TestFlavour(unittest.TestCase):
             with self.assertRaises(TypeError) as err:
                 result = backbone.jsonToFlavour(None)
                 self.assertEqual(
-                    err, "Function jsonToFlavour expects a dictionary as input."
+                    err,
+                    "Function jsonToFlavour expects a dictionary as input.",
                 )
 
         # test 2: correct format with additional information still works
@@ -543,9 +547,8 @@ class TestFlavour(unittest.TestCase):
         with self.subTest("test 4: Giving no known name as type"):
             data["fileVal"]["type"] = "no actual type"
             result = backbone.jsonToFlavour(data)
-            
+
         # test 5: incorrect format
         with self.subTest("test 5: Having no type field"):
             data["fileVal"].pop("type")
             result = backbone.jsonToFlavour(data)
-            

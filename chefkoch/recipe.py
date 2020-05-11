@@ -74,18 +74,18 @@ class Recipe:
         ----------
         input (str):
             The input that is to be tested
-        
+
         Returns
         -------
         True if the input is valid.
         """
         if os.path.isfile(input):
-             return True
+            return True
         prefix = os.path.splitext(input)[0]
-        if (prefix == "flavour"):
+        if prefix == "flavour":
             return True
         else:
-            return False                    
+            return False
 
     def inputIntegrity(self):
         """
@@ -106,12 +106,14 @@ class Recipe:
             # & is the intersection of sets
             if len(node_outputs & outputs_of_all_nodes) > 0:
                 raise NameError(
-                    "The output " + str(node_outputs & outputs_of_all_nodes) 
-                    + " of node " + node.name
+                    "The output "
+                    + str(node_outputs & outputs_of_all_nodes)
+                    + " of node "
+                    + node.name
                     + " has the same name as an output declared before. "
                 )
             else:
-                 outputs_of_all_nodes.update(node_outputs)
+                outputs_of_all_nodes.update(node_outputs)
         # 2. see if inputs are from flavour, are file paths to existing files
         # or are in output list
         try_again = True
@@ -120,7 +122,7 @@ class Recipe:
             for node in self.nodes:
                 nodeIsValid = True
                 node_inputs = set(node.inputs.values())
-                for input in (node_inputs.difference(outputs_of_all_nodes)):
+                for input in node_inputs.difference(outputs_of_all_nodes):
                     if not self.inputIsValid(input):
                         nodeIsValid = False
                 if not nodeIsValid:
@@ -130,7 +132,8 @@ class Recipe:
             try_again = len(unreachable_nodes) > 0
             for node in unreachable_nodes:
                 warnings.warn(
-                    "Node " + node.name
+                    "Node "
+                    + node.name
                     + " or one of its previous nodes has an invalid input"
                     + " and therefore cannot be computed. "
                 )
@@ -191,7 +194,7 @@ class Recipe:
         nodesOnTheWay (Node[]):
             Previously visited nodes. If a node in there can be revisited \
             by going deeper into the graph, there is a circle.
-        
+
         Returns
         -------
         returns:
@@ -206,7 +209,9 @@ class Recipe:
         if node in nodesOnTheWay:
             warnings.warn(
                 "The recipe contains a circle along "
-                + namesOnTheWay + node.name + " and can therefore"
+                + namesOnTheWay
+                + node.name
+                + " and can therefore"
                 + " not be executed."
             )
             return True
@@ -257,18 +262,18 @@ class Node:
 
         Parameters
         ----------
-        name (str): 
+        name (str):
             Name of the simulation step.
-        inputdict (dict): 
+        inputdict (dict):
             Dictionary of all inputs needed to execute this step.
-        outputdict (dict): 
+        outputdict (dict):
             Dictionary of all outputs of the simulation step.
-        stepsource (str): 
+        stepsource (str):
             Information on how to execute this step.
-        
+
         Raises
         ------
-        TypeError: 
+        TypeError:
             If the input or output of a node are not given as a dict.
         """
         # for empty name enter "" into recipe
@@ -283,8 +288,8 @@ class Node:
             raise TypeError(
                 "The input of node "
                 + str(name)
-                + ' must be of the format {"name as in '
-                + 'step": value, ...}'
+                + ' must be of the format {"name as in'
+                + ' step": value, ...}'
             )
             return
         self.inputs = inputdict
@@ -317,7 +322,7 @@ class Name:
         ----------
         name (str or unicode):
             Name to be checked and saved
-        
+
         Raises
         ------
         TypeError:
@@ -348,7 +353,7 @@ class Name:
         ----------
         name (str or unicode):
             string
-        
+
         Returns
         -------
         `True`, if name only contains ascii characters.
@@ -371,7 +376,7 @@ class StepSource:
         stepsource (str):
             file path to a sub-recipe, a python executable or the name \
             of a built-in function
-        
+
         Raises
         ------
         TypeError:
@@ -443,7 +448,7 @@ class FileParamValue:
             file path as given in flavour.json
         key (str or None):
             optional key or passphrase to the file
-        
+
         Raises
         -------
         IOError:
@@ -520,7 +525,7 @@ class Param:
         ----------
         entry (dict):
             dict with fields type, file and key
-        
+
         Raises
         ------
         ValueError:
@@ -559,7 +564,7 @@ class Param:
         ----------
         entry (dict):
             dict with fields start, stop and step.
-        
+
         Raises
         ------
         KeyError:
@@ -709,7 +714,7 @@ def readflavour(filename):
     ----------
     filename (str):
         file path
-    
+
     Returns
     --------
     flavour - object of type flavour.
@@ -732,11 +737,11 @@ def openjson(filename):
     ----------
     filename (str):
         file path
-    
+
     Returns
     --------
     data - dict or list depending on JSON structure
-    
+
     Raises
     ------
     IOError:
@@ -751,7 +756,9 @@ def openjson(filename):
             data = json.load(f)
             # That's the whole file at once. Hope files dont get too big
         except ValueError as err:
-            raise ValueError("This is no valid JSON file. Try deleting comments.")
+            raise ValueError(
+                "This is no valid JSON file. Try deleting comments."
+            )
 
     return data
 
@@ -765,7 +772,7 @@ def jsonToRecipe(data):
     ----------
     data (dict or list):
         dict or list depending on the outer structure of JSON file
-    
+
     Returns
     -------
     recipe - object of class Recipe \n
@@ -804,12 +811,12 @@ def jsonToFlavour(data):
     ----------
     data (dict or list):
         dict or list depending on json file.
-    
+
     Returns
     -------
     flavour - object of class Flavour
     :rtype: Flavour
-    
+
     Raises
     ------
     TypeError:
@@ -821,7 +828,9 @@ def jsonToFlavour(data):
     # should be a warning and this parameter should be skipped instead of
     # having a random key error
     if not isinstance(data, dict):
-        raise TypeError("Function jsonToFlavour expects a dictionary as input.")
+        raise TypeError(
+            "Function jsonToFlavour expects a dictionary as input."
+        )
     flavour = Flavour({})
     for param in data:
         try:
@@ -833,13 +842,17 @@ def jsonToFlavour(data):
                 flavour[param] = newParam  # new entry to dict
             else:
                 warnings.warn(
-                    "The parameter " + param + " has no valid"
+                    "The parameter "
+                    + param
+                    + " has no valid"
                     + " value and will be excluded from the flavour."
                 )
         except TypeError as errorMessage:
             raise TypeError(errorMessage)
         except Exception as err:
-            raise Exception("Error while parsing json data into flavour object.")
+            raise Exception(
+                "Error while parsing json data into flavour object."
+            )
 
     return flavour
 
@@ -879,7 +892,7 @@ def readjson(type, filename):
     type (str):
         Type of JSON-file that should be converted into a \
         dictionary: {"recipe", "flavour"}
-    
+
     Returns
     -------
     Recipe or Flavour object depending on the `type` parameter.
