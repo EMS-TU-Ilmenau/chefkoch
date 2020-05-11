@@ -10,7 +10,7 @@ FILES=chefkoch/*.py bin/* tests/*.py *.py
 
 .PHONY: test
 test: | stylecheck
-	python2 setup.py test
+	$(PYTHON) setup.py test
 
 .PHONY: black
 black:
