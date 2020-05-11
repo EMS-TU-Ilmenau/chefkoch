@@ -390,9 +390,7 @@ class StepSource:
             # is used)
         else:
             raise TypeError(
-                "Stepsource to node "
-                + str(name)
-                + ": "
+                "Stepsource : "
                 + str(stepsource)
                 + ". Must be a Python file, another recipe "
                 + "or a build-in function."
@@ -691,7 +689,7 @@ def readrecipe(filename):
 
     Returns
     -------
-    Object of type recipe
+    Object of class Recipe
     :rtype: Recipe
     """
     jsonData = openjson(filename)
@@ -741,7 +739,7 @@ def openjson(filename):
     
     Raises
     ------
-    TypeError:
+    IOError:
         If the file path or file name are incorrect.
     ValueError:
         If the given file is no valid JSON format.
@@ -772,6 +770,13 @@ def jsonToRecipe(data):
     -------
     recipe - object of class Recipe \n
     :rtype: Recipe
+
+    Raises
+    -------
+    TypeError:
+        If data ist not of type dictionary.
+    Exception:
+        Error while parsing json data into recipe object.
     """
     if not isinstance(data, dict):
         raise TypeError("Function jsonToRecipe expects dictionary as input.")
@@ -785,10 +790,8 @@ def jsonToRecipe(data):
                 node["stepsource"],
             )
             recipe.nodes.append(newNode)
-        except TypeError as errorMessage:
-            raise TypeError(errorMessage)
-        except Exception as err:
-            raise Exception("Error while parsing json data into recipe object.")
+        except KeyError as err:
+            raise KeyError("Error while parsing json data into recipe object.")
 
     return recipe
 
