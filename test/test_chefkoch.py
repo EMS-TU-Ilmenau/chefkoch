@@ -63,7 +63,7 @@ class TestChefkoch(unittest.TestCase):
         # test 2: broken JSON recipe file.
         with self.subTest("test 2: broken JSON file."):
             with self.assertRaises(ValueError) as err:
-                result = backbone.openjson("broken_for_testcase.json")
+                result = backbone.openjson("test/broken_for_testcase.json")
                 self.assertEqual(
                     err, "This is no valid JSON file. Try deleting comments."
                 )
@@ -86,7 +86,7 @@ class TestRecipe(unittest.TestCase):
     def test_openjson(self):
         # test 1: valid JSON recipe file.
         test_chefkoch = TestChefkoch()
-        test_chefkoch.check_openjson("recipe.json", self.assert_openjson)
+        test_chefkoch.check_openjson("test/recipe.json", self.assert_openjson)
 
     def test_jsonToRecipe(self):
         # correct data to be changed in every subtest
@@ -252,7 +252,7 @@ class TestRecipe(unittest.TestCase):
                 "nodes": [
                     {
                         "name": "A",
-                        "inputs": {"a": "recipe.json"},
+                        "inputs": {"a": "test/recipe.json"},
                         "outputs": {"c": "outOfA"},
                         "stepsource": "somesource.py",
                     }
@@ -306,7 +306,7 @@ class TestFlavour(unittest.TestCase):
     def test_readjson(self):
         # test 1: valid JSON flavour file.
         with self.subTest("test 1: valid JSON flavour file."):
-            result = backbone.openjson("flavour.json")
+            result = backbone.openjson("test/flavour.json")
             self.assertEqual(result["fS"], 9.22e9)
             self.assertEqual(result["subsample"][0]["type"], "range")
             self.assertEqual(result["average"][2], 64)
@@ -314,8 +314,8 @@ class TestFlavour(unittest.TestCase):
 
     def test_Flavour_tostring(self):
         # only test: correct comparison string
-        flavour = backbone.readflavour("flavour.json")
-        with open("flavour_tostring.txt", "r") as f:
+        flavour = backbone.readflavour("test/flavour.json")
+        with open("test/flavour_tostring.txt", "r") as f:
             comparisonStr = f.read()
             testedStr = flavour.tostring()
             self.assertEqual(testedStr, comparisonStr)
@@ -338,7 +338,7 @@ class TestFlavour(unittest.TestCase):
     def test_FileParamValue_tostring(self):
         # only test: correct comparison string
         file_param = backbone.FileParamValue("test.log", "no key")
-        with open("file_param_tostring.txt", "r") as f:
+        with open("test/file_param_tostring.txt", "r") as f:
             comparisonStr = f.read()
             testedStr = file_param.tostring()
             self.assertEqual(testedStr, comparisonStr)
@@ -478,7 +478,7 @@ class TestFlavour(unittest.TestCase):
     def test_readflavour(self):
         # only test: parsing the whole file
         with self.subTest("test 1: valid JSON flavour file."):
-            flavour = backbone.readflavour("flavour.json")
+            flavour = backbone.readflavour("test/flavour.json")
             self.assertEqual(flavour["fS"].values[0], 9.22e9)
             self.assertEqual(len(flavour["subsample"].values), 19)
             self.assertEqual(flavour["average"].values[2], 3)
@@ -497,7 +497,7 @@ class TestFlavour(unittest.TestCase):
     def test_openjson(self):
         # using three tests in TestChefkoch
         test_chefkoch = TestChefkoch()
-        test_chefkoch.check_openjson("flavour.json", self.assert_openjson)
+        test_chefkoch.check_openjson("test/flavour.json", self.assert_openjson)
 
     def test_jsonToFlavour(self):
         # correct data to be changed in every subtest
