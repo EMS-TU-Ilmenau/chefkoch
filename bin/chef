@@ -168,7 +168,9 @@ if __name__ == "__main__":
         # env_parse_and_apply(parser, context, arguments)
         # need to know what it does and why it does not work in this context
 
-    HELP_ECHO = "This command is just for learning. That's how you use @subcmd."
+    HELP_ECHO = (
+        "This command is just for learning. That's how you use @subcmd."
+    )
 
     @subcmd("echo", help=HELP_ECHO)
     def echo(parser, context, args):
