@@ -66,7 +66,8 @@ class TestChefkoch(unittest.TestCase):
                 with self.assertRaises(ValueError) as err:
                     result = backbone.openjson("test/broken_for_testcase.json")
                     self.assertEqual(
-                        err, "This is no valid JSON file. Try deleting comments."
+                        err, "This is no valid JSON file. "
+                        + "Try deleting comments."
                     )
 
             # test 3: file path wrong/ file does not exist
