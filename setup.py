@@ -258,6 +258,7 @@ if __name__ == "__main__":
         packages=["chefkoch"],
         scripts=["bin/chef"],
         cmdclass={"build_doc": doc_opts()},
+        test_suite="test",
         command_options={
             "build_sphinx": {
                 "project": ("setup.py", packageName),

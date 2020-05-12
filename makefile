@@ -6,7 +6,7 @@
 # make all: builds all of the above targets
 
 PYTHON=python3
-FILES=chefkoch/*.py bin/* tests/*.py *.py
+FILES=chefkoch/*.py bin/* test/*.py *.py
 
 .PHONY: test
 test: | stylecheck
