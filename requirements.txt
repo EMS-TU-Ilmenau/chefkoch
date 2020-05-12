@@ -1,2 +1,3 @@
 dask
 dask-jobqueue
+xxhash

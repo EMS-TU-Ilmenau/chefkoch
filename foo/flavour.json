@@ -1,0 +1,29 @@
+{
+    "discreteParameters": { //this value will always be called descreteParameters
+        "historicCatapultAngles": [ 32, 36, 43 ], //parameter names in here can differ
+        "funnyname": [ "Olaf", "Gunther", "Svenson", "Harald" ],
+        "shipLength": [ 5.787, 10.46, 7.924, 21.57 ],
+        "globalTruth": 42
+    },
+    "intervalParameters": { //this will always be called intervalParameters
+        "temperature": { //this name can differ
+            "from": -40, //these valuenames are the same for every interval
+            "until": 35,
+            "stepsize": 5
+        }
+        "year": {
+            "from": 793,
+            "until": 1066,
+            "stepsize": 1
+        }
+        "testagles": {
+            "from": 40.0,
+            "until": 50.0,
+            "stepsize": 0.25
+        }
+    }
+    /* TODO Throw error if a colon is missing or the overall syntax doesn't fit into this scheme.
+       TODO Please build .json files with every combination of the values above. I know this sample has too many combinations,
+            you can make it smaller.
+       TODO Please tell me if you need an extra "datatype" field for the interval parameters. */
+}
