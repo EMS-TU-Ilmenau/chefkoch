@@ -49,7 +49,7 @@ class TestChefkoch(unittest.TestCase):
     """
 
     def test_readjson(self):
-        result = chefkoch.readjson("recipe", "recipe.json")
+        result = chefkoch.readjson("recipe", "test/recipe.json")
 
     def check_openjson(self, file, assertionFunc):
         # not executed by the test runner but by the test_openjson functions
