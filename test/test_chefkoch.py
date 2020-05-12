@@ -86,7 +86,7 @@ class TestRecipe(unittest.TestCase):
     def test_openjson(self):
         # test 1: valid JSON recipe file.
         test_chefkoch = TestChefkoch()
-        test_chefkoch.check_openjson("tests/recipe.json", self.assert_openjson)
+        test_chefkoch.check_openjson("recipe.json", self.assert_openjson)
 
     def test_jsonToRecipe(self):
         # correct data to be changed in every subtest
