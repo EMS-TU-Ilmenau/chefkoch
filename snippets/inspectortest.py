@@ -11,6 +11,9 @@ def varnames(f):
     """
     return inspect.getargspec(f)[0]
 
+def fullvarnames(f):
+    return inspect.getfullargspec(f)
 
 print(varnames(aFunction))
 print("erster Argumentenname: " + (varnames(aFunction)[0]))
+print(fullvarnames(aFunction))
