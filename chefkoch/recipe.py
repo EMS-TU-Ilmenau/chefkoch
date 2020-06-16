@@ -80,6 +80,7 @@ class Recipe:
         True if the input is valid.
         """
         if os.path.isfile(input):
+            isMaxLengtViolation(input)
             return True
         prefix = os.path.splitext(input)[0]
         if prefix == "flavour":
@@ -464,6 +465,7 @@ class FileParamValue:
             raise IOError("The filepath is None.")
             return
         if os.path.isfile(filepath):
+            isMaxLengtViolation(input)
             self.file = filepath
             logger.debug("Filepath: " + str(self.file))
         else:
@@ -751,6 +753,7 @@ def openjson(filename):
     """
     if not os.path.isfile(filename):
         raise IOError("The file path or file name is incorrect.")
+    # isMaxLengtViolation(filename)
     with open(filename) as f:
         try:
             data = json.load(f)
@@ -912,3 +915,30 @@ def readjson(type, filename):
             "The function readjson only takes 'recipe' or"
             + "'flavour' as type."
         )
+
+
+def isMaxLengthViolation(path):
+    """
+    Function checking if a MAX_PATH Error could possibly appear
+
+    Parameters
+    ----------
+    path (str):
+        a filepath
+    Returns
+    -------
+    Bool
+        True - If Path is equal/longer than 260 characters and OS is Windows
+        False - else
+    Raises
+    ------
+    Warning:
+        If Path is longer than 260 characters and OS is Windows
+
+    """
+    if sys.platform.startswith("win"):
+        if len(os.path.abspath(path)) >= 260:
+            warnings.warn("Length of Path above is 260 Characters which may results in MAX_PATH ERROR in Windows\n"
+                          "For Information to disable Path Length Limit visit https://github.com/EMS-TU-Ilmenau")
+            return True
+    return False
