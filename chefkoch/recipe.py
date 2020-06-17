@@ -80,7 +80,7 @@ class Recipe:
         True if the input is valid.
         """
         if os.path.isfile(input):
-            isMaxLengtViolation(input)
+            isMaxLengthViolation(input)
             return True
         prefix = os.path.splitext(input)[0]
         if prefix == "flavour":
@@ -465,7 +465,7 @@ class FileParamValue:
             raise IOError("The filepath is None.")
             return
         if os.path.isfile(filepath):
-            isMaxLengtViolation(input)
+            isMaxLengthViolation(input)
             self.file = filepath
             logger.debug("Filepath: " + str(self.file))
         else:
@@ -753,7 +753,7 @@ def openjson(filename):
     """
     if not os.path.isfile(filename):
         raise IOError("The file path or file name is incorrect.")
-    # isMaxLengtViolation(filename)
+    # isMaxLengthViolation(filename)
     with open(filename) as f:
         try:
             data = json.load(f)
