@@ -938,7 +938,9 @@ def isMaxLengthViolation(path):
     """
     if sys.platform.startswith("win"):
         if len(os.path.abspath(path)) >= 260:
-            warnings.warn("Length of Path above is 260 Characters which may results in MAX_PATH ERROR in Windows\n"
-                          "For Information to disable Path Length Limit visit https://github.com/EMS-TU-Ilmenau")
+            warnings.warn("Length of Path above is 260 Characters which may "
+                          "results in MAX_PATH ERROR in Windows\n"
+                          "For Information to disable Path Length Limit "
+                          "visit https://github.com/EMS-TU-Ilmenau")
             return True
     return False
