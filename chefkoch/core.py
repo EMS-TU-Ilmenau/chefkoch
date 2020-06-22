@@ -52,7 +52,8 @@ class Configuration:
 
         Returns
         -------
-        configuration item
+        returns:
+            configuration item
         """
     # brauch es nicht noch so etwas wie key
         pass
