@@ -2,7 +2,7 @@ import inspect
 import inspectortest
 
 """The following snippet returns all functionnames of inspectortest.py.
-getmembers with the predicate isgunction returns all functions in a list 
+getmembers with the predicate isfunction returns all functions in a list 
 of (name, value). 
 """
 
