@@ -1,17 +1,19 @@
 """
-The fridge is responsible for storing the data and steps and checking if 
+The fridge is responsible for storing the data and steps and checking if
 they are still up-to-date.
 """
 import container
 from core import Chefkoch
 
-#Resource vorläufig mit angefügt
+
+# Resource vorläufig mit angefügt
 class Resource(Item):
     """
     Resources used to create a specific item
     """
     def __init__(self):
         pass
+
 
 class Item:
     """
@@ -20,7 +22,7 @@ class Item:
     def __init__(self, fridge, name):
         self.fridge = fridge
         self.name
-        self.refLog 
+        self.refLog
         pass
 
     def createHash():
@@ -39,12 +41,12 @@ class Item:
             true,....
 
         """
-        pass    
+        pass  
 
     def check():
         """
         Checks if the file and it's refLog exists and if the refLog itself is
-        unchanged 
+        unchanged
 
         Returns:
         --------
@@ -53,6 +55,7 @@ class Item:
 
         """
         pass
+
 
 class HyperItem:
     """
@@ -63,6 +66,7 @@ class HyperItem:
 
     def find():
         pass
+
 
 class Fridge:
     """
@@ -84,7 +88,7 @@ class Fridge:
         """
         self.chef = chef
         self basePath = basePath
-        self.items   
+        self.items
         pass
 
     def update():

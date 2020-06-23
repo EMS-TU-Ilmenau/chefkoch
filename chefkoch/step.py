@@ -4,6 +4,7 @@ Definition of the different simulation steps available.
 import core
 from fridge import Item
 
+
 class Step(Item):
     """
     A single simulation step.
@@ -16,12 +17,14 @@ class Step(Item):
         self.logfile
         self.mapping
 
+
 class StepPython(Step):
     """
     A simulation step specified in a Python-file
     """
     def __init__(self):
         pass
+
 
 class StepShell(Step):
     """
@@ -30,9 +33,11 @@ class StepShell(Step):
     def __init__(self):
         pass
 
+
 class StepSubRecipe(Step):
     """
     A simulation step where a SubRecipe is cooked
     """
     def __init__(self):
         pass
+    
