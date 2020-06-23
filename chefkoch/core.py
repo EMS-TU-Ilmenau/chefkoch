@@ -5,14 +5,16 @@ It is also responsible for logging everything.
 
 from fridge import Fridge
 import scheduler
-#from scheduler import Scheduler
-#import recipe
-#from recipe import Recipe
+# from scheduler import Scheduler
+# import recipe
+# from recipe import Recipe
+
 
 class Logger:
     """
     creates a logfile  
     """
+
     def __init__(self, filename):
         """
         Create a logfile and use this container for logging.
@@ -46,6 +48,7 @@ class Configuration:
     """
     Manages the configurations specified in the configuration file
     """
+
     def __getattr__(self):
         """
         Retrieve a configuration item
@@ -55,7 +58,7 @@ class Configuration:
         returns:
             configuration item
         """
-    # brauch es nicht noch so etwas wie key
+        # braucht es nicht noch so etwas wie key
         pass
 
     def __init__(self, filename):
@@ -68,12 +71,12 @@ class Configuration:
             file, that specifies configuration
         """
         self.items
-        pass
 
 class Chefkoch:
     """
     main instance
     """
+
     def __init__(self, cheffile):
         """ 
         Initializes everything according to he Cheffile and the needed 
@@ -91,7 +94,6 @@ class Chefkoch:
         self.fridge 
         self.logger 
         self.scheduler 
-        pass
 
     def cook(self, targets):
         """
@@ -104,3 +106,4 @@ class Chefkoch:
 
         """
         pass
+    
