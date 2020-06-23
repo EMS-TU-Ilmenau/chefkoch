@@ -11,6 +11,7 @@ class Resource(Item):
     """
     Resources used to create a specific item
     """
+
     def __init__(self):
         pass
 
@@ -19,11 +20,11 @@ class Item:
     """
     An item represent a piece of data, either an input or an output of a step
     """
+
     def __init__(self, fridge, name):
         self.fridge = fridge
         self.name
         self.refLog
-        pass
 
     def createHash():
         """
@@ -61,6 +62,7 @@ class HyperItem:
     """
     Eine Art
     """
+
     def __init__(self):
         pass
 
@@ -73,6 +75,7 @@ class Fridge:
     The fridge stores all items or steps in chefkoch with metadata
 
     """
+
     def __init__(self, chef, basePath):
         """
         Instantiate Directory as Fridge
