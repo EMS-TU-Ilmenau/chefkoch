@@ -12,7 +12,7 @@ class Step(Item):
 
     def __init__(self):
         """
-        Initializes the logfile for this step and the 
+        Initializes the logfile for this step and the
         name-mapping
         """
         self.logfile

@@ -42,7 +42,7 @@ class Item:
             true,....
 
         """
-        pass  
+        pass
 
     def check():
         """
