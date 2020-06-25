@@ -50,7 +50,7 @@ class Configuration:
     Manages the configurations specified in the configuration file
     """
 
-    def __getattr__(self):
+    def __getattr__(self, keyname):
         """
         Retrieve a configuration item
 
