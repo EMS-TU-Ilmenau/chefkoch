@@ -69,7 +69,7 @@ class YAMLContainer():
         #     f.close()
 
         f = open(filename)
-        data = yaml.load(f, Loader=yaml.SafeLoader)
+        self.data = yaml.load(f, Loader=yaml.SafeLoader)
         f.close()
 
 
@@ -78,18 +78,25 @@ class YAMLContainer():
         """
         Returns the value of specific item
         """
+        return self.data[item]
 
 
     def __hasattr__(self, name):
         """
         Check if container contains specific item
         """
+        if hasattr(self.data, name):
+            return True
+        else:
+            return False
 
 
-    def save(filename):
+    def save(self, filename):
         """
         Save container to file
         """
+        f = open(filename, "w")
+        f.write(yaml.dump(self.data))
 
 
 
