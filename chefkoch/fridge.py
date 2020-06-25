@@ -90,7 +90,7 @@ class Fridge:
 
         """
         self.chef = chef
-        self basePath = basePath
+        self.basePath = basePath
         self.items
         pass
 
