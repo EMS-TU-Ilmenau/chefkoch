@@ -3,7 +3,7 @@ Starts and controls the main functionality of Chefkoch.
 It is also responsible for logging everything.
 """
 
-from fridge import Fridge
+import fridge
 import scheduler
 # from scheduler import Scheduler
 # import recipe
@@ -27,20 +27,20 @@ class Logger:
         """
         pass
 
-    def log(self, level, message, objects):
+    def log(self, level, message, *objects):
         """
         Creates a log entry
 
         Parameters
         ----------
-        level():
-            desc
+        level(int):
+            type and importance of log-message
 
         message(string):
-            desc
+            log-message
 
         objects():
-            desc
+            describes the used objects
         """
         pass
 
@@ -59,7 +59,6 @@ class Configuration:
         returns:
             configuration item
         """
-        # braucht es nicht noch so etwas wie key
         pass
 
     def __init__(self, filename):
@@ -97,14 +96,21 @@ class Chefkoch:
         self.logger
         self.scheduler
 
-    def cook(self, targets):
+    def cook(self, *targets):
         """
         starts the cooking process
 
         Parameters
         ----------
-        targets(???):
-            ?????
+        targets(str):
+            things/steps that should be cooked
 
         """
+        pass
+
+
+class Name(str):
+    SEPARATOR = '.'
+
+    def __init__(self, *tokens):
         pass

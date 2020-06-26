@@ -3,17 +3,7 @@ The fridge is responsible for storing the data and steps and checking if
 they are still up-to-date.
 """
 import container
-from core import Chefkoch
-
-
-# Resource vorläufig mit angefügt
-class Resource(Item):
-    """
-    Resources used to create a specific item
-    """
-
-    def __init__(self):
-        pass
+import core
 
 
 class Item:
@@ -25,6 +15,7 @@ class Item:
         self.fridge = fridge
         self.name
         self.refLog
+        self.shelf
 
     def createHash():
         """
@@ -34,7 +25,7 @@ class Item:
 
     def checkHash():
         """
-        Check if the hashfile is still valid ?
+        Check if the hashfile is still valid
 
         Returns:
         --------
@@ -58,9 +49,19 @@ class Item:
         pass
 
 
-class HyperItem:
+# Resource vorläufig mit angefügt
+class Resource(Item):
     """
-    Eine Art
+    Resources used to create a specific item
+    """
+
+    def __init__(self):
+        pass
+
+
+class FridgeShelf:
+    """
+    A container for items of a similar kind
     """
 
     def __init__(self):
@@ -83,7 +84,7 @@ class Fridge:
         Parameters
         ----------
         chef(Chefkoch):
-
+            gets an instance of chef
 
         basePath(str):
             filepath to main directory of this experiment
