@@ -5,7 +5,7 @@ import yaml
 import json
 
 
-class JSONContainer():
+class JSONContainer:
     """
     A Container for JSON Files
     """
@@ -16,7 +16,6 @@ class JSONContainer():
         """
         self.data = dict()
         self.read_only = False
-
 
     def __init__(self, filename):
         """
@@ -33,14 +32,12 @@ class JSONContainer():
         """
         return self.data[item]
 
-
     def __setattr__(self, key, value):
         """
         Set value of specific key
         """
         if not self.read_only:
             self.data[key] = value
-
 
     def save(self, filename):
         """
@@ -54,8 +51,7 @@ class JSONContainer():
             outfile.close()
 
 
-
-class YAMLContainer():
+class YAMLContainer:
     """
     A Container for JSON Files
     """
@@ -72,14 +68,11 @@ class YAMLContainer():
         self.data = yaml.load(f, Loader=yaml.SafeLoader)
         f.close()
 
-
-
     def __getattr__(self, item):
         """
         Returns the value of specific item
         """
         return self.data[item]
-
 
     def __hasattr__(self, name):
         """
@@ -90,14 +83,12 @@ class YAMLContainer():
         else:
             return False
 
-
     def save(self, filename):
         """
         Save container to file
         """
         f = open(filename, "w")
         f.write(yaml.dump(self.data))
-
 
 
 # import chefkoch.container as cont
