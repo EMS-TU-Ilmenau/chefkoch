@@ -812,7 +812,7 @@ def openyaml(filename):
 
 def dictToRecipe(data):
     """
-    Takes a dictionary or list of interpreted JSON or YAML 
+    Takes a dictionary or list of interpreted JSON or YAML
     and parses it into an object of class Recipe.
 
     Parameters
