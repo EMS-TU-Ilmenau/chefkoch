@@ -29,6 +29,7 @@ import platform
 import json
 import sys
 import warnings
+import yaml
 
 # logs need to be imported this way to not write logs.logger all the time
 from .logs import *
@@ -697,8 +698,13 @@ def readrecipe(filename):
     Object of class Recipe
     :rtype: Recipe
     """
-    jsonData = openjson(filename)
-    recipe = jsonToRecipe(jsonData)
+    data = {}
+    type = filename[-4:]
+    if type == "json":
+        data = openjson(filename)
+    elif type == "yaml":
+        data = openyaml(filename)
+    recipe = dictToRecipe(data)
     recipe.inputIntegrity()
     recipe.findCircles()
     printRecipe(recipe)
@@ -720,8 +726,13 @@ def readflavour(filename):
     flavour - object of type flavour.
     :rtype: Flavour
     """
-    jsonData = openjson(filename)
-    flavour = jsonToFlavour(jsonData)
+    data = {}
+    type = filename[-4:]
+    if type == "json":
+        data = openjson(filename)
+    elif type == "yaml":
+        data = openyaml(filename)
+    flavour = dictToFlavour(data)
     print(flavour.tostring())
     # todo: input Integrity checks
     return flavour
@@ -763,9 +774,45 @@ def openjson(filename):
     return data
 
 
-def jsonToRecipe(data):
+def openyaml(filename):
     """
-    Takes a dictionary or list of interpreted JSON and parses it into an object
+    Opens a JSON file, makes sure it is valid JSON and the file exists
+    at the given path. Loads the whole file at once. File should there-
+    fore not be too big.
+
+    Parameters
+    ----------
+    filename (str):
+        file path
+
+    Returns
+    --------
+    data - dict or list depending on JSON structure
+
+    Raises
+    ------
+    IOError:
+        If the file path or file name are incorrect.
+    ValueError:
+        If the given file is no valid JSON format.
+    """
+    if not os.path.isfile(filename):
+        raise IOError("The file path or file name is incorrect.")
+    with open(filename) as f:
+        try:
+            data = yaml.load(f, Loader=yaml.SafeLoader)
+            # That's the whole file at once. Hope files dont get too big
+        except ValueError as err:
+            raise ValueError(
+                "This is no valid YAML file."
+            )
+
+    return data
+
+
+def dictToRecipe(data):
+    """
+    Takes a dictionary or list of interpreted JSON or YAML and parses it into an object
     of class Recipe.
 
     Parameters
@@ -786,7 +833,7 @@ def jsonToRecipe(data):
         Error while parsing json data into recipe object.
     """
     if not isinstance(data, dict):
-        raise TypeError("Function jsonToRecipe expects dictionary as input.")
+        raise TypeError("Function dictToRecipe expects dictionary as input.")
     recipe = Recipe([])
     for node in data["nodes"]:
         try:
@@ -798,19 +845,19 @@ def jsonToRecipe(data):
             )
             recipe.nodes.append(newNode)
         except KeyError as err:
-            raise KeyError("Error while parsing json data into recipe object.")
+            raise KeyError("Error while parsing data into recipe object.")
 
     return recipe
 
 
-def jsonToFlavour(data):
+def dictToFlavour(data):
     """
-    Turns data loaded from a json file into a flavour object.
+    Turns data loaded from a json or yaml file into a flavour object.
 
     Parameters
     ----------
     data (dict or list):
-        dict or list depending on json file.
+        dict or list depending on json or yaml file.
 
     Returns
     -------
@@ -822,14 +869,14 @@ def jsonToFlavour(data):
     TypeError:
         If some data to the flavour file is missing.
     Exception:
-        If some random error should occure.
+        If some random error should occur.
     """
     # todo: if the flavour file has an entry that misses the "type" field, there
     # should be a warning and this parameter should be skipped instead of
     # having a random key error
     if not isinstance(data, dict):
         raise TypeError(
-            "Function jsonToFlavour expects a dictionary as input."
+            "Function dictToFlavour expects a dictionary as input."
         )
     flavour = Flavour({})
     for param in data:
@@ -851,7 +898,7 @@ def jsonToFlavour(data):
             raise TypeError(errorMessage)
         except Exception as err:
             raise Exception(
-                "Error while parsing json data into flavour object."
+                "Error while parsing data into flavour object."
             )
 
     return flavour
@@ -882,7 +929,7 @@ def printRecipe(recipe):
 
 
 # called by typing "chef read /file/path/.."
-def readjson(type, filename):
+def readfile(type, filename):
     """
     Wrapper function that calls either `readrecipe` or `readflavour`
     depending on the parameter `type`.
@@ -912,3 +959,35 @@ def readjson(type, filename):
             "The function readjson only takes 'recipe' or"
             + "'flavour' as type."
         )
+
+
+# def readyaml(type, filename):
+#     """
+#     Wrapper function that calls either `readrecipe` or `readflavour`
+#     depending on the parameter `type`.
+#
+#     Parameters
+#     ----------
+#     type (str):
+#         Type of YAML-file that should be converted into a \
+#         dictionary: {"recipe", "flavour"}
+#
+#     Returns
+#     -------
+#     Recipe or Flavour object depending on the `type` parameter.
+#
+#     Raises
+#     ------
+#     TypeError:
+#         If type is none of the above.
+#
+#     """
+#     if type == "recipe":
+#         return readrecipe(filename)
+#     if type == "flavour":
+#         return readflavour(filename)
+#     else:
+#         raise TypeError(
+#             "The function parameter type hase to be 'recipe' or"
+#             + "'flavour'."
+#         )
