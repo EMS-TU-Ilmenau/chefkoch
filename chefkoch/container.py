@@ -10,29 +10,33 @@ class JSONContainer:
     A Container for JSON Files
     """
 
-    def __init__(self):
-        """
-        Initializes the container
-        """
-        self.data = dict()
-        self.read_only = False
+    # def __init__(self):
+    #     """
+    #     Initializes the container
+    #     """
+    #     self.data = dict()
+    #     self.read_only = False
 
-    def __init__(self, filename):
+    def __init__(self, filename: str = None):
         """
-        Initializes the container from file
+        Initializes the container from file if path is given, else create empty Container
         """
-        with open(filename) as f:
-            self.data = json.load(f)
-            f.close()
-        self.read_only = True
+        if filename is not None:
+            with open(filename) as f:
+                self.data = json.load(f)
+                f.close()
+            self.read_only = True
+        else:
+            self.data = dict()
+            self.read_only = False
 
-    def __getattr__(self, item):
+    def __getitem__(self, item):
         """
         Returns value of specific key
         """
         return self.data[item]
 
-    def __setattr__(self, key, value):
+    def __setitem__(self, key, value):
         """
         Set value of specific key
         """
@@ -68,12 +72,6 @@ class YAMLContainer:
         self.data = yaml.load(f, Loader=yaml.SafeLoader)
         f.close()
 
-    def __getattr__(self, item):
-        """
-        Returns the value of specific item
-        """
-        return self.data[item]
-
     def __hasattr__(self, name):
         """
         Check if container contains specific item
@@ -82,6 +80,12 @@ class YAMLContainer:
             return True
         else:
             return False
+
+    def __getitem__(self, item):
+        """
+        Returns the value of specific item
+        """
+        return self.data[item]
 
     def save(self, filename):
         """
