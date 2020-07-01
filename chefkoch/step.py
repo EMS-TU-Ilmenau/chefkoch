@@ -45,4 +45,8 @@ class StepSubRecipe(Step):
     def __init__(self):
         pass
 
-class 
+
+class StepBuiltin(Step):
+
+    def __init__(self):
+        pass

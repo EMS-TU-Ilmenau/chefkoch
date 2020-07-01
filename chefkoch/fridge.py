@@ -13,9 +13,9 @@ class Item:
 
     def __init__(self, shelf, name):
         self.name = name
-        #self.refLog = JSONContainer()
-        #self.refLog.save(name)
-        # voruebergehend 
+        # self.refLog = JSONContainer()
+        # self.refLog.save(name)
+        # voruebergehend
         self.shelf = shelf
 
     def createHash():
@@ -94,11 +94,8 @@ class Fridge:
         """
         self.chef = chef
         self.basePath = basePath
-        self.shelfs = dict()# brauchen wir das?
+        self.shelfs = dict()
         pass
-
-    def __init__(self):
-        
 
     def update():
         """
