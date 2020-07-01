@@ -92,4 +92,7 @@ class YAMLContainer:
 
 
 # import chefkoch.container as cont
-# yam = cont.YAMLContainer("test/example.yaml")
+# yam = cont.YAMLContainer("/home/maka/PycharmProjects
+#                           /chefkoch/test/example.yaml")
+# yeet = yam.xmas_fifth_day
+# print( yeet["calling-birds"])
