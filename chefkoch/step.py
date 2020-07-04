@@ -25,6 +25,7 @@ class StepPython(Step):
     """
 
     def __init__(self):
+
         pass
 
 
@@ -40,6 +41,12 @@ class StepSubRecipe(Step):
     """
     A simulation step where a SubRecipe is cooked
     """
+
+    def __init__(self):
+        pass
+
+
+class StepBuiltin(Step):
 
     def __init__(self):
         pass

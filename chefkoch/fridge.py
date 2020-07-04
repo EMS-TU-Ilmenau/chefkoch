@@ -2,7 +2,7 @@
 The fridge is responsible for storing the data and steps and checking if
 they are still up-to-date.
 """
-import container
+from container import JSONContainer
 import core
 
 
@@ -11,11 +11,12 @@ class Item:
     An item represent a piece of data, either an input or an output of a step
     """
 
-    def __init__(self, fridge, name):
-        self.fridge = fridge
-        self.name
-        self.refLog
-        self.shelf
+    def __init__(self, shelf, name):
+        self.name = name
+        # self.refLog = JSONContainer()
+        # self.refLog.save(name)
+        # voruebergehend
+        self.shelf = shelf
 
     def createHash():
         """
@@ -49,7 +50,6 @@ class Item:
         pass
 
 
-# Resource vorläufig mit angefügt
 class Resource(Item):
     """
     Resources used to create a specific item
@@ -64,7 +64,9 @@ class FridgeShelf:
     A container for items of a similar kind
     """
 
-    def __init__(self):
+    def __init__(self, fridge):
+        self.items = dict()
+        self.fridge = fridge
         pass
 
     def find():
@@ -92,7 +94,7 @@ class Fridge:
         """
         self.chef = chef
         self.basePath = basePath
-        self.items
+        self.shelfs = dict()
         pass
 
     def update():

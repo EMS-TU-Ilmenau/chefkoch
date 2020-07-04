@@ -1,43 +1,27 @@
-"""
-Scheduler
-"""
+import chefkoch
 
-import chefkoch.core
-import chefkoch.recipe
-import chefkoch.step
-
-class Scheduler:
-    """
-    Scheduler Class
-    """
-
-    def __init__(self, chef, plan):
-        """
-        Initialize Scheduler Object
-        :param chef:
-        :param plan:
-        """
-
-        self.chef = chef
-        self.plan = plan
-
-    def update(self):
-        """
-        Uodate current status of scheduler
-        :return:
-        """
 
 class Job:
     """
-    Job Class
+    A job which represents the execution of a step.
+    It is scheduled by the scheduler
     """
+    def __init__(self, scheduler, step):
+        self.scheduler = scheduler
+        self.setp = step
 
-    # scheduler: Scheduler
-    # step: chefkoch.step.Step
 
-    def __init__(self):
+class Scheduler:
+    """
+    Responsible for scheduling the single jobs to fulfill
+    th plan.
+    """
+    def __init__(self, chef, plan):
+        self.chef = chef
+        self.plan = plan
+
+    def update():
         """
-        Initialize Job Class
+        update current status of scheduler
         """
         pass
-
