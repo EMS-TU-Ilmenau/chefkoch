@@ -164,7 +164,7 @@ if __name__ == "__main__":
         )
         parser.add_argument("filepath", type=str)
         args = env_parse_and_apply(parser, context, arguments)
-        chefkoch.readjson(args.filetype, args.filepath)
+        chefkoch.readfile(args.filetype, args.filepath)
         # env_parse_and_apply(parser, context, arguments)
         # need to know what it does and why it does not work in this context
 
