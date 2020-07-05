@@ -92,6 +92,19 @@ if __name__ == "__main__":
     # def cmd_name is the method which is called when name is typed into the
     # command line.
 
+    HELP_TEST = "Testfunction for example testing"
+
+    @subcmd("test", help=HELP_TEST)
+    def cmd_test(parser, context, arguments):
+        parser.description = HELP_TEST
+        cheffile = input("Path to cheffile: ")
+        # cheffile = "/home/wiebke/Arbeit/chefkoch-mwe/example/cheffile.yml"
+        # Version mit extend ist noch eine Option, aber dafür brauchen wir
+        # ein neueres argparse
+        parser.add_argument('-o', '--option', action='append')
+        arguments = parser.parse_args(arguments)
+        chef = chefkoch.Chefkoch(cheffile, vars(arguments))
+
     HELP_COOK = "Cook something from the scope of your recipe"
 
     @subcmd("cook", help=HELP_COOK)
