@@ -34,7 +34,6 @@ if __name__ == "__main__":
     from logging import *
     from arghandler import *
 
-
     REMOTES = "remotes"
     TOKEN = "token"
     ARG_VERBOSE = {
@@ -98,10 +97,11 @@ if __name__ == "__main__":
     @subcmd("test", help=HELP_TEST)
     def cmd_test(parser, context, arguments):
         parser.description = HELP_TEST
-        # cheffile = input("Path to cheffile: ")
-        cheffile = "/home/wiebke/Arbeit/chefkoch-mwe/example/cheffile.yml"
-        # Version mit extend ist noch eine Option, aber dafür brauchen wir ein neueres argparse
-        parser.add_argument('-o','--option', action='append')
+        cheffile = input("Path to cheffile: ")
+        # cheffile = "/home/wiebke/Arbeit/chefkoch-mwe/example/cheffile.yml"
+        # Version mit extend ist noch eine Option, aber dafür brauchen wir
+        # ein neueres argparse
+        parser.add_argument('-o', '--option', action='append')
         arguments = parser.parse_args(arguments)
         chef = chefkoch.Chefkoch(cheffile, vars(arguments))
 

@@ -11,6 +11,7 @@ import chefkoch.scheduler as scheduler
 from chefkoch.container import YAMLContainer
 import ast
 
+
 class Logger:
     """
     creates a logfile
@@ -77,7 +78,7 @@ class Configuration:
         print(arguments)
         for x in arguments["option"]:
             x = x.split("=")
-            self.items["options"][x[0]]=ast.literal_eval(x[1])
+            self.items["options"][x[0]] = ast.literal_eval(x[1])
         print(self.items)
 
 
@@ -99,8 +100,8 @@ class Chefkoch:
         """
         # aus Testzwecken sind meisten Werte mit null initialisiert
         # self.basePath = cheffile
-        self.cheffileContainer = YAMLContainer(cheffile)
-        self.configuration = Configuration(self.cheffileContainer.options, arguments)
+        self.cheffile = YAMLContainer(cheffile)
+        self.configuration = Configuration(self.cheffile.options, arguments)
         self.recipe = None
         self.fridge = fridge.Fridge(self, self.cheffileContainer.fridge)
         self.logger = None
