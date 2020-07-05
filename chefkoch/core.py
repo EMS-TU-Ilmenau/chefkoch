@@ -103,7 +103,7 @@ class Chefkoch:
         self.cheffile = YAMLContainer(cheffile)
         self.configuration = Configuration(self.cheffile.options, arguments)
         self.recipe = None
-        self.fridge = fridge.Fridge(self, self.cheffileContainer.fridge)
+        self.fridge = fridge.Fridge(self, self.cheffile.fridge)
         self.logger = None
         self.scheduler = None
         print("This is your evil overlord")
