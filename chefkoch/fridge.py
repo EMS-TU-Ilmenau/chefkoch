@@ -2,8 +2,8 @@
 The fridge is responsible for storing the data and steps and checking if
 they are still up-to-date.
 """
-from container import JSONContainer
-import core
+from chefkoch.container import JSONContainer
+import chefkoch.core
 
 
 class Item:

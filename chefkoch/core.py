@@ -3,12 +3,13 @@ Starts and controls the main functionality of Chefkoch.
 It is also responsible for logging everything.
 """
 
-import fridge
-import scheduler
+import chefkoch.fridge as fridge
+import chefkoch.scheduler as scheduler
 # from scheduler import Scheduler
 # import recipe
 # from recipe import Recipe
-
+from chefkoch.container import YAMLContainer
+import ast
 
 class Logger:
     """
@@ -59,9 +60,9 @@ class Configuration:
         returns:
             configuration item
         """
-        pass
+        return this.items[keyname]
 
-    def __init__(self, filename):
+    def __init__(self, filename, arguments):
         """
         Load of configuration of specified in cheffile
 
@@ -70,7 +71,14 @@ class Configuration:
         filename(string):
             file, that specifies configuration
         """
-        self.items
+        self.file = YAMLContainer(filename)
+        self.items = dict()
+        self.items["options"] = self.file.data
+        print(arguments)
+        for x in arguments["option"]:
+            x = x.split("=")
+            self.items["options"][x[0]]=ast.literal_eval(x[1])
+        print(self.items)
 
 
 class Chefkoch:
@@ -78,7 +86,7 @@ class Chefkoch:
     main instance
     """
 
-    def __init__(self, cheffile):
+    def __init__(self, cheffile, arguments):
         """
         Initializes everything according to he Cheffile and the needed
         components
@@ -89,12 +97,15 @@ class Chefkoch:
             specifies path of cheffile
 
         """
-        self.basePath
-        self.configuration
-        self.recipe
-        self.fridge
-        self.logger
-        self.scheduler
+        # aus Testzwecken sind meisten Werte mit null initialisiert
+        # self.basePath = cheffile
+        self.cheffileContainer = YAMLContainer(cheffile)
+        self.configuration = Configuration(self.cheffileContainer.options, arguments)
+        self.recipe = None
+        self.fridge = fridge.Fridge(self, self.cheffileContainer.fridge)
+        self.logger = None
+        self.scheduler = None
+        print("This is your evil overlord")
 
     def cook(self, *targets):
         """
