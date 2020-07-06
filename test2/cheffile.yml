@@ -1,0 +1,8 @@
+  # `recipe` -- the recipe file defines
+  options: "/home/wiebke/Arbeit/chefkoch-mwe/example/options.yml"
+  recipe: "./recipe.yml"
+  flavour: "./flavour.yml"
+  "cuisine": "./cuisine.json"
+  "fridge": "./fridge"
+  "pantry": "./resources"
+  "instructions": "./instructions"
