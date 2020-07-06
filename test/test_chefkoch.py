@@ -49,7 +49,7 @@ class TestChefkoch(unittest.TestCase):
     """
 
     def test_readjson(self):
-        result = chefkoch.readjson("recipe", "test/recipe.json")
+        result = chefkoch.readfile("recipe", "test/recipe.json")
 
     def check_openjson(self, file, assertionFunc):
         # not executed by the test runner but by the test_openjson functions
@@ -128,7 +128,7 @@ class TestRecipe(unittest.TestCase):
             "test 1: Not giving a dict as input to jsonToRecipe"
         ):
             with self.assertRaises(TypeError):
-                result = backbone.jsonToRecipe(None)
+                result = backbone.dictToRecipe(None)
                 self.assertEqual(
                     err, "Function jsonToRecipe expects dictionary as input."
                 )
@@ -137,7 +137,7 @@ class TestRecipe(unittest.TestCase):
         with self.subTest(
             "test 2: correct format with additional information still works"
         ):
-            result = backbone.jsonToRecipe(correct_data)
+            result = backbone.dictToRecipe(correct_data)
             self.assertIsInstance(result, backbone.Recipe)
             self.assertEqual(result.nodes[0].inputs["b"], "flavour.b")
 
@@ -146,7 +146,7 @@ class TestRecipe(unittest.TestCase):
             data = correct_data
             data["nodes"][0].pop("inputs")
             with self.assertRaises(KeyError) as err:
-                result = backbone.jsonToRecipe(data)
+                result = backbone.dictToRecipe(data)
                 self.assertEqual(
                     err, "Error while parsing json data into recipe object."
                 )
@@ -158,7 +158,7 @@ class TestRecipe(unittest.TestCase):
         ):
             data = correct_data
             data["nodes"][0]["inputs"] = {"a": ["first", "second"]}
-            result = backbone.jsonToRecipe(data)
+            result = backbone.dictToRecipe(data)
             self.assertIsNotNone(result)
 
         # test 4: Annoying the StepSource class
@@ -166,7 +166,7 @@ class TestRecipe(unittest.TestCase):
             data = correct_data
             data["nodes"][0]["stepsource"] = "no_built-in_function"
             with self.assertRaises(TypeError):
-                result = backbone.jsonToRecipe(data)
+                result = backbone.dictToRecipe(data)
 
     def test_inputIntegrity(self):
         # recipe with two outputs with same name
@@ -187,7 +187,7 @@ class TestRecipe(unittest.TestCase):
                     },
                 ]
             }
-            recipe = backbone.jsonToRecipe(data)
+            recipe = backbone.dictToRecipe(data)
             with self.assertRaises(NameError) as err:
                 recipe.inputIntegrity()
                 self.assertTrue(str(err).startswith("The output"))
@@ -225,7 +225,7 @@ class TestRecipe(unittest.TestCase):
                     },
                 ]
             }
-            recipe = backbone.jsonToRecipe(data)
+            recipe = backbone.dictToRecipe(data)
             recipe.inputIntegrity()
             self.assertEqual(len(recipe.nodes), 4)
 
@@ -264,7 +264,7 @@ class TestRecipe(unittest.TestCase):
                     },
                 ]
             }
-            recipe = backbone.jsonToRecipe(data)
+            recipe = backbone.dictToRecipe(data)
             recipe.inputIntegrity()
             self.assertEqual(len(recipe.nodes), 2)
 
@@ -280,7 +280,7 @@ class TestRecipe(unittest.TestCase):
                     }
                 ]
             }
-            recipe = backbone.jsonToRecipe(data)
+            recipe = backbone.dictToRecipe(data)
             recipe.inputIntegrity()
             self.assertEqual(len(recipe.nodes), 1)
 
@@ -319,7 +319,7 @@ class TestRecipe(unittest.TestCase):
                     },
                 ]
             }
-            recipe = backbone.jsonToRecipe(data)
+            recipe = backbone.dictToRecipe(data)
             result = recipe.findCircles()
             print(result)
 
@@ -540,7 +540,7 @@ class TestFlavour(unittest.TestCase):
             "test 1: Not giving a dict as input to jsonToRecipe"
         ):
             with self.assertRaises(TypeError) as err:
-                result = backbone.jsonToFlavour(None)
+                result = backbone.dictToFlavour(None)
                 self.assertEqual(
                     err,
                     "Function jsonToFlavour expects a dictionary as input.",
@@ -550,7 +550,7 @@ class TestFlavour(unittest.TestCase):
         with self.subTest(
             "test 2: correct format with additional information still works"
         ):
-            result = backbone.jsonToFlavour(data)
+            result = backbone.dictToFlavour(data)
             self.assertIsInstance(result, backbone.Flavour)
             self.assertEqual(result["singleVal"].values[0], 10.33e3)
             self.assertEqual(result["fileVal"].values[0].file, "test.log")
@@ -559,7 +559,7 @@ class TestFlavour(unittest.TestCase):
         # test 3: File does not exist
         with self.subTest("test 3: File does not exist"):
             data["fileVal"]["file"] = "no_existing_file.txt"
-            result = backbone.jsonToFlavour(data)
+            result = backbone.dictToFlavour(data)
             # todo how can I check if there was a warning?
             # todo delete empty parameters until following:
             with self.assertRaises(KeyError):
@@ -568,9 +568,9 @@ class TestFlavour(unittest.TestCase):
         # test 4: Annoying the Input integrity tests
         with self.subTest("test 4: Giving no known name as type"):
             data["fileVal"]["type"] = "no actual type"
-            result = backbone.jsonToFlavour(data)
+            result = backbone.dictToFlavour(data)
 
         # test 5: incorrect format
         with self.subTest("test 5: Having no type field"):
             data["fileVal"].pop("type")
-            result = backbone.jsonToFlavour(data)
+            result = backbone.dictToFlavour(data)
