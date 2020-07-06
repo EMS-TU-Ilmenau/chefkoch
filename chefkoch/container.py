@@ -19,7 +19,8 @@ class JSONContainer:
 
     def __init__(self, filename: str = None):
         """
-        Initializes the container from file if path is given, else create empty Container
+        Initializes the container from file if path is given,
+        else create empty Container
 
         :param filename:
         """
