@@ -4,7 +4,8 @@ they are still up-to-date.
 """
 from chefkoch.container import JSONContainer
 import chefkoch.core
-
+import os
+import warnings
 
 class Item:
     """
@@ -54,8 +55,9 @@ class Resource(Item):
     Resources used to create a specific item
     """
 
-    def __init__(self):
+    def __init__(self, basePath):
         pass
+        
 
 
 class FridgeShelf:
@@ -78,7 +80,7 @@ class Fridge:
 
     """
 
-    def __init__(self, chef, basePath):
+    def __init__(self, chef, basePath, resourcePath):
         """
         Instantiate Directory as Fridge
 
@@ -92,9 +94,26 @@ class Fridge:
 
         """
         self.chef = chef
-        self.basePath = basePath
         self.shelfs = dict()
-        pass
+        self.basePath = basePath
+        if not os.path.exists(basePath):
+            os.makedirs(basePath)
+        else:
+            warnings.warn(
+                    "there already exists a directory: " +
+                    self.basePath
+                )
+        # anlegen des Ordners für resourcen
+        # keine Ahnung, ob der da bleibt
+        self.resourcePath = resourcePath
+        if not os.path.exists(resourcePath):
+            os.makedirs(resourcePath)
+        else:
+            warnings.warn(
+                "there already exists a directory: " +
+                self.resourcePath
+            )
+        
 
     def update():
         """

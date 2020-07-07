@@ -87,23 +87,25 @@ class Chefkoch:
     main instance
     """
 
-    def __init__(self, cheffile, arguments):
+    def __init__(self, path, arguments):
         """
         Initializes everything according to he Cheffile and the needed
         components
 
         Parameters
         ----------
-        cheffile(string):
-            specifies path of cheffile
+        path(string):
+            specifies path of project directory
 
         """
         # aus Testzwecken sind meisten Werte mit null initialisiert
         # self.basePath = cheffile
-        self.cheffile = YAMLContainer(cheffile)
+        self.cheffile = YAMLContainer((path+"/cheffile.yml"))
         self.configuration = Configuration(self.cheffile["options"], arguments)
         self.recipe = None
-        self.fridge = fridge.Fridge(self, self.cheffile["fridge"])
+        # veraltete Version mit Festlegungen für fridge und pantry
+        self.fridge = fridge.Fridge(self, (path+"/fridge"), 
+        (path+"/resources"))
         self.logger = None
         self.scheduler = None
         print("This is your evil overlord")
