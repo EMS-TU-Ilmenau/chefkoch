@@ -100,12 +100,12 @@ class Chefkoch:
         """
         # aus Testzwecken sind meisten Werte mit null initialisiert
         # self.basePath = cheffile
-        self.cheffile = YAMLContainer((path+"/cheffile.yml"))
+        self.cheffile = YAMLContainer((path + "/cheffile.yml"))
         self.configuration = Configuration(self.cheffile["options"], arguments)
         self.recipe = None
         # veraltete Version mit Festlegungen für fridge und pantry
-        self.fridge = fridge.Fridge(self, (path+"/fridge"), 
-        (path+"/resources"))
+        self.fridge = fridge.Fridge(self, (path + "/fridge"),
+                                    (path + "/resources"))
         self.logger = None
         self.scheduler = None
         print("This is your evil overlord")

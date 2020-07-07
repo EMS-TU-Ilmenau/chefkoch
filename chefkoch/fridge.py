@@ -7,6 +7,7 @@ import chefkoch.core
 import os
 import warnings
 
+
 class Item:
     """
     An item represent a piece of data, either an input or an output of a step
@@ -57,7 +58,6 @@ class Resource(Item):
 
     def __init__(self, basePath):
         pass
-        
 
 
 class FridgeShelf:
@@ -100,9 +100,9 @@ class Fridge:
             os.makedirs(basePath)
         else:
             warnings.warn(
-                    "there already exists a directory: " +
-                    self.basePath
-                )
+                "there already exists a directory: "
+                + self.basePath
+            )
         # anlegen des Ordners für resourcen
         # keine Ahnung, ob der da bleibt
         self.resourcePath = resourcePath
@@ -110,10 +110,9 @@ class Fridge:
             os.makedirs(resourcePath)
         else:
             warnings.warn(
-                "there already exists a directory: " +
-                self.resourcePath
+                "there already exists a directory: "
+                + self.resourcePath
             )
-        
 
     def update():
         """
