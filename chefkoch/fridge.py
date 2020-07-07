@@ -13,9 +13,8 @@ class Item:
 
     def __init__(self, shelf, name):
         self.name = name
-        # self.refLog = JSONContainer()
-        # self.refLog.save(name)
-        # voruebergehend
+        self.refLog = JSONContainer()
+        self.refLog.save(name)
         self.shelf = shelf
 
     def createHash():

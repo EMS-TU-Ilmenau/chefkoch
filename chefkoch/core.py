@@ -75,10 +75,10 @@ class Configuration:
         self.file = YAMLContainer(filename)
         self.items = dict()
         self.items["options"] = self.file.data
-        print(arguments)
-        for x in arguments["option"]:
-            x = x.split("=")
-            self.items["options"][x[0]] = ast.literal_eval(x[1])
+        if (arguments['option'] is not None):
+            for x in arguments["option"]:
+                x = x.split("=")
+                self.items["options"][x[0]] = ast.literal_eval(x[1])
         print(self.items)
 
 
@@ -101,9 +101,9 @@ class Chefkoch:
         # aus Testzwecken sind meisten Werte mit null initialisiert
         # self.basePath = cheffile
         self.cheffile = YAMLContainer(cheffile)
-        self.configuration = Configuration(self.cheffile.options, arguments)
+        self.configuration = Configuration(self.cheffile["options"], arguments)
         self.recipe = None
-        self.fridge = fridge.Fridge(self, self.cheffile.fridge)
+        self.fridge = fridge.Fridge(self, self.cheffile["fridge"])
         self.logger = None
         self.scheduler = None
         print("This is your evil overlord")
