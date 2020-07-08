@@ -104,8 +104,7 @@ class Chefkoch:
         self.configuration = Configuration(self.cheffile["options"], arguments)
         self.recipe = None
         # veraltete Version mit Festlegungen für fridge und pantry
-        self.fridge = fridge.Fridge(self, (path + "/fridge"),
-                                    (path + "/resources"))
+        self.fridge = fridge.Fridge(self, path)
         self.logger = None
         self.scheduler = None
         print("This is your evil overlord")
