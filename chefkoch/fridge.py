@@ -4,6 +4,8 @@ they are still up-to-date.
 """
 from chefkoch.container import JSONContainer
 import chefkoch.core
+import os
+import warnings
 
 
 class Item:
@@ -12,19 +14,21 @@ class Item:
     """
 
     def __init__(self, shelf, name):
-        self.name = name
-        # self.refLog = JSONContainer()
-        # self.refLog.save(name)
-        # voruebergehend
+        # zugeordneter Shelf
         self.shelf = shelf
+        # Name + Pfad anlegen
+        self.name = (self.shelf.fridge.basePath + "/fridge/" + name + ".json")
+        # legt passende JSON an
+        self.refLog = JSONContainer()
+        self.refLog.save(self.name)
 
-    def createHash():
+    def createHash(self):
         """
         create a hashfile for the main file object
         """
         pass
 
-    def checkHash():
+    def checkHash(self):
         """
         Check if the hashfile is still valid
 
@@ -36,7 +40,7 @@ class Item:
         """
         pass
 
-    def check():
+    def check(self):
         """
         Checks if the file and it's refLog exists and if the refLog itself is
         unchanged
@@ -47,7 +51,10 @@ class Item:
             true,....
 
         """
-        pass
+        if (os.path.isfile(self.name + ".json")):
+            return True
+        else:
+            return False
 
 
 class Resource(Item):
@@ -55,7 +62,7 @@ class Resource(Item):
     Resources used to create a specific item
     """
 
-    def __init__(self):
+    def __init__(self, basePath):
         pass
 
 
@@ -69,7 +76,7 @@ class FridgeShelf:
         self.fridge = fridge
         pass
 
-    def find():
+    def find(self):
         pass
 
 
@@ -93,11 +100,32 @@ class Fridge:
 
         """
         self.chef = chef
-        self.basePath = basePath
         self.shelfs = dict()
-        pass
+        self.basePath = basePath
+        if not os.path.exists(basePath + "/fridge"):
+            os.makedirs(basePath + "/fridge")
+        else:
+            warnings.warn(
+                "there already exists a directory: "
+                + self.basePath
+            )
+        # anlegen des Ordners für resourcen
+        # keine Ahnung, ob der da bleibt
+        if not os.path.exists(basePath + "/resource"):
+            os.makedirs(basePath + "/resource")
+        else:
+            warnings.warn(
+                "there already exists a directory: "
+                + self.basePath
+            )
 
-    def update():
+        # Testzwecke
+        shelf = FridgeShelf(self)
+        self.shelfs["test"] = shelf
+        self.shelfs["test"].items["Titem"] = Item(shelf, "A")
+        print(self.shelfs["test"].items["Titem"].check())
+
+    def update(self):
         """
         Updates the internal item map
         """

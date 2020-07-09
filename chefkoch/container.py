@@ -53,14 +53,14 @@ class JSONContainer:
         json_object = json.dumps(self.data, indent=4)
 
         # Writing to sample.json
-        with open("sample.json", "w") as outfile:
+        with open(filename, "w") as outfile:
             outfile.write(json_object)
             outfile.close()
 
 
 class YAMLContainer:
     """
-    A Container for JSON Files
+    A Container for YAML Files
     """
 
     def __init__(self, filename):
@@ -96,6 +96,7 @@ class YAMLContainer:
         """
         f = open(filename, "w")
         f.write(yaml.dump(self.data))
+        f.close()
 
 
 # import chefkoch.container as cont
