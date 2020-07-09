@@ -3,6 +3,7 @@ Definition of the different simulation steps available.
 """
 import yaml
 import json
+import zlib
 
 
 class JSONContainer:
@@ -56,6 +57,15 @@ class JSONContainer:
         with open(filename, "w") as outfile:
             outfile.write(json_object)
             outfile.close()
+
+    def hash(self):
+        """
+        save Container to hashfile
+        """
+        json_object = json.dumps(self.data, indent=4)
+        # Problem vllt wegen Kollisionen
+        hashName = zlib.adler32(json_object.encode('utf-8'))
+        return str(hashName)
 
 
 class YAMLContainer:

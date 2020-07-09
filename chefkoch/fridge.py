@@ -4,8 +4,10 @@ they are still up-to-date.
 """
 from chefkoch.container import JSONContainer
 import chefkoch.core
+import chefkoch.tarball
 import os
 import warnings
+import zlib
 
 
 class Item:
@@ -13,19 +15,24 @@ class Item:
     An item represent a piece of data, either an input or an output of a step
     """
 
-    def __init__(self, shelf, name):
+    def __init__(self, shelf):
         # zugeordneter Shelf
         self.shelf = shelf
-        # Name + Pfad anlegen
-        self.name = (self.shelf.fridge.basePath + "/fridge/" + name + ".json")
-        # legt passende JSON an
-        self.refLog = JSONContainer()
-        self.refLog.save(self.name)
+        # legt passenden JSON-Container an
+        # muss wahrscheinlich nochmal ausgelagert werden
+        if (True):  # falls es ein neuer Container ist
+            self.refLog = JSONContainer()
+            self.refLog["test"] = "hua"
+            self.hashName = self.refLog.hash()
+            self.refLog.save((self.shelf.path + "/" + self.hashName + ".json"))
+        else:  # ansonsten neuen Container
+            self.refLog = JSONContainer()
 
     def createHash(self):
         """
-        create a hashfile for the main file object
+        create a hashfile for the dataset
         """
+
         pass
 
     def checkHash(self):
@@ -40,6 +47,14 @@ class Item:
         """
         pass
 
+    def jsonHash(self, input):
+        """
+        makes a hash over the jsonfile, to check if it already exists
+        """
+        hashName = zlib.adler32(json_object.encode('utf-8'))
+        # return str(hashName)
+        return None
+
     def check(self):
         """
         Checks if the file and it's refLog exists and if the refLog itself is
@@ -51,7 +66,7 @@ class Item:
             true,....
 
         """
-        if (os.path.isfile(self.name + ".json")):
+        if (os.path.isfile(self.shelf.path + "/" + self.hashName + ".json")):
             return True
         else:
             return False
@@ -71,10 +86,17 @@ class FridgeShelf:
     A container for items of a similar kind
     """
 
-    def __init__(self, fridge):
+    def __init__(self, fridge, name):
         self.items = dict()
         self.fridge = fridge
-        pass
+        self.path = fridge.basePath + "/fridge/" + name
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+        else:
+            warnings.warn(
+                "there already exists a directory: "
+                + self.path
+            )
 
     def find(self):
         pass
@@ -109,20 +131,11 @@ class Fridge:
                 "there already exists a directory: "
                 + self.basePath
             )
-        # anlegen des Ordners für resourcen
-        # keine Ahnung, ob der da bleibt
-        if not os.path.exists(basePath + "/resource"):
-            os.makedirs(basePath + "/resource")
-        else:
-            warnings.warn(
-                "there already exists a directory: "
-                + self.basePath
-            )
 
         # Testzwecke
-        shelf = FridgeShelf(self)
+        shelf = FridgeShelf(self, "A")
         self.shelfs["test"] = shelf
-        self.shelfs["test"].items["Titem"] = Item(shelf, "A")
+        self.shelfs["test"].items["Titem"] = Item(shelf)
         print(self.shelfs["test"].items["Titem"].check())
 
     def update(self):
