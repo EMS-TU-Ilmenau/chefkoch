@@ -519,8 +519,8 @@ class Param:
 
     def appendFileParam(self, entry):
         """
-        Appends a file parameter given in the JSON or YAML data to the Param.values
-        list.
+        Appends a file parameter given in the JSON or YAML data to the
+        Param.values list.
 
         Parameters
         ----------
@@ -559,7 +559,8 @@ class Param:
 
     def appendValuesFromRange(self, entry):
         """
-        Appends all values within a range given in the JSON or YAML data to Param.values
+        Appends all values within a range given in the JSON or YAML data to
+        Param.values
 
         Parameters
         ----------
@@ -620,8 +621,8 @@ class Param:
 
     def appendEntry(self, entry):
         """
-        Appends a single entry within the JSON or YAML data received from the flavour
-        file.
+        Appends a single entry within the JSON or YAML data received from the
+        flavour file.
 
         Parameters
         ----------
