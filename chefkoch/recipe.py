@@ -40,6 +40,63 @@ from .logs import *
 BUILT_INS = ["collect"]
 
 
+class Plan:
+    """
+
+    """
+
+    nodes: list = []
+    constructiontree: dict = {}
+
+    def __init__(self, recipe, *targets):
+        """
+        Initialize Plan Object over a given recipe and calculation targets
+        :param recipe: recipe object
+        :param targets: calculation targets given as string (name of the node),
+                        int (list index of the node in recipe object)
+                        or node object
+        """
+        # targets = []
+        if len(targets) == 0:
+            self.nodes = recipe
+        else:
+            for target in targets:
+                if type(target) == str or type(target) == int:
+                    targetnode = recipe[target]
+                elif type(target) == Node:
+                    targetnode = target
+                self.constructiontree[targetnode.name] = self.createConstructionTree(
+                    recipe, target
+                )
+
+    def createConstructionTree(self, recipe, target):
+        """
+        build recursively a construction tree based on a recipe and a target
+        :param recipe:
+        :param target: calculation target given as string (name of the node),
+                        int (list index of the node in recipe object)
+                        or node object
+        :return:
+        """
+        constructiontree = {}
+        if type(target) == str or type(target) == int:
+            node = recipe[target]
+        elif type(target) == Node:
+            node = target
+        if node not in self.nodes:
+            self.nodes.append(node)
+        for inputKey, inputValue in node.inputs.items():
+            children = recipe.inputIsOutput(inputValue)
+            for child in children:
+                if child.name not in self.constructiontree.keys():
+                    constructiontree[inputValue] = self.createConstructionTree(
+                        recipe, child
+                    )
+                else:
+                    constructiontree[inputValue] = self.constructiontree[child.name]
+        return constructiontree
+
+
 class Recipe:
     """
     A recipe is the workflow representation of a simulation. It is struktured
@@ -63,6 +120,52 @@ class Recipe:
         # TODO: Making sure, that nodelist is a list of type Node
         # TODO: Therefore initialise each Node in nodelist as an
         # instance of class Node.
+
+    def __getitem__(self, item):
+        """
+
+        :param item:
+        :return:
+        """
+        if type(item) == int:
+            return self.nodes[item]
+        if type(item) == str:
+            for node in self.nodes:
+                if node.name == item:
+                    return node
+
+    def getPrerequisits(self, item):
+        """
+        Returns all nodes required to calculate a given item of the recipe
+        :param item:
+        :return: List of nodes
+        """
+        ret = []
+        for inputKey, inputValue in (
+            self[item].inputs.items() if type(item) == int else item.inputs.items()
+        ):
+            prerequisites = self.inputIsOutput(inputValue)
+            if len(prerequisites) > 0:
+                ret.extend(prerequisites)
+                for i in prerequisites:
+                    # print("i is: ")
+                    # print(i.name)
+                    ret.extend(self.getPrerequisits(i))
+        return ret
+
+    def inputIsOutput(self, input):
+        """
+        Checks if given input is also output of other nodes and returns them
+        :param input: name of the ipnut
+        :return: list of nodes
+        """
+        ret = []
+        for node in self.nodes:
+            for outputKey, outputValue in node.outputs.items():
+                if input == outputValue:
+                    if node not in ret:
+                        ret.append(node)
+        return ret
 
     def inputIsValid(self, input):
         """
@@ -204,9 +307,7 @@ class Recipe:
         namesOnTheWay = ""
         for nodeOTW in nodesOnTheWay:
             namesOnTheWay = namesOnTheWay + " " + nodeOTW.name
-        logger.debug(
-            "Executing rDFS for " + node.name + " and " + namesOnTheWay
-        )
+        logger.debug("Executing rDFS for " + node.name + " and " + namesOnTheWay)
         if node in nodesOnTheWay:
             warnings.warn(
                 "The recipe contains a circle along "
@@ -225,15 +326,10 @@ class Recipe:
             for nextNode in self.nodes:
                 # to search for the values in a dict instead of their keys
                 # we need to invert it
-                invertedInputDict = dict(
-                    map(reversed, nextNode.inputs.items())
-                )
+                invertedInputDict = dict(map(reversed, nextNode.inputs.items()))
                 if output in invertedInputDict:
                     logger.debug(
-                        "Taking the edge from "
-                        + node.name
-                        + " to "
-                        + nextNode.name
+                        "Taking the edge from " + node.name + " to " + nextNode.name
                     )
                     if self.recursiveDFS(nextNode, nodesOnTheWay):
                         return True  # a circle was found
@@ -336,9 +432,7 @@ class Name:
             is_unicode = isinstance(name, unicode)
         except NameError as mimimi:
             logger.debug(mimimi)
-            logger.debug(
-                "You are using python 3, but don't worry, we make it work."
-            )
+            logger.debug("You are using python 3, but don't worry, we make it work.")
             pass
         if not (isinstance(name, str) or is_unicode):
             raise TypeError("The name of a node must be a string.")
@@ -541,8 +635,7 @@ class Param:
             # KeyError because the key-field is missing, in this case ignore
             # todo: different possible exceptions
             logger.exception(
-                "Either the file or the key field of the "
-                + "entry are missing."
+                "Either the file or the key field of the " + "entry are missing."
             )
             # only abort if the file is missing. Missing keyword is possible.
             try:
@@ -578,9 +671,7 @@ class Param:
             step = entry["step"]
         except KeyError as err:
             raise KeyError(
-                "The start, stop or step field of "
-                + str(entry)
-                + "are missing."
+                "The start, stop or step field of " + str(entry) + "are missing."
             )
         valid_start = isinstance(i, int) or isinstance(i, float)
         valid_stop = isinstance(stop, int) or isinstance(stop, float)
@@ -639,9 +730,7 @@ class Param:
             return
         except TypeError as err:
             # entry is not a dictionary
-            logger.debug(
-                "The entry is not a dictionary. It is appended normally."
-            )
+            logger.debug("The entry is not a dictionary. It is appended normally.")
             self.values.append(entry)
             return
         # if there is a type to the entry, test if it is known
@@ -763,9 +852,7 @@ def openyaml(filename):
             data = yaml.load(f, Loader=yaml.SafeLoader)
             # That's the whole file at once. Hope files dont get too big
         except ValueError as err:
-            raise ValueError(
-                "This is no valid YAML file."
-            )
+            raise ValueError("This is no valid YAML file.")
 
     return data
 
@@ -798,10 +885,7 @@ def dictToRecipe(data):
     for node in data["nodes"]:
         try:
             newNode = Node(
-                node["name"],
-                node["inputs"],
-                node["outputs"],
-                node["stepsource"],
+                node["name"], node["inputs"], node["outputs"], node["stepsource"],
             )
             recipe.nodes.append(newNode)
         except KeyError as err:
@@ -835,9 +919,7 @@ def dictToFlavour(data):
     # should be a warning and this parameter should be skipped instead of
     # having a random key error
     if not isinstance(data, dict):
-        raise TypeError(
-            "Function dictToFlavour expects a dictionary as input."
-        )
+        raise TypeError("Function dictToFlavour expects a dictionary as input.")
     flavour = Flavour({})
     for param in data:
         try:
@@ -857,9 +939,7 @@ def dictToFlavour(data):
         except TypeError as errorMessage:
             raise TypeError(errorMessage)
         except Exception as err:
-            raise Exception(
-                "Error while parsing data into flavour object."
-            )
+            raise Exception("Error while parsing data into flavour object.")
 
     return flavour
 
@@ -916,8 +996,7 @@ def readfile(type, filename):
         return readflavour(filename)
     else:
         raise TypeError(
-            "The function readyaml only takes 'recipe' or"
-            + "'flavour' as type."
+            "The function readyaml only takes 'recipe' or" + "'flavour' as type."
         )
 
 
