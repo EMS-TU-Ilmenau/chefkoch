@@ -99,9 +99,7 @@ if __name__ == "__main__":
         parser.description = HELP_TEST
         # cheffile = input("Path to your projektfolder: ")
         cheffile = "./test2"
-        # Version mit action='extend' ist noch eine Option,
-        # aber dafür brauchen wir ein neueres argparse
-        parser.add_argument('-o', '--option', action='append')
+        parser.add_argument("-o", "--option", action="append")
         arguments = parser.parse_args(arguments)
         print(vars(arguments))
         chef = chefkoch.Chefkoch(cheffile, vars(arguments))

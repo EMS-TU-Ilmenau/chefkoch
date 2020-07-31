@@ -54,7 +54,7 @@ class TestChefkoch(unittest.TestCase):
     def check_openjson(self, file, assertionFunc):
         # not executed by the test runner but by the test_openjson functions
         # inside the TestRecipe class and the TestFlavour class
-        if (sys.version_info.micro > 8 or sys.version_info.minor > 6):
+        if sys.version_info.micro > 8 or sys.version_info.minor > 6:
             # test 1: valid JSON recipe file.
             with self.subTest("test 1: Valid JSON file.", file=file):
                 result = backbone.openjson(file)
@@ -66,8 +66,9 @@ class TestChefkoch(unittest.TestCase):
                 with self.assertRaises(ValueError) as err:
                     result = backbone.openjson("test/broken_for_testcase.json")
                     self.assertEqual(
-                        err, "This is no valid JSON file. "
-                        + "Try deleting comments."
+                        err,
+                        "This is no valid JSON file. "
+                        + "Try deleting comments.",
                     )
 
             # test 3: file path wrong/ file does not exist

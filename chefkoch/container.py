@@ -60,12 +60,17 @@ class JSONContainer:
 
     def hash(self):
         """
-        save Container to hashfile
+        compute hashname over data
         """
         json_object = json.dumps(self.data, indent=4)
         # Problem vllt wegen Kollisionen
-        hashName = zlib.adler32(json_object.encode('utf-8'))
+        hashName = zlib.adler32(json_object.encode("utf-8"))
         return str(hashName)
+
+    def __eq__(self, container):
+        # hier den Operator für die Klasse überschreiben
+        # falls das eine gute Idee ist
+        return self.data == container.data
 
 
 class YAMLContainer:

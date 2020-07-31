@@ -5,11 +5,13 @@ It is also responsible for logging everything.
 
 import chefkoch.fridge as fridge
 import chefkoch.scheduler as scheduler
+
 # from scheduler import Scheduler
 # import recipe
 # from recipe import Recipe
 from chefkoch.container import YAMLContainer
 import ast
+import chefkoch.step as step
 
 
 class Logger:
@@ -75,7 +77,7 @@ class Configuration:
         self.file = YAMLContainer(filename)
         self.items = dict()
         self.items["options"] = self.file.data
-        if (arguments['option'] is not None):
+        if arguments["option"] is not None:
             for x in arguments["option"]:
                 x = x.split("=")
                 self.items["options"][x[0]] = ast.literal_eval(x[1])
@@ -97,13 +99,16 @@ class Chefkoch:
         path(string):
             specifies path of project directory
 
+        arguments(args*):
+            extra configuration settings, specified in commandline
+
         """
         # aus Testzwecken sind meisten Werte mit null initialisiert
         # self.basePath = cheffile
         self.cheffile = YAMLContainer((path + "/cheffile.yml"))
         self.configuration = Configuration(self.cheffile["options"], arguments)
         self.recipe = None
-        # veraltete Version mit Festlegungen für fridge und pantry
+        # festgelegte Stelle für Fridge, durch Config mglweiser änderbar
         self.fridge = fridge.Fridge(self, path)
         self.logger = None
         self.scheduler = None
@@ -123,7 +128,7 @@ class Chefkoch:
 
 
 class Name(str):
-    SEPARATOR = '.'
+    SEPARATOR = "."
 
     def __init__(self, *tokens):
         pass

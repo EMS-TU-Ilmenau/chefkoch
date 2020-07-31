@@ -65,9 +65,8 @@ class Plan:
                     targetnode = recipe[target]
                 elif type(target) == Node:
                     targetnode = target
-                self.constructiontree[targetnode.name] = self.createConstructionTree(
-                    recipe, target
-                )
+                tree = self.createConstructionTree(recipe, target)
+                self.constructiontree[targetnode.name] = tree
 
     def createConstructionTree(self, recipe, target):
         """
@@ -93,7 +92,9 @@ class Plan:
                         recipe, child
                     )
                 else:
-                    constructiontree[inputValue] = self.constructiontree[child.name]
+                    constructiontree[inputValue] = self.constructiontree[
+                        child.name
+                    ]
         return constructiontree
 
 
@@ -142,7 +143,9 @@ class Recipe:
         """
         ret = []
         for inputKey, inputValue in (
-            self[item].inputs.items() if type(item) == int else item.inputs.items()
+            self[item].inputs.items()
+            if type(item) == int
+            else item.inputs.items()
         ):
             prerequisites = self.inputIsOutput(inputValue)
             if len(prerequisites) > 0:
@@ -307,7 +310,9 @@ class Recipe:
         namesOnTheWay = ""
         for nodeOTW in nodesOnTheWay:
             namesOnTheWay = namesOnTheWay + " " + nodeOTW.name
-        logger.debug("Executing rDFS for " + node.name + " and " + namesOnTheWay)
+        logger.debug(
+            "Executing rDFS for " + node.name + " and " + namesOnTheWay
+        )
         if node in nodesOnTheWay:
             warnings.warn(
                 "The recipe contains a circle along "
@@ -326,10 +331,15 @@ class Recipe:
             for nextNode in self.nodes:
                 # to search for the values in a dict instead of their keys
                 # we need to invert it
-                invertedInputDict = dict(map(reversed, nextNode.inputs.items()))
+                invertedInputDict = dict(
+                    map(reversed, nextNode.inputs.items())
+                )
                 if output in invertedInputDict:
                     logger.debug(
-                        "Taking the edge from " + node.name + " to " + nextNode.name
+                        "Taking the edge from "
+                        + node.name
+                        + " to "
+                        + nextNode.name
                     )
                     if self.recursiveDFS(nextNode, nodesOnTheWay):
                         return True  # a circle was found
@@ -432,7 +442,9 @@ class Name:
             is_unicode = isinstance(name, unicode)
         except NameError as mimimi:
             logger.debug(mimimi)
-            logger.debug("You are using python 3, but don't worry, we make it work.")
+            logger.debug(
+                "You are using python 3, but don't worry, we make it work."
+            )
             pass
         if not (isinstance(name, str) or is_unicode):
             raise TypeError("The name of a node must be a string.")
@@ -635,7 +647,8 @@ class Param:
             # KeyError because the key-field is missing, in this case ignore
             # todo: different possible exceptions
             logger.exception(
-                "Either the file or the key field of the " + "entry are missing."
+                "Either the file or the key field of the "
+                + "entry are missing."
             )
             # only abort if the file is missing. Missing keyword is possible.
             try:
@@ -672,7 +685,9 @@ class Param:
             step = entry["step"]
         except KeyError as err:
             raise KeyError(
-                "The start, stop or step field of " + str(entry) + "are missing."
+                "The start, stop or step field of "
+                + str(entry)
+                + "are missing."
             )
         valid_start = isinstance(i, int) or isinstance(i, float)
         valid_stop = isinstance(stop, int) or isinstance(stop, float)
@@ -731,7 +746,9 @@ class Param:
             return
         except TypeError as err:
             # entry is not a dictionary
-            logger.debug("The entry is not a dictionary. It is appended normally.")
+            logger.debug(
+                "The entry is not a dictionary. It is appended normally."
+            )
             self.values.append(entry)
             return
         # if there is a type to the entry, test if it is known
@@ -886,7 +903,10 @@ def dictToRecipe(data):
     for node in data["nodes"]:
         try:
             newNode = Node(
-                node["name"], node["inputs"], node["outputs"], node["stepsource"],
+                node["name"],
+                node["inputs"],
+                node["outputs"],
+                node["stepsource"],
             )
             recipe.nodes.append(newNode)
         except KeyError as err:
@@ -920,7 +940,9 @@ def dictToFlavour(data):
     # should be a warning and this parameter should be skipped instead of
     # having a random key error
     if not isinstance(data, dict):
-        raise TypeError("Function dictToFlavour expects a dictionary as input.")
+        raise TypeError(
+            "Function dictToFlavour expects a dictionary as input."
+        )
     flavour = Flavour({})
     for param in data:
         try:
@@ -997,7 +1019,8 @@ def readfile(type, filename):
         return readflavour(filename)
     else:
         raise TypeError(
-            "The function readyaml only takes 'recipe' or" + "'flavour' as type."
+            "The function readyaml only takes 'recipe' or"
+            + "'flavour' as type."
         )
 
 
