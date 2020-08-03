@@ -63,7 +63,7 @@ class Configuration:
         returns:
             configuration item
         """
-        return this.items[keyname]
+        return self.items["options"][keyname]
 
     def __init__(self, filename, arguments):
         """

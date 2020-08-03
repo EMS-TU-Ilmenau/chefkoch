@@ -5,6 +5,7 @@ they are still up-to-date.
 from chefkoch.container import JSONContainer
 import chefkoch.core
 import chefkoch.tarball
+import chefkoch.item
 import os
 import warnings
 import zlib
@@ -33,19 +34,16 @@ class Fridge:
         self.chef = chef
         self.shelfs = dict()
         self.basePath = basePath
-        if not os.path.exists(basePath + "/fridge"):
-            os.makedirs(basePath + "/fridge")
-        else:
-            warnings.warn("there already exists a directory: " + self.basePath)
+        self.makeDirectory(self.basePath + "/fridge")
         """
         # Testzwecke
-        shelf = FridgeShelf(self, "A")
+        shelf = ItemShelf(self, "A")
         self.shelfs["test"] = shelf
-        self.shelfs["test"].items["Titem"] = Item(shelf)
+        self.shelfs["test"].items["Titem"] = chefkoch.item.Resource(shelf)
         # print(self.shelfs["test"].items["Titem"].check())
-        shelf = FridgeShelf(self, "B")
+        shelf = ItemShelf(self, "B")
         self.shelfs["test"] = shelf
-        self.shelfs["test"].items["Titem1"] = Item(shelf)
+        self.shelfs["test"].items["Titem1"] = chefkoch.item.Resource(shelf)
         # print(self.shelfs["test"].items["Titem"].refLog
         # == self.shelfs["test"].items["Titem"].refLog)
         """
@@ -56,11 +54,27 @@ class Fridge:
         """
         pass
 
-    def checkItem(self, name, container):
+    def checkItem(self, item):
         """
         WIP
+        Ist diese Funktion überhaupt sinnvoll?
         """
         pass
+
+    def makeDirectory(self, path):
+        """
+        creates the directories, if the option is enabled
+
+        Parameters
+        ----------
+        path(str):
+            describes path to the directory
+        """
+        if self.chef.configuration["directory"]:
+            if not os.path.exists(path):
+                os.makedirs(path)
+            else:
+                warnings.warn("there already exists a directory: " + path)
 
 
 class Shelf(ABC):
@@ -72,17 +86,14 @@ class Shelf(ABC):
         self.items = dict()
         self.fridge = fridge
         self.path = fridge.basePath + "/fridge/" + str(name)
-        if not os.path.exists(self.path):
-            os.makedirs(self.path)
-        else:
-            warnings.warn("there already exists a directory: " + self.path)
+        self.fridge.makeDirectory(self.path)
+        self.name = name
 
 
 class ItemShelf(Shelf):
     """
     A container for items of a similar kind
     """
-
     def find(self, name):
         if name in self.items:
             return self.items[name]
