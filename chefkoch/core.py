@@ -10,6 +10,7 @@ import chefkoch.scheduler as scheduler
 # import recipe
 # from recipe import Recipe
 from chefkoch.container import YAMLContainer
+from chefkoch.container import JSONContainer
 import ast
 import chefkoch.step as step
 
@@ -63,9 +64,14 @@ class Configuration:
         returns:
             configuration item
         """
-        return self.items["options"][keyname]
+        return self.items[keyname]
 
-    def __init__(self, filename, arguments):
+    def output(self, filename):
+        container = JSONContainer()
+        container.data = self.items
+        container.save(filename)
+
+    def __init__(self, container, path, arguments):
         """
         Load of configuration of specified in cheffile
 
@@ -74,14 +80,38 @@ class Configuration:
         filename(string):
             file, that specifies configuration
         """
-        self.file = YAMLContainer(filename)
+
+        self.file = container
+
         self.items = dict()
-        self.items["options"] = self.file.data
-        if arguments["option"] is not None:
-            for x in arguments["option"]:
-                x = x.split("=")
-                self.items["options"][x[0]] = ast.literal_eval(x[1])
-        print(self.items)
+        # TODO: Standardinitialisierungen
+
+        # einlesen der cheffile mit Extraoptionen
+        # vllt nochmal eine Read-Data-Funktion für sich wiederholenden Code
+        # oder besser gliedern
+        for element in self.file.data:
+            # prüfe dort auch die entsprechenden options
+            if arguments[element] is not None:
+                if element == "options":
+                    for x in arguments["option"]:
+                        x = x.split("=")
+                    self.items["options"][x[0]] = ast.literal_eval(x[1])
+                    self.file.data[x[0]]  = ast.literal_eval(x[1])
+                else:
+                    # filepath für Alternatives yml
+                    # muss nochmal schöner aufgeteilt werden
+                    help = YAMLContainer(path + self.file.data[element])
+                    self.items[element] = help.data
+            else:
+                if ".yml" in self.file.data[element]:
+                    help = YAMLContainer(path + self.file.data[element])
+                    self.items[element] = help.data
+                else:
+                    self.items[element] = self.file.data[element]
+
+        # vllt nochmal an andere Stelle speichern, aber über eine Zusatsoption
+        self.output(path + "/" + "test.json")
+        
 
 
 class Chefkoch:
@@ -103,13 +133,24 @@ class Chefkoch:
             extra configuration settings, specified in commandline
 
         """
-        # aus Testzwecken sind meisten Werte mit null initialisiert
-        # self.basePath = cheffile
-        self.cheffile = YAMLContainer((path + "/cheffile.yml"))
-        self.configuration = Configuration(self.cheffile["options"], arguments)
-        self.recipe = None
-        # festgelegte Stelle für Fridge, durch Config mglweiser änderbar
+        # Laden des entsprechenden Cheffiles
+        if (arguments["cheffile"] is not None):
+            self.cheffile = YAMLContainer(arguments["cheffile"])
+        else:
+            self.cheffile = YAMLContainer(path + "/cheffile.yml")
+
+        # Erstellen des entsprechenden Konfigurations-Items
+        # erstmal mit path
+        self.configuration = Configuration(self.cheffile, path, arguments)
+        # Erstellen der passenden fridge -> Verweis zu Konfiguration
         self.fridge = fridge.Fridge(self, path)
+        # legt hier die Resource-Shelfs an, mit Namen aus der Konfiguration
+        print(self.configuration["resource"])
+
+        self.recipe = None # beinhaltet den kompletten Namen
+        # alle Namen im Namespace -> konsistent
+        # baut erst Flavour-Resource und step auf
+        # festgelegte Stelle für Fridge, durch Config mglweiser änderbar
         self.logger = None
         self.scheduler = None
         print("This is your evil overlord")

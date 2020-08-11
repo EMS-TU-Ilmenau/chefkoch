@@ -1,6 +1,8 @@
-options: "./test2/options.yml"
-recipe: "./recipe.yml"
-flavour: "./test2/flavour.yml"
+options: "/options.yml"
+resource:
+  {raw_data: resource/raw_data.npy}
+# recipe: !include "recipe.yml"
+flavour: "/flavour.yml"
 # pantry: "./test2/resources"
 # "cuisine": "./cuisine.json"
 # "instructions": "./instructions"

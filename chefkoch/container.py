@@ -4,6 +4,7 @@ Definition of the different simulation steps available.
 import yaml
 import json
 import zlib
+import os.path
 
 
 class JSONContainer:
@@ -85,7 +86,7 @@ class YAMLContainer:
         # with open(filename) as f:
         #     self.data = yaml.load(f, Loader=yaml.SafeLoader)
         #     f.close()
-
+        # self.filename = filename
         f = open(filename)
         self.data = yaml.load(f, Loader=yaml.SafeLoader)
         f.close()
@@ -105,12 +106,14 @@ class YAMLContainer:
         """
         return self.data[item]
 
-    def save(self, filename):
+    # def save(self, filename):
+    def save(self):
         """
         Save container to file
         """
-        f = open(filename, "w")
-        f.write(yaml.dump(self.data))
+        # f = open(filename, "w")
+        f = open(self.filename, "w")
+        f.write(yaml.dump(self.data, default_flow_style=False, allow_unicode=True))
         f.close()
 
 

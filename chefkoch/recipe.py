@@ -81,7 +81,7 @@ class Plan:
         if type(target) == str or type(target) == int:
             node = recipe[target]
         elif type(target) == Node:
-            node = target
+            node = targetiagram
         if node not in self.nodes:
             self.nodes.append(node)
         for inputKey, inputValue in node.inputs.items():

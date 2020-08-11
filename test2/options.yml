@@ -1,4 +1,1 @@
-some_switch: True
-another_switch: False
-the_answer: 42
-directory: True
+{another_switch: false, directory: false, some_switch: true, the_answer: 42}

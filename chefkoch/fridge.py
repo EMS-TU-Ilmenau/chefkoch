@@ -4,7 +4,6 @@ they are still up-to-date.
 """
 from chefkoch.container import JSONContainer
 import chefkoch.core
-import chefkoch.tarball
 import chefkoch.item
 import os
 import warnings
@@ -34,7 +33,7 @@ class Fridge:
         self.chef = chef
         self.shelfs = dict()
         self.basePath = basePath
-        self.makeDirectory(self.basePath + "/fridge")
+        # self.makeDirectory(self.basePath + "/fridge")
         """
         # Testzwecke
         shelf = ItemShelf(self, "A")
@@ -56,10 +55,51 @@ class Fridge:
 
     def checkItem(self, item):
         """
-        WIP
+        WIP, sollte man auseinandernehmen und wieder vernünftig zusammenbauen
         Ist diese Funktion überhaupt sinnvoll?
         """
-        pass
+        if item.shelf.name in self.shelfs: # wenn es unter den Namen einen Ordner gibt
+            # erstmal grob
+            item = self.shelfs[name].items[name] # dann holen wir uns das Item
+            # speichern den Pfad zu der existierenden Json
+            itempath = self.shelfs[name].path + "/" + str(name) + ".json"
+            # überprüfen Dateigröße
+            if (JSONContainer(itempath) == container):
+            # das ist schon das passende Item
+                return (item, None)
+            else:
+                # Hashkollision
+                # create new Item mit anderem Namen und neuem shelf
+                # erstmal mit Indizes dann
+                i = 1 # zähler
+            begin = self.shelfs[name].path + "/" + str(name) + "_"
+            end = false
+            # gehe die shelfs mit den Indizes durch
+            while ((str(name) + "_" + str(i) ) in self.shelfs):
+                if (JSONContainer(begin + i + ".json") == container):
+                # wenn passende Item gefunden
+                    end = true
+                    break
+                else:
+                    i += 1
+
+            name = name + "_" + i
+            if (end):
+            # wir können passendes Item zurückgeben
+                return (self.shelfs[name].items[name], None)
+            else:
+                # wir müssen einen neuen Shelf für das Item zurückgeben
+                shelf = FridgeShelf(self, name)
+                self.shelfs[name] = shelf
+                return (None, self.shelfs[name])
+
+        else: 
+            # wenn es das noch gar nicht gibt,
+            # wird ein neue Shelf angelegt und der Namen des Shelfs zurückgegeben
+            shelf = FridgeShelf(self, name)
+            self.shelfs[name] = shelf
+            return (None, self.shelfs[name])
+
 
     def makeDirectory(self, path):
         """
@@ -75,6 +115,19 @@ class Fridge:
                 os.makedirs(path)
             else:
                 warnings.warn("there already exists a directory: " + path)
+
+    def shelving(self, list, type):
+        """
+        legt es anhand der Namen die Shelfs an
+        wird vermutlich eh wieder gelöscht
+        """
+        for i in list:
+            if (type == item):
+                shelf = ItemShelf(self, i)
+                self.shelfs[i] = shelf
+            else:
+                shelf = FlavourShelf(self, i)
+                self.shelfs[i] = shelf
 
 
 class Shelf(ABC):

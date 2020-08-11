@@ -99,7 +99,11 @@ if __name__ == "__main__":
         parser.description = HELP_TEST
         # cheffile = input("Path to your projektfolder: ")
         cheffile = "./test2"
-        parser.add_argument("-o", "--option", action="append")
+        parser.add_argument("-o", "--options", action="append")
+        parser.add_argument("-chef", "--cheffile", action="append")
+        # parser.add_argument("-kitchen", "--kitchenfile", action="append")
+        parser.add_argument("-r", "--resource", action="append")
+        parser.add_argument("-flavour", "--flavour", action="append")
         arguments = parser.parse_args(arguments)
         print(vars(arguments))
         chef = chefkoch.Chefkoch(cheffile, vars(arguments))
