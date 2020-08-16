@@ -114,7 +114,6 @@ class Configuration:
                     self.items[element] = help.data
                 else:
                     self.items[element] = self.file.data[element]
-        
         # vllt nochmal an andere Stelle speichern, aber über eine Zusatsoption
         self.output(path + "/" + "test.json")
 

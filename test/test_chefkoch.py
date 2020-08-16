@@ -41,12 +41,14 @@ import chefkoch
 
 # todo: Konsultiere Fabian
 
-
+"""
 class TestChefkoch(unittest.TestCase):
     """
+"""
     This class includes functions that test both recipe and flavour class
     functions or are called by recipe or flavour tests.
-    """
+"""
+"""
 
     def test_readjson(self):
         result = chefkoch.readfile("recipe", "test/recipe.json")
@@ -575,3 +577,4 @@ class TestFlavour(unittest.TestCase):
         with self.subTest("test 5: Having no type field"):
             data["fileVal"].pop("type")
             result = backbone.dictToFlavour(data)
+"""

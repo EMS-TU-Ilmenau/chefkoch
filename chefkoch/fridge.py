@@ -62,10 +62,10 @@ class Fridge:
         -> prüft erstmal nicht auf Konsistenz, da mache ich eine Extra-Funktion
         -> also nur, gibt es Shelf mit dem Item schon: False
         -> gibt es den nicht, wird er angelegt und das Item eingeordnet: True
-        Problem: brauche dem entsprechend Namen 
+        Problem: brauche dem entsprechend Namen
         """
         """
-        if (item.shelf.name in self.shelfs):  
+        if (item.shelf.name in self.shelfs):
             # wenn es unter den Namen einen Ordner gibt
             # erstmal grob
             item = self.shelfs[name].items[name]  # dann holen wir uns das Item
@@ -134,9 +134,6 @@ class Fridge:
             self.shelfs[element] = shelf
             print(element)
             # dann legen wir ein Item an
-
-
-        pass
 
 
 class Shelf(ABC):
