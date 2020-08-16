@@ -10,6 +10,7 @@ class Step(Item, ABC):
     """
     A single simulation step
     """
+
     @abstractmethod
     def __init__(self, shelf):
         """
@@ -24,6 +25,7 @@ class Step(Item, ABC):
 class StepResource(Step, ABC):
     """
     """
+
     def __init__(self):
         pass
 

@@ -1,0 +1,45 @@
+{
+    "options": {
+        "another_switch": false,
+        "directory": false,
+        "some_switch": false,
+        "the_answer": 42,
+        "test": true
+    },
+    "resource": {
+        "raw_data": "resource/raw_data.npy"
+    },
+    "flavour": {
+        "fS": "9.22e9",
+        "data": {
+            "type": "file",
+            "file": "resources/realtime-moving_DIV_4096.mat",
+            "key": "data"
+        },
+        "subsample": [
+            {
+                "type": "range",
+                "start": 1,
+                "stop": 16,
+                "step": 1
+            },
+            32,
+            64,
+            128
+        ],
+        "average": [
+            {
+                "type": "range",
+                "start": 1,
+                "stop": 16,
+                "step": 1
+            },
+            32,
+            64,
+            128
+        ],
+        "tx_lfsr_order": 12,
+        "tx_lfsr_tap": "0x8F1",
+        "tx_lfsr_start": "0xFFF"
+    }
+}

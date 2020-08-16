@@ -93,10 +93,16 @@ class Configuration:
             # prüfe dort auch die entsprechenden options
             if arguments[element] is not None:
                 if element == "options":
-                    for x in arguments["option"]:
+                    # options extra eingeladen, um sie zu überschreiben
+                    if ".yml" in self.file.data[element]:
+                        help = YAMLContainer(path + self.file.data[element])
+                        self.items[element] = help.data
+                    else:
+                        self.items[element] = self.file.data["options"]
+
+                    for x in arguments["options"]:
                         x = x.split("=")
-                    self.items["options"][x[0]] = ast.literal_eval(x[1])
-                    self.file.data[x[0]]  = ast.literal_eval(x[1])
+                        self.items[element][x[0]] = ast.literal_eval(x[1])
                 else:
                     # filepath für Alternatives yml
                     # muss nochmal schöner aufgeteilt werden
@@ -108,10 +114,9 @@ class Configuration:
                     self.items[element] = help.data
                 else:
                     self.items[element] = self.file.data[element]
-
+        
         # vllt nochmal an andere Stelle speichern, aber über eine Zusatsoption
         self.output(path + "/" + "test.json")
-        
 
 
 class Chefkoch:
@@ -134,7 +139,7 @@ class Chefkoch:
 
         """
         # Laden des entsprechenden Cheffiles
-        if (arguments["cheffile"] is not None):
+        if arguments["cheffile"] is not None:
             self.cheffile = YAMLContainer(arguments["cheffile"])
         else:
             self.cheffile = YAMLContainer(path + "/cheffile.yml")
@@ -145,15 +150,16 @@ class Chefkoch:
         # Erstellen der passenden fridge -> Verweis zu Konfiguration
         self.fridge = fridge.Fridge(self, path)
         # legt hier die Resource-Shelfs an, mit Namen aus der Konfiguration
-        print(self.configuration["resource"])
-
-        self.recipe = None # beinhaltet den kompletten Namen
+        print(self.configuration.items["resource"])
+        # self.fridge.makeResources(self.configuration.items["resource"])
+        self.recipe = None  # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf
         # festgelegte Stelle für Fridge, durch Config mglweiser änderbar
         self.logger = None
         self.scheduler = None
         print("This is your evil overlord")
+        print("(͠≖ ͜ʖ͠≖)👌")
 
     def cook(self, *targets):
         """

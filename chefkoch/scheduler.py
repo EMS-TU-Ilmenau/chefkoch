@@ -1,7 +1,7 @@
 import chefkoch
 
-class Worker:
 
+class Worker:
     def __init__(self, scheduler):
         self.scheduler = scheduler
 

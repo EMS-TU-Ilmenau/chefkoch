@@ -113,7 +113,9 @@ class YAMLContainer:
         """
         # f = open(filename, "w")
         f = open(self.filename, "w")
-        f.write(yaml.dump(self.data, default_flow_style=False, allow_unicode=True))
+        f.write(
+            yaml.dump(self.data, default_flow_style=False, allow_unicode=True)
+        )
         f.close()
 
 
