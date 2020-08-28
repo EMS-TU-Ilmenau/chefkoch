@@ -148,9 +148,16 @@ class Chefkoch:
         self.configuration = Configuration(self.cheffile, path, arguments)
         # Erstellen der passenden fridge -> Verweis zu Konfiguration
         self.fridge = fridge.Fridge(self, path)
+
         # legt hier die Resource-Shelfs an, mit Namen aus der Konfiguration
-        print(self.configuration.items["resource"])
-        # self.fridge.makeResources(self.configuration.items["resource"])
+        # print(self.configuration.items["resource"])
+        self.fridge.makeRessources(self.configuration.items["resource"])
+
+        # und die Flavours -> wird auch nur einmal spezifisch gemacht, da nur
+        # einmal aufgerufen
+        # print(self.configuration.items["flavour"])
+        self.fridge.makeFlavours(self.configuration.items["flavour"])
+
         self.recipe = None  # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf

@@ -84,10 +84,24 @@ class Result(Item):
     pass
 
 
-class Resource(Item):
+class Ressource(Item):
     """
     Resources used to create a specific item
     """
 
-    def __init__(self, basePath):
+    def __init__(self, shelf, path):
+        """
+        initializes Ressource
+
+        Parameters
+        ----------
+        shelf(Shelf):
+            the item belongs to this shelf
+
+        path(str):
+            Path to the Ressource
+        """
+        # später mit item abstrahiert
+        self.shelf = shelf
+        self.path = path
         pass

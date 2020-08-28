@@ -43,11 +43,11 @@ import chefkoch
 
 """
 class TestChefkoch(unittest.TestCase):
-    """
+"""
 """
     This class includes functions that test both recipe and flavour class
     functions or are called by recipe or flavour tests.
-"""
+    """
 """
 
     def test_readjson(self):
@@ -578,3 +578,49 @@ class TestFlavour(unittest.TestCase):
             data["fileVal"].pop("type")
             result = backbone.dictToFlavour(data)
 """
+
+
+class TestConfiguration(unittest.TestCase):
+    def setUp(self):
+        cheffile = "./test2"
+        arg = {
+            "options": ["test=True"],
+            "cheffile": None,
+            "resource": None,
+            "flavour": None,
+        }
+        self.chef = Chefkoch.Chefkoch(cheffile, arg)
+        result = {
+            "options": {
+                "another_switch": False,
+                "directory": False,
+                "some_switch": True,
+                "the_answer": 42,
+                "test": True,
+            },
+            "resource": {"raw_data": "resource/raw_data.npy"},
+            "flavour": {
+                "fS": "9.22e9",
+                "data": {
+                    "type": "file",
+                    "file": "resources/realtime-moving_DIV_4096.mat",
+                    "key": "data",
+                },
+                "subsample": [
+                    {"type": "range", "start": 1, "stop": 16, "step": 1},
+                    32,
+                    64,
+                    128,
+                ],
+                "average": [
+                    {"type": "range", "start": 1, "stop": 16, "step": 1},
+                    32,
+                    64,
+                    128,
+                ],
+                "tx_lfsr_order": 12,
+                "tx_lfsr_tap": "0x8F1",
+                "tx_lfsr_start": "0xFFF",
+            },
+        }
+        self.assertEqual(result, self.chef.configuration.items)

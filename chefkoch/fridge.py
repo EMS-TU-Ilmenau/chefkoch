@@ -8,6 +8,8 @@ import chefkoch.item
 import os
 import warnings
 import zlib
+import numpy
+import ast
 from abc import ABC, abstractmethod
 
 
@@ -124,16 +126,30 @@ class Fridge:
             else:
                 warnings.warn("there already exists a directory: " + path)
 
-    def makeResources(self, Ressources):
+    def makeRessources(self, Ressources):
         """
-        legt die ganzen Ressourcen an
+        initialises the Ressources
         """
         for element in Ressources:
             # FlavourShelf wird angelegt
-            shelf = FlavourShelf(self, element)
+            shelf = ItemShelf(self, element)
             self.shelfs[element] = shelf
-            print(element)
             # dann legen wir ein Item an
+            ressource = chefkoch.item.Ressource(
+                self.shelfs[element], Ressources[element]
+            )
+            name = zlib.adler32(Ressources[element].encode("utf-8"))
+            self.shelfs[element].items[name] = ressource
+            print(self.shelfs[element].items)
+
+    def makeFlavours(self, Flavours):
+        """
+        initializes the different flavours
+        """
+        # machen wir erstmal nur einen FlavourShelf
+        shelf = FlavourShelf(self, "flavours")
+        self.shelfs["flavours"] = shelf
+        self.shelfs["flavours"].makeFullList(Flavours)
 
 
 class Shelf(ABC):
@@ -146,7 +162,6 @@ class Shelf(ABC):
         self.fridge = fridge
         self.path = fridge.basePath + "/fridge/" + str(name)
         self.fridge.makeDirectory(self.path)
-        self.name = name
 
 
 class ItemShelf(Shelf):
@@ -166,5 +181,25 @@ class FlavourShelf(Shelf):
     A container for different Flavours
     """
 
-    # müsste vielleicht auch noch abstrakt werden
-    pass
+    def makeFullList(self, Flavours):
+        for x in Flavours:
+            if isinstance(Flavours[x], list):
+                self.items[x] = Flavours[x]
+            elif isinstance(Flavours[x], dict):
+                print("difficult")
+                vals = []
+                f = Flavours[x]
+                if Flavours[x]["type"] == "lin":
+                    r = range(f["start"], f["stop"], f["step"])
+                    for i in r:
+                        vals.append(i)
+                    self.items[x] = vals
+
+                elif Flavours[x]["type"] == "log":
+                    # TODO: verschiedene Möglichkeiten, wegen Basis, Count, ect
+                    start = ast.literal_eval(f["start"])
+                    stop = ast.literal_eval(f["stop"])
+
+                    # vals = numpy.logspace(start, stop, num=f["count"])
+                    # self.items[x] = vals
+        print(self.items)
