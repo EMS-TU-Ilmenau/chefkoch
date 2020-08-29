@@ -9,12 +9,26 @@
         "raw_data": "resource/raw_data.npy"
     },
     "flavour": {
-        "num_lambda": {
-            "type": "log",
-            "start": "1e-3",
-            "stop": "1e3",
-            "count": 7
-        },
+        "num_lambda": [
+            {
+                "type": "log",
+                "start": "1e-3",
+                "stop": "1e3",
+                "count": 7
+            },
+            {
+                "type": "log",
+                "start": "1e7",
+                "stop": "1e19",
+                "count": 5
+            },
+            {
+                "type": "lin",
+                "start": 8,
+                "stop": 12,
+                "step": 1
+            }
+        ],
         "num_N": {
             "type": "lin",
             "start": 10,

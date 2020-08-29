@@ -9,6 +9,7 @@ import os
 import warnings
 import zlib
 import numpy
+import math
 import ast
 from abc import ABC, abstractmethod
 
@@ -180,26 +181,35 @@ class FlavourShelf(Shelf):
     """
     A container for different Flavours
     """
+    def ranges(self, f):
+        if f["type"] == "lin":
+            vals = numpy.arange(f["start"], f["stop"]+1, f["step"])
+            return vals
+        elif f["type"] == "log":
+            if "base" in f:
+                base = f["base"]
+            else:
+                base = 10
+
+            start = math.log(ast.literal_eval(f["start"]), base)
+            stop = math.log(ast.literal_eval(f["stop"]), base)
+            vals = numpy.logspace(start, stop, num=f["count"])
+            return vals
 
     def makeFullList(self, Flavours):
         for x in Flavours:
             if isinstance(Flavours[x], list):
-                self.items[x] = Flavours[x]
+                if (isinstance(Flavours[x][0], dict)):
+                    vals = []
+                    for elem in Flavours[x]:
+                        vals.append(self.ranges(elem))
+                    self.items[x] = vals
+                else:
+                    self.items[x] = Flavours[x]
+
             elif isinstance(Flavours[x], dict):
                 print("difficult")
                 vals = []
                 f = Flavours[x]
-                if Flavours[x]["type"] == "lin":
-                    r = range(f["start"], f["stop"], f["step"])
-                    for i in r:
-                        vals.append(i)
-                    self.items[x] = vals
-
-                elif Flavours[x]["type"] == "log":
-                    # TODO: verschiedene Möglichkeiten, wegen Basis, Count, ect
-                    start = ast.literal_eval(f["start"])
-                    stop = ast.literal_eval(f["stop"])
-
-                    # vals = numpy.logspace(start, stop, num=f["count"])
-                    # self.items[x] = vals
+                self.items[x] = self.ranges(f)
         print(self.items)
