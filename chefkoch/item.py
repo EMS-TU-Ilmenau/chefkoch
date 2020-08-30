@@ -84,7 +84,7 @@ class Result(Item):
     pass
 
 
-class Ressource(Item):
+class Resource(Item):
     """
     Resources used to create a specific item
     """

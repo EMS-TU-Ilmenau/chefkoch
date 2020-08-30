@@ -6,7 +6,8 @@
         "the_answer": 42
     },
     "resource": {
-        "raw_data": "resource/raw_data.npy"
+        "raw_data": "resource/raw_data.npy",
+        "tex_paper": "resource/paper"
     },
     "flavour": {
         "num_lambda": [
@@ -49,5 +50,43 @@
             "FISTA",
             "TWISTA"
         ]
+    },
+    "kitchen": {
+        "stove": "local"
+    },
+    "recipe": {
+        "compute_a": {
+            "type": "python",
+            "resource": "steps/dosomething.py",
+            "inputs": {
+                "data": "raw_data",
+                "some_parameter": "y"
+            },
+            "outputs": {
+                "result": "z"
+            }
+        },
+        "render_figure_z": {
+            "type": "python",
+            "resource": "steps/render_figure.py",
+            "inputs": {
+                "data": "z"
+            },
+            "outputs": {
+                "result": "figure_z"
+            }
+        },
+        "compile_latex": {
+            "inputs": null,
+            "outputs": {
+                "1": "paper"
+            },
+            "type": "shell",
+            "resource": "steps/compile_latex.sh"
+        }
+    },
+    "link": {
+        "figure_z": "results/figures/figure_z.pdf",
+        "paper": "results/paper.pdf"
     }
 }

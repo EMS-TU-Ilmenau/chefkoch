@@ -86,11 +86,11 @@ class Configuration:
         self.items = dict()
         # TODO: Standardinitialisierungen
 
-        # einlesen der cheffile mit Extraoptionen
+        # import cheffile with extra-options
         # vllt nochmal eine Read-Data-Funktion für sich wiederholenden Code
         # oder besser gliedern
         for element in self.file.data:
-            # prüfe dort auch die entsprechenden options
+            # checking for the options
             if arguments[element] is not None:
                 if element == "options":
                     # options extra eingeladen, um sie zu überschreiben
@@ -137,26 +137,29 @@ class Chefkoch:
             extra configuration settings, specified in commandline
 
         """
-        # Laden des entsprechenden Cheffiles
+        # loading the cheffile
         if arguments["cheffile"] is not None:
             self.cheffile = YAMLContainer(arguments["cheffile"])
         else:
             self.cheffile = YAMLContainer(path + "/cheffile.yml")
 
-        # Erstellen des entsprechenden Konfigurations-Items
-        # erstmal mit path
+        # generate the configuration-item
+        # using the path to main directory
         self.configuration = Configuration(self.cheffile, path, arguments)
-        # Erstellen der passenden fridge -> Verweis zu Konfiguration
+        # generate the fridge
         self.fridge = fridge.Fridge(self, path)
 
-        # legt hier die Resource-Shelfs an, mit Namen aus der Konfiguration
+        # generate Resource-Shelfs from configuration
         # print(self.configuration.items["resource"])
-        self.fridge.makeRessources(self.configuration.items["resource"])
+        self.fridge.makeResources(self.configuration.items["resource"], False)
 
-        # und die Flavours -> wird auch nur einmal spezifisch gemacht, da nur
-        # einmal aufgerufen
+        # generate the flavour-shelf
         # print(self.configuration.items["flavour"])
         self.fridge.makeFlavours(self.configuration.items["flavour"])
+
+        # dealing with configuration.recipe
+        # print(self.configuration.items["recipe"])
+        self.fridge.makeResources(self.configuration.items["recipe"], True)
 
         self.recipe = None  # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent

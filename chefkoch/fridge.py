@@ -127,20 +127,28 @@ class Fridge:
             else:
                 warnings.warn("there already exists a directory: " + path)
 
-    def makeRessources(self, Ressources):
+    def makeResources(self, Resources, recipe):
         """
-        initialises the Ressources
+        initialises the Resources
         """
-        for element in Ressources:
+        for element in Resources:
             # FlavourShelf wird angelegt
             shelf = ItemShelf(self, element)
             self.shelfs[element] = shelf
-            # dann legen wir ein Item an
-            ressource = chefkoch.item.Ressource(
-                self.shelfs[element], Ressources[element]
-            )
-            name = zlib.adler32(Ressources[element].encode("utf-8"))
-            self.shelfs[element].items[name] = ressource
+            if recipe:
+                resource = chefkoch.item.Resource(
+                    self.shelfs[element], Resources[element]["resource"]
+                )
+                name = zlib.adler32(
+                    Resources[element]["resource"].encode("utf-8")
+                )
+            else:
+                resource = chefkoch.item.Resource(
+                    self.shelfs[element], Resources[element]
+                )
+                name = zlib.adler32(Resources[element].encode("utf-8"))
+
+            self.shelfs[element].items[name] = resource
             print(self.shelfs[element].items)
 
     def makeFlavours(self, Flavours):
@@ -181,9 +189,10 @@ class FlavourShelf(Shelf):
     """
     A container for different Flavours
     """
+
     def ranges(self, f):
         if f["type"] == "lin":
-            vals = numpy.arange(f["start"], f["stop"]+1, f["step"])
+            vals = numpy.arange(f["start"], f["stop"] + 1, f["step"])
             return vals
         elif f["type"] == "log":
             if "base" in f:
@@ -199,10 +208,10 @@ class FlavourShelf(Shelf):
     def makeFullList(self, Flavours):
         for x in Flavours:
             if isinstance(Flavours[x], list):
-                if (isinstance(Flavours[x][0], dict)):
+                if isinstance(Flavours[x][0], dict):
                     vals = []
                     for elem in Flavours[x]:
-                        vals.append(self.ranges(elem))
+                        vals.extend(self.ranges(elem))
                     self.items[x] = vals
                 else:
                     self.items[x] = Flavours[x]
@@ -212,4 +221,4 @@ class FlavourShelf(Shelf):
                 vals = []
                 f = Flavours[x]
                 self.items[x] = self.ranges(f)
-        print(self.items)
+        # print(self.items)
