@@ -1,6 +1,6 @@
 num_lambda:
     # These entries are the entries in the Configuration object:
-    - {type: log, start: 1e-3, stop: 1e3, count: 7}
+    - {type: log, start: 1e-3, stop: 1e3, count: 7, base: 10}
     - {type: log, start: 1e7, stop: 1e19, count: 5}
     - {type: lin, start: 8, stop: 12, step: 1}
 # exemplary entry in the corresponding FlavourShelf 'num_lambda': [1e-3, 0.01, 0.1, 1., 8, 9, 10., 11, 12, 100., 1e3, 1e7, 1e10, 1e13, 1e16, 1e19]

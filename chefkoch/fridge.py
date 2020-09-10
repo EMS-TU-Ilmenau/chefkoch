@@ -130,7 +130,16 @@ class Fridge:
     def makeResources(self, Resources, recipe):
         """
         initialises the Resources
+
+        Parameters
+        ----------
+        Resources(dict):
+            dictionary with the Resources
+
+        recipe(bool):
+            describes, if the recources are from the recipe
         """
+        print(Resources)
         for element in Resources:
             # FlavourShelf wird angelegt
             shelf = ItemShelf(self, element)
@@ -149,11 +158,16 @@ class Fridge:
                 name = zlib.adler32(Resources[element].encode("utf-8"))
 
             self.shelfs[element].items[name] = resource
-            print(self.shelfs[element].items)
 
     def makeFlavours(self, Flavours):
         """
-        initializes the different flavours
+        initializes the flavour-shelf for the given flavours
+
+        Parameters
+        ----------
+        Flavours(dict):
+            dictionary with the different flavours
+
         """
         # machen wir erstmal nur einen FlavourShelf
         shelf = FlavourShelf(self, "flavours")
@@ -163,7 +177,7 @@ class Fridge:
 
 class Shelf(ABC):
     """
-    Abstrakte Basis-Klasse für die unterschiedlichen shelfs
+    abstract base-class for the different shelves
     """
 
     def __init__(self, fridge, name):
@@ -171,6 +185,16 @@ class Shelf(ABC):
         self.fridge = fridge
         self.path = fridge.basePath + "/fridge/" + str(name)
         self.fridge.makeDirectory(self.path)
+
+    def __len__(self):
+        return len(self.items)
+
+    def __next__(self):
+        return next(self.iterator)
+
+    def __iter__(self):
+        self.iterator = iter(self.items)
+        return iter(self.items)
 
 
 class ItemShelf(Shelf):
@@ -191,10 +215,21 @@ class FlavourShelf(Shelf):
     """
 
     def ranges(self, f):
+        """
+        translates the range-entries to valuelists
+
+        Parameters:
+        -----------
+        f(dict):
+            dictionary that specifies a range
+        """
         if f["type"] == "lin":
+            # dealing with linear ranges
             vals = numpy.arange(f["start"], f["stop"] + 1, f["step"])
             return vals
         elif f["type"] == "log":
+            # dealing with logarithmic ranges
+            # first specify base
             if "base" in f:
                 base = f["base"]
             else:
@@ -206,6 +241,15 @@ class FlavourShelf(Shelf):
             return vals
 
     def makeFullList(self, Flavours):
+        """
+        parses the flavour dictionary and translates it to value lists
+
+        Parameters:
+        -----------
+        Flavours(dict):
+            flavour dictionary from flavour-file
+
+        """
         for x in Flavours:
             if isinstance(Flavours[x], list):
                 if isinstance(Flavours[x][0], dict):
@@ -218,7 +262,6 @@ class FlavourShelf(Shelf):
 
             elif isinstance(Flavours[x], dict):
                 print("difficult")
-                vals = []
                 f = Flavours[x]
                 self.items[x] = self.ranges(f)
         # print(self.items)

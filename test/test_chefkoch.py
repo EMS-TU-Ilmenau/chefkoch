@@ -36,8 +36,9 @@ threw an error. Subtests are only available from python 3.4 on.
 import os
 import unittest
 import sys
+import chefkoch.core as core
 import chefkoch.recipe as backbone
-import chefkoch
+import chefkoch.fridge as fridge
 
 # todo: Konsultiere Fabian
 
@@ -581,46 +582,104 @@ class TestFlavour(unittest.TestCase):
 
 
 class TestConfiguration(unittest.TestCase):
-    def setUp(self):
+    # so funktioniert das wahrscheinlich nicht
+    def test_init(self):
         cheffile = "./test2"
         arg = {
-            "options": ["test=True"],
+            "options": None,
             "cheffile": None,
             "resource": None,
             "flavour": None,
+            "kitchen": None,
+            "recipe": None,
+            "link": None,
         }
-        self.chef = Chefkoch.Chefkoch(cheffile, arg)
+        self.chef = core.Chefkoch(cheffile, arg)
         result = {
             "options": {
                 "another_switch": False,
                 "directory": False,
                 "some_switch": True,
                 "the_answer": 42,
-                "test": True,
             },
-            "resource": {"raw_data": "resource/raw_data.npy"},
+            "resource": {
+                "raw_data": "resource/raw_data.npy",
+                "tex_paper": "resource/paper",
+            },
             "flavour": {
-                "fS": "9.22e9",
-                "data": {
-                    "type": "file",
-                    "file": "resources/realtime-moving_DIV_4096.mat",
-                    "key": "data",
+                "num_lambda": [
+                    {
+                        "type": "log",
+                        "start": "1e-3",
+                        "stop": "1e3",
+                        "count": 7,
+                        "base": 10,
+                    },
+                    {
+                        "type": "log",
+                        "start": "1e7",
+                        "stop": "1e19",
+                        "count": 5,
+                    },
+                    {"type": "lin", "start": 8, "stop": 12, "step": 1},
+                ],
+                "num_N": {"type": "lin", "start": 10, "stop": 20, "step": 2},
+                "num_K": [1, 2, 3, 7, 8],
+                "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
+            },
+            "kitchen": {"stove": "local"},
+            "recipe": {
+                "compute_a": {
+                    "type": "python",
+                    "resource": "steps/dosomething.py",
+                    "inputs": {"data": "raw_data", "some_parameter": "y"},
+                    "outputs": {"result": "z"},
                 },
-                "subsample": [
-                    {"type": "range", "start": 1, "stop": 16, "step": 1},
-                    32,
-                    64,
-                    128,
-                ],
-                "average": [
-                    {"type": "range", "start": 1, "stop": 16, "step": 1},
-                    32,
-                    64,
-                    128,
-                ],
-                "tx_lfsr_order": 12,
-                "tx_lfsr_tap": "0x8F1",
-                "tx_lfsr_start": "0xFFF",
+                "render_figure_z": {
+                    "type": "python",
+                    "resource": "steps/render_figure.py",
+                    "inputs": {"data": "z"},
+                    "outputs": {"result": "figure_z"},
+                },
+                "compile_latex": {
+                    "inputs": None,
+                    "outputs": {1: "paper"},
+                    "type": "shell",
+                    "resource": "steps/compile_latex.sh",
+                },
+            },
+            "link": {
+                "figure_z": "results/figures/figure_z.pdf",
+                "paper": "results/paper.pdf",
             },
         }
         self.assertEqual(result, self.chef.configuration.items)
+
+
+class TestFridge(unittest.TestCase):
+
+    resource = {
+        "num_lambda": [
+            {
+                "type": "log",
+                "start": "1e-3",
+                "stop": "1e3",
+                "count": 7,
+                "base": 10,
+            },
+            {"type": "log", "start": "1e7", "stop": "1e19", "count": 5},
+            {"type": "lin", "start": 8, "stop": 12, "step": 1},
+        ],
+        "num_N": {"type": "lin", "start": 10, "stop": 20, "step": 2},
+        "num_K": [1, 2, 3, 7, 8],
+        "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
+    }
+    t = False
+
+    def setUp(self):
+        # path = "./test2"
+        # aguments = {'options': None, 'cheffile': None, 'resource': None,
+        # 'flavour': None, 'kitchen': None, 'recipe': None, 'link': None}
+        # chef = chefkoch.Chefkoch(cheffile, arguments)
+        # self.shelf = fridge.FlavourShelf()
+        pass
