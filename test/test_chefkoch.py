@@ -39,6 +39,8 @@ import sys
 import chefkoch.core as core
 import chefkoch.recipe as backbone
 import chefkoch.fridge as fridge
+import chefkoch.container as container
+import numpy
 
 # todo: Konsultiere Fabian
 
@@ -579,12 +581,68 @@ class TestFlavour(unittest.TestCase):
             data["fileVal"].pop("type")
             result = backbone.dictToFlavour(data)
 """
+# Results for comparing and using
+config_dict = {
+    "options": {
+        "another_switch": False,
+        "directory": False,
+        "some_switch": True,
+        "the_answer": 42,
+    },
+    "resource": {
+        "raw_data": "resource/raw_data.npy",
+        "tex_paper": "resource/paper",
+    },
+    "flavour": {
+        "num_lambda": [
+            {
+                "type": "log",
+                "start": "1e-3",
+                "stop": "1e3",
+                "count": 7,
+                "base": 10,
+            },
+            {"type": "log", "start": "1e7", "stop": "1e19", "count": 5, },
+            {"type": "lin", "start": 8, "stop": 12, "step": 1},
+        ],
+        "num_N": {"type": "lin", "start": 10, "stop": 20, "step": 2},
+        "num_K": [1, 2, 3, 7, 8],
+        "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
+    },
+    "kitchen": {"stove": "local"},
+    "recipe": {
+        "compute_a": {
+            "type": "python",
+            "resource": "steps/dosomething.py",
+            "inputs": {"data": "raw_data", "some_parameter": "y"},
+            "outputs": {"result": "z"},
+        },
+        "render_figure_z": {
+            "type": "python",
+            "resource": "steps/render_figure.py",
+            "inputs": {"data": "z"},
+            "outputs": {"result": "figure_z"},
+        },
+        "compile_latex": {
+            "inputs": None,
+            "outputs": {1: "paper"},
+            "type": "shell",
+            "resource": "steps/compile_latex.sh",
+        },
+    },
+    "link": {
+        "figure_z": "results/figures/figure_z.pdf",
+        "paper": "results/paper.pdf",
+    },
+}
+
+path = "./test2"
 
 
 class TestConfiguration(unittest.TestCase):
     # so funktioniert das wahrscheinlich nicht
     def test_init(self):
-        cheffile = "./test2"
+        self.cheffile = container.YAMLContainer(path + "/cheffile.yml")
         arg = {
             "options": None,
             "cheffile": None,
@@ -594,70 +652,13 @@ class TestConfiguration(unittest.TestCase):
             "recipe": None,
             "link": None,
         }
-        self.chef = core.Chefkoch(cheffile, arg)
-        result = {
-            "options": {
-                "another_switch": False,
-                "directory": False,
-                "some_switch": True,
-                "the_answer": 42,
-            },
-            "resource": {
-                "raw_data": "resource/raw_data.npy",
-                "tex_paper": "resource/paper",
-            },
-            "flavour": {
-                "num_lambda": [
-                    {
-                        "type": "log",
-                        "start": "1e-3",
-                        "stop": "1e3",
-                        "count": 7,
-                        "base": 10,
-                    },
-                    {
-                        "type": "log",
-                        "start": "1e7",
-                        "stop": "1e19",
-                        "count": 5,
-                    },
-                    {"type": "lin", "start": 8, "stop": 12, "step": 1},
-                ],
-                "num_N": {"type": "lin", "start": 10, "stop": 20, "step": 2},
-                "num_K": [1, 2, 3, 7, 8],
-                "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
-            },
-            "kitchen": {"stove": "local"},
-            "recipe": {
-                "compute_a": {
-                    "type": "python",
-                    "resource": "steps/dosomething.py",
-                    "inputs": {"data": "raw_data", "some_parameter": "y"},
-                    "outputs": {"result": "z"},
-                },
-                "render_figure_z": {
-                    "type": "python",
-                    "resource": "steps/render_figure.py",
-                    "inputs": {"data": "z"},
-                    "outputs": {"result": "figure_z"},
-                },
-                "compile_latex": {
-                    "inputs": None,
-                    "outputs": {1: "paper"},
-                    "type": "shell",
-                    "resource": "steps/compile_latex.sh",
-                },
-            },
-            "link": {
-                "figure_z": "results/figures/figure_z.pdf",
-                "paper": "results/paper.pdf",
-            },
-        }
-        self.assertEqual(result, self.chef.configuration.items)
+        # self.chef = core.Chefkoch(cheffile, arg)
+        self.configuration = core.Configuration(self.cheffile, path, arg)
+        self.assertEqual(config_dict, self.configuration.items)
 
 
 class TestFridge(unittest.TestCase):
-
+    # das ist vermutlich unnötig
     resource = {
         "num_lambda": [
             {
@@ -674,12 +675,42 @@ class TestFridge(unittest.TestCase):
         "num_K": [1, 2, 3, 7, 8],
         "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
     }
-    t = False
 
     def setUp(self):
-        # path = "./test2"
-        # aguments = {'options': None, 'cheffile': None, 'resource': None,
-        # 'flavour': None, 'kitchen': None, 'recipe': None, 'link': None}
-        # chef = chefkoch.Chefkoch(cheffile, arguments)
-        # self.shelf = fridge.FlavourShelf()
-        pass
+        self.fridge = fridge.Fridge(config_dict, path)
+
+    def test_flavourShelf_ranges(self):
+        self.fridge.makeFlavours(config_dict["flavour"])
+        items = self.fridge.shelfs["flavours"].items
+        flavour_result = {
+            "num_lambda": [
+                0.001,
+                0.01,
+                0.1,
+                1.0,
+                10.0,
+                100,
+                1000,
+                10000000.0,
+                10000000000.0,
+                10000000000000.0,
+                1e16,
+                1e19,
+                8,
+                9,
+                10,
+                11,
+                12,
+            ],
+            "num_N": [10, 12, 14, 16, 18, 20],
+            "num_K": [1, 2, 3, 7, 8],
+            "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
+        }
+        for x in flavour_result:
+            if isinstance(items[x][0], str):
+                self.assertEqual(items[x], flavour_result[x])
+            else:
+                i = 0
+                for element in flavour_result[x]:
+                    self.assertAlmostEqual(element, items[x][i], places=7)
+                    i = i + 1

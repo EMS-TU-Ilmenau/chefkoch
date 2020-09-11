@@ -20,7 +20,8 @@ class Fridge:
 
     """
 
-    def __init__(self, chef, basePath):
+    # def __init__(self, chef, basePath):
+    def __init__(self, config, basePath):
         """
         Instantiate Directory as Fridge
 
@@ -33,22 +34,11 @@ class Fridge:
             filepath to main directory of this experiment
 
         """
-        self.chef = chef
+        # self.chef = chef
+        self.config = config
         self.shelfs = dict()
         self.basePath = basePath
         self.makeDirectory(self.basePath + "/fridge")
-        """
-        # Testzwecke
-        shelf = ItemShelf(self, "A")
-        self.shelfs["test"] = shelf
-        self.shelfs["test"].items["Titem"] = chefkoch.item.Resource(shelf)
-        # print(self.shelfs["test"].items["Titem"].check())
-        shelf = ItemShelf(self, "B")
-        self.shelfs["test"] = shelf
-        self.shelfs["test"].items["Titem1"] = chefkoch.item.Resource(shelf)
-        # print(self.shelfs["test"].items["Titem"].refLog
-        # == self.shelfs["test"].items["Titem"].refLog)
-        """
 
     def update(self):
         """
@@ -121,7 +111,8 @@ class Fridge:
         path(str):
             describes path to the directory
         """
-        if self.chef.configuration["options"]["directory"]:
+        # if self.chef.configuration["options"]["directory"]:
+        if self.config["options"]["directory"]:
             if not os.path.exists(path):
                 os.makedirs(path)
             else:
@@ -139,7 +130,7 @@ class Fridge:
         recipe(bool):
             describes, if the recources are from the recipe
         """
-        print(Resources)
+        # print(Resources)
         for element in Resources:
             # FlavourShelf wird angelegt
             shelf = ItemShelf(self, element)
@@ -264,4 +255,3 @@ class FlavourShelf(Shelf):
                 print("difficult")
                 f = Flavours[x]
                 self.items[x] = self.ranges(f)
-        # print(self.items)

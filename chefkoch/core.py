@@ -147,7 +147,8 @@ class Chefkoch:
         # using the path to main directory
         self.configuration = Configuration(self.cheffile, path, arguments)
         # generate the fridge
-        self.fridge = fridge.Fridge(self, path)
+        # self.fridge = fridge.Fridge(self, path)
+        self.fridge = fridge.Fridge(self.configuration, path)
 
         # generate Resource-Shelfs from configuration
         # print(self.configuration.items["resource"])
