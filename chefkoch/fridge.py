@@ -152,7 +152,7 @@ class Fridge:
 
     def makeFlavours(self, Flavours):
         """
-        initializes the flavour-shelf for the given flavours
+        initializes the flavour-shelves for the given flavours
 
         Parameters
         ----------
@@ -160,12 +160,14 @@ class Fridge:
             dictionary with the different flavours
 
         """
-        # machen wir erstmal nur einen FlavourShelf
-        shelf = FlavourShelf(self, "flavours")
-        self.shelfs["flavours"] = shelf
-        self.shelfs["flavours"].makeFullList(Flavours)
-        # optional printing of the different Flavours in a json
-        self.shelfs["flavours"].printFlavour()
+        # shelf = FlavourShelf(self, "flavours")
+        # vllt will man es ja doch irgendwann mal schön machen
+        for x in Flavours:
+            shelf = FlavourShelf(self, x)
+            self.shelfs[x] = shelf
+            self.shelfs[x].makeFullList(Flavours[x])
+            # optional printing of the different Flavours in a json
+            self.shelfs[x].printFlavour(x)
 
     def makeItemShelfs(self, outputs):
         """
@@ -258,25 +260,26 @@ class FlavourShelf(Shelf):
             flavour dictionary from flavour-file
 
         """
-        for x in Flavours:
-            if isinstance(Flavours[x], list):
-                if isinstance(Flavours[x][0], dict):
-                    vals = []
-                    for elem in Flavours[x]:
-                        vals.extend(self.ranges(elem))
-                    self.items[x] = vals
-                else:
-                    self.items[x] = Flavours[x]
+        if isinstance(Flavours, list):
+            if isinstance(Flavours[0], dict):
+                vals = []
+                for elem in Flavours:
+                    vals.extend(self.ranges(elem))
+                self.items = vals
+            else:
+                self.items = Flavours
 
-            elif isinstance(Flavours[x], dict):
-                print("difficult")
-                f = Flavours[x]
-                self.items[x] = self.ranges(f)
+        elif isinstance(Flavours, dict):
+            print("difficult")
+            f = Flavours
+            self.items = self.ranges(f)
         print(self.items)
 
-    def printFlavour(self):
+    def printFlavour(self, name):
         if os.path.exists(self.path):
             container = JSONContainer(None, self.items)
-            container.save(self.path + "/flavour.json")
+            container.save(self.path + "/" + name + ".json")
         else:
-            warnings.warn("unable to print flavours, there is no directory")
+            warnings.warn(
+                "unable to print these flavours, there is no directory"
+            )

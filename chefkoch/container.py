@@ -20,7 +20,6 @@ class JSONContainer:
     #     self.read_only = False
 
     def __init__(self, filename: str = None, data: dict = None):
-        # maybe it's a good idea
         """
         Initializes the container from file if path is given,
         else create empty Container
@@ -77,6 +76,19 @@ class JSONContainer:
         # hier den Operator für die Klasse überschreiben
         # falls das eine gute Idee ist
         return self.data == container.data
+
+    def merge(self, container):
+        """
+        Allows to merge the own data with data from another container
+
+        Parameters
+        ----------
+        container(JSONContainer):
+            a different JSONContainer
+        """
+        # es kann passieren, dass hier nochmal die Reihenfolge
+        # geändert werden muss
+        self.data.update(container.data)
 
 
 class YAMLContainer:

@@ -3,6 +3,7 @@ Definition of the different simulation steps available.
 """
 import chefkoch.core
 from chefkoch.item import Item
+from chefkoch.container import JSONContainer
 from abc import ABC, abstractmethod
 
 
@@ -19,7 +20,7 @@ class Step(Item, ABC):
         """
         self.logfile = None
         self.mapping = None
-        self.dependencies = dict()
+        self.dependencies = JSONContainer()
 
 
 class StepResource(Step, ABC):

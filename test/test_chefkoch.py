@@ -583,7 +583,7 @@ class TestFlavour(unittest.TestCase):
 """
 # Results for comparing and using
 config_dict = {
-    "options": {"test": True, "directory": True, "configOut": True, },
+    "options": {"test": True, "directory": False, "configOut": True, },
     "resource": {
         "raw_data": "resource/raw_data.npy",
         "tex_paper": "resource/paper",
@@ -676,7 +676,8 @@ class TestFridge(unittest.TestCase):
 
     def test_flavourShelf_ranges(self):
         self.fridge.makeFlavours(config_dict["flavour"])
-        items = self.fridge.shelfs["flavours"].items
+
+        # items = self.fridge.shelfs["flavours"].items
         flavour_result = {
             "num_lambda": [
                 0.001,
@@ -702,10 +703,12 @@ class TestFridge(unittest.TestCase):
             "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
         }
         for x in flavour_result:
-            if isinstance(items[x][0], str):
-                self.assertEqual(items[x], flavour_result[x])
+            if isinstance(self.fridge.shelfs[x].items[0], str):
+                self.assertEqual(self.fridge.shelfs[x].items, flavour_result[x])
             else:
                 i = 0
                 for element in flavour_result[x]:
-                    self.assertAlmostEqual(element, items[x][i], places=7)
+                    self.assertAlmostEqual(
+                        element, self.fridge.shelfs[x].items[i], places=7
+                    )
                     i = i + 1
