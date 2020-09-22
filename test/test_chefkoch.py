@@ -583,12 +583,7 @@ class TestFlavour(unittest.TestCase):
 """
 # Results for comparing and using
 config_dict = {
-    "options": {
-        "another_switch": False,
-        "directory": False,
-        "some_switch": True,
-        "the_answer": 42,
-    },
+    "options": {"test": True, "directory": True, "configOut": True, },
     "resource": {
         "raw_data": "resource/raw_data.npy",
         "tex_paper": "resource/paper",

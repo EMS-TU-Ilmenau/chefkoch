@@ -164,6 +164,22 @@ class Fridge:
         shelf = FlavourShelf(self, "flavours")
         self.shelfs["flavours"] = shelf
         self.shelfs["flavours"].makeFullList(Flavours)
+        # optional printing of the different Flavours in a json
+        self.shelfs["flavours"].printFlavour()
+
+    def makeItemShelfs(self, outputs):
+        """
+        creates the necessary itemshelfs
+
+        Parameters
+        ----------
+        outputs(list):
+            list that contains the names of the different shelfs
+
+        """
+        for x in outputs:
+            shelf = ItemShelf(self, x)
+            self.shelfs[x] = shelf
 
 
 class Shelf(ABC):
@@ -191,6 +207,7 @@ class Shelf(ABC):
 class ItemShelf(Shelf):
     """
     A container for items of a similar kind
+    Resultate von Berechnungen
     """
 
     def find(self, name):
@@ -207,7 +224,7 @@ class FlavourShelf(Shelf):
 
     def ranges(self, f):
         """
-        translates the range-entries to valuelists
+        translates the log-range-entries to valuelists
 
         Parameters:
         -----------
@@ -216,7 +233,7 @@ class FlavourShelf(Shelf):
         """
         if f["type"] == "lin":
             # dealing with linear ranges
-            vals = numpy.arange(f["start"], f["stop"] + 1, f["step"])
+            vals = numpy.arange(f["start"], f["stop"] + 1, f["step"]).tolist()
             return vals
         elif f["type"] == "log":
             # dealing with logarithmic ranges
@@ -255,3 +272,11 @@ class FlavourShelf(Shelf):
                 print("difficult")
                 f = Flavours[x]
                 self.items[x] = self.ranges(f)
+        print(self.items)
+
+    def printFlavour(self):
+        if os.path.exists(self.path):
+            container = JSONContainer(None, self.items)
+            container.save(self.path + "/flavour.json")
+        else:
+            warnings.warn("unable to print flavours, there is no directory")

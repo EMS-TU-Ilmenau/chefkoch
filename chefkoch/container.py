@@ -19,7 +19,8 @@ class JSONContainer:
     #     self.data = dict()
     #     self.read_only = False
 
-    def __init__(self, filename: str = None):
+    def __init__(self, filename: str = None, data: dict = None):
+        # maybe it's a good idea
         """
         Initializes the container from file if path is given,
         else create empty Container
@@ -31,6 +32,10 @@ class JSONContainer:
                 self.data = json.load(f)
                 f.close()
             self.read_only = True
+        elif dict is not None:
+            self.data = data
+            # read_only eigentlich irrelevant
+            self.read_only = False
         else:
             self.data = dict()
             self.read_only = False
