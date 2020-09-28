@@ -29,7 +29,9 @@ import platform
 import json
 import sys
 import warnings
-import yaml
+from graph import Graph
+
+from chefkoch.container import YAMLContainer, JSONContainer
 
 # logs need to be imported this way to not write logs.logger all the time
 from .logs import *
@@ -45,8 +47,11 @@ class Plan:
 
     """
 
-    nodes: list = []
-    constructiontree: dict = {}
+    nodes = []
+    constructiontree = {}
+    required = []
+    remaining = []
+    targets = []
 
     def __init__(self, recipe, *targets):
         """
@@ -57,17 +62,28 @@ class Plan:
                         or node object
         """
         # targets = []
+        self.recipe = recipe
         if len(targets) == 0:
             self.nodes = recipe
         else:
+            self.targets.append(targets)
             for target in targets:
                 if type(target) == str or type(target) == int:
                     targetnode = recipe[target]
                 elif type(target) == Node:
                     targetnode = target
-                tree = self.createConstructionTree(recipe, target)
-                self.constructiontree[targetnode.name] = tree
-
+                self.constructiontree[targetnode.name] = self.createConstructionTree(
+                    recipe, target
+                )
+        for node in self.nodes:
+            # for i in range(len(node.inputs)):
+            #     inputKey, inputValue = node.inputs
+            for inputValue in node.inputs.values():
+                if inputValue not in self.required:
+                    self.required.append(inputValue)
+        self.remaining = self.required.copy()
+            # self.requi()
+####################################################
     def createConstructionTree(self, recipe, target):
         """
         build recursively a construction tree based on a recipe and a target
@@ -77,25 +93,44 @@ class Plan:
                         or node object
         :return:
         """
-        constructiontree = {}
+        tree = {}
         if type(target) == str or type(target) == int:
             node = recipe[target]
         elif type(target) == Node:
-            node = targetiagram
-        if node not in self.nodes:
-            self.nodes.append(node)
+            node = target
         for inputKey, inputValue in node.inputs.items():
             children = recipe.inputIsOutput(inputValue)
             for child in children:
+                if child.name in self.targets:
+                    self.targets.remove(child.name)
                 if child.name not in self.constructiontree.keys():
-                    constructiontree[inputValue] = self.createConstructionTree(
+                    tree[child.name] = self.createConstructionTree(
                         recipe, child
                     )
                 else:
-                    constructiontree[inputValue] = self.constructiontree[
-                        child.name
-                    ]
-        return constructiontree
+                    tree[child.name] = self.constructiontree[child.name]
+                    self.constructiontree.pop(child.name)
+        if node not in self.nodes:
+            self.nodes.append(node)
+        return tree
+
+    # def requi(self):
+    #     for root in self.constructiontree.values():
+    #         # print(root)
+    #         self.buildNodes(root)
+    #         self.required.append(self.recipe[root.key])
+    #
+    # def buildNodes(self, node):
+    #     print(type(node))
+    #     print(node)
+    #     if node.values:
+    #         for value in node.values():
+    #             self.buildNodes(value)
+    #             print("build " + value.keys())
+    #             self.required.append(self.recipe[value.keys()])
+    #     else:
+    #         self.required.append(self.recipe[node.keys()])
+    #         print("test " + node.key())
 
 
 class Recipe:
@@ -118,6 +153,8 @@ class Recipe:
             list of simulation steps as Node[]
         """
         self.nodes = nodelist
+        self.graph = Graph()
+        self.makeGraph()
         # TODO: Making sure, that nodelist is a list of type Node
         # TODO: Therefore initialise each Node in nodelist as an
         # instance of class Node.
@@ -134,7 +171,7 @@ class Recipe:
             for node in self.nodes:
                 if node.name == item:
                     return node
-
+#########################
     def getPrerequisits(self, item):
         """
         Returns all nodes required to calculate a given item of the recipe
@@ -143,9 +180,7 @@ class Recipe:
         """
         ret = []
         for inputKey, inputValue in (
-            self[item].inputs.items()
-            if type(item) == int
-            else item.inputs.items()
+            self[item].inputs.items() if type(item) == int else item.inputs.items()
         ):
             prerequisites = self.inputIsOutput(inputValue)
             if len(prerequisites) > 0:
@@ -155,7 +190,7 @@ class Recipe:
                     # print(i.name)
                     ret.extend(self.getPrerequisits(i))
         return ret
-
+##################################
     def inputIsOutput(self, input):
         """
         Checks if given input is also output of other nodes and returns them
@@ -169,7 +204,7 @@ class Recipe:
                     if node not in ret:
                         ret.append(node)
         return ret
-
+##################################
     def inputIsValid(self, input):
         """
         Checks if a given input name is valid. An input is valid if it
@@ -193,6 +228,7 @@ class Recipe:
             return True
         else:
             return False
+
 
     def inputIntegrity(self):
         """
@@ -250,104 +286,29 @@ class Recipe:
 
         # 4. Loop until all nodes are reachable
         return None, None
+########################
 
-    def findCircles(self):
+    def makeGraph(self):
         """
-        Makes list of all nodes, which are those who only have flavour
-        parameters as inputs.
-        Then starts depth-first search for every root node. If there is a way
-        back to a previously visited node, there is a warning about a circle.
 
-        Raises
-        -------
-        RecursionError:
-            If there is a circle in the recipe that would cause an
-            endless recursion.
+        :param dict:
+        :return:
         """
-        rootNodes = []
-        # 1. Make list of all root nodes
-        # 1.1. Make set of all inputs that refere to the flavour file
-        all_ins = set([])
         for node in self.nodes:
-            all_ins.update(node.inputs.values())
-        flavour_inputs = set(i for i in all_ins if i.startswith("flavour."))
-        # TODO neue Möglichkeit für startswith auf Mengen finden
-        # 1.2. If all inputs of a node are in there, node is root node.
-        for node in self.nodes:
-            node_inputs = set(node.inputs.values())
-            if (node_inputs & flavour_inputs) == node_inputs:
-                # in that case all of node's inputs start with flavour.
-                rootNodes.append(node)
-        logger.debug("Root Nodes:")
-        # 2. Start depth-first-search for every such node.
-        for node in rootNodes:
-            logger.debug(node.name)
-            nodesOnTheWay = []
-            # do recursive depth-first search
-            if self.recursiveDFS(node, nodesOnTheWay):
-                raise RecursionError(
-                    "The recipe contains a circle reachable from " + node.name
-                )
-        return
+            print("adding node: " + node.name)
+            self.graph.add_node(node.name, node)
+            for input in node.inputs.values():
+                if "item." + input not in self.graph:
+                    print("adding input: " + "item." + input)
+                    self.graph.add_node("item." + input)
+                self.graph.add_edge("item." + input, node.name)
+            for output in node.outputs.values():
+                if "item." + output not in self.graph:
+                    print("adding output: " + "item." + output)
+                    self.graph.add_node("item." + output)
+                self.graph.add_edge(node.name, "item." + output)
 
-    def recursiveDFS(self, node, nodesOnTheWay):
-        """
-        Recursive Depth First Search finding circles.
-
-        Parameters
-        ------------
-        node (Node):
-            The node, the DFS starts in.
-        nodesOnTheWay (Node[]):
-            Previously visited nodes. If a node in there can be revisited \
-            by going deeper into the graph, there is a circle.
-
-        Returns
-        -------
-        returns:
-            `True` if there is a circle. False elsewise.
-        """
-        namesOnTheWay = ""
-        for nodeOTW in nodesOnTheWay:
-            namesOnTheWay = namesOnTheWay + " " + nodeOTW.name
-        logger.debug(
-            "Executing rDFS for " + node.name + " and " + namesOnTheWay
-        )
-        if node in nodesOnTheWay:
-            warnings.warn(
-                "The recipe contains a circle along "
-                + namesOnTheWay
-                + node.name
-                + " and can therefore"
-                + " not be executed."
-            )
-            return True
-        nodesOnTheWay.append(node)
-        # this only gets longer in deeper recursion levels
-        # no need to bring nodes from deeper levels up.
-        for key in node.outputs:
-            output = node.outputs[key]
-            # output might be used by several other nodes
-            for nextNode in self.nodes:
-                # to search for the values in a dict instead of their keys
-                # we need to invert it
-                invertedInputDict = dict(
-                    map(reversed, nextNode.inputs.items())
-                )
-                if output in invertedInputDict:
-                    logger.debug(
-                        "Taking the edge from "
-                        + node.name
-                        + " to "
-                        + nextNode.name
-                    )
-                    if self.recursiveDFS(nextNode, nodesOnTheWay):
-                        return True  # a circle was found
-                    # else continue with next node
-        # after all outgoing edges where tested, remove current node
-        nodesOnTheWay.remove(node)
-        # if there is no circle from none of the outputs
-        return False
+        print(self.graph.to_dict())
 
 
 class Node:
@@ -442,9 +403,7 @@ class Name:
             is_unicode = isinstance(name, unicode)
         except NameError as mimimi:
             logger.debug(mimimi)
-            logger.debug(
-                "You are using python 3, but don't worry, we make it work."
-            )
+            logger.debug("You are using python 3, but don't worry, we make it work.")
             pass
         if not (isinstance(name, str) or is_unicode):
             raise TypeError("The name of a node must be a string.")
@@ -508,289 +467,285 @@ class StepSource:
                 + "or a build-in function."
             )
 
+#
+# class Flavour(dict):
+#     """
+#     The Flavour class extends the dictionary class and holds the parsed flavour
+#     file. The flavour file is the collection of all paramters needed for the
+#     simulation and all their values the simulation should be executed with. The
+#     goal is to find the best parameter combination. Paramter can have a constant
+#     value, a list of values or a range. They can also be files.
+#     """
+#
+#     def tostring(self):
+#         """
+#         Converts the data held inside the flavour object into a string.
+#
+#         Returns
+#         ----------
+#         String that holds structured content of the flavour object
+#         """
+#         content = "The flavour file contains: "
+#         for key in self:
+#             content += "\n  " + self[key].tostring()
+#         return content
+#
+#     # todo overwrite return of the parameter values list so that
+#     # flavour["param_name"] returns flavour["param_name"][0] if there is only
+#     # one element in the list
 
-class Flavour(dict):
-    """
-    The Flavour class extends the dictionary class and holds the parsed flavour
-    file. The flavour file is the collection of all paramters needed for the
-    simulation and all their values the simulation should be executed with. The
-    goal is to find the best parameter combination. Paramter can have a constant
-    value, a list of values or a range. They can also be files.
-    """
+#
+# class FileParamValue:
+#     """
+#     A single parameter value which is a file, defined by filepath and optional
+#     key/passphrase to the file.
+#     """
+#
+#     key = ""  #: Saves optional passphrase to the given file, defaults to "".
+#     file = ""  #: Saves the filepath, if the given file exists, defaults to "".
+#
+#     def __init__(self, filepath, key):
+#         """
+#         Initialises a new parameter value, that holds a file.
+#
+#         Parameters
+#         ----------
+#         filepath (str):
+#             file path as given in flavour.json or flacour.yaml
+#         key (str or None):
+#             optional key or passphrase to the file
+#
+#         Raises
+#         -------
+#         IOError:
+#             In case, the filepath is None or the path does not exist, there \
+#             is an IOError raised and the functions returns.
+#         """
+#         logger.debug("Creating new FileParamValue")
+#         logger.debug("Filepath (dict): " + str(filepath))
+#         logger.debug("Key (dict): " + str(key))
+#         self.key = key
+#         logger.debug("Key: " + str(self.key))
+#         if filepath is None:
+#             raise IOError("The filepath is None.")
+#             return
+#         if os.path.isfile(filepath):
+#             self.file = filepath
+#             logger.debug("Filepath: " + str(self.file))
+#         else:
+#             warnings.warn("The file " + filepath + " does not exist.")
+#             raise IOError("The file " + filepath + " does not exist.")
+#             return
+#
+#     def tostring(self):
+#         """
+#         Returns a printable and formatted string that shows the
+#         FileParamValue and its values.
+#
+#         Returns
+#         -------
+#         String that holds structured information on the FileParamValue
+#         """
+#         content = "Value is following file: \n  "
+#         content += self.file + "\n  Key: " + str(self.key)
+#         return content
 
-    def tostring(self):
-        """
-        Converts the data held inside the flavour object into a string.
+#
+# class Param:
+#     """
+#     A parameter with all values attached to it.
+#     """
+#
+#     # todo: make Param class extend list so that Param returns Param.values
+#     values = []  #: All possible values of the parameter
+#
+#     def __init__(self, name, entry):
+#         """
+#         Creates a new paramter from the data gotten from the flavour file.
+#
+#         Parameters
+#         ----------
+#         name (str):
+#             name as provided as in flavour file
+#         entry (dict):
+#             if the falvour file was a dict, it was flavour['name']
+#         """
+#         self.values = []
+#         logger.debug("Creating a new parameter " + str(name))
+#         self.name = name
+#         if type(entry) is not list:  # a single value so to say
+#             logger.debug("It has a single value: " + str(entry))
+#             self.appendEntry(entry)
+#         else:
+#             logger.debug("It has more than one value.")
+#             for sub_entry in entry:  # the entry in the json file
+#                 self.appendEntry(sub_entry)
+#         logger.debug("Fin.")
+#
+#     def appendFileParam(self, entry):
+#         """
+#         Appends a file parameter given in the JSON or YAML data to the
+#         Param.values list.
+#
+#         Parameters
+#         ----------
+#         entry (dict):
+#             dict with fields type, file and key
+#
+#         Raises
+#         ------
+#         ValueError:
+#             If there is no 'file' field to the entry or if the given file \
+#             path does not exist
+#         """
+#         try:
+#             newValue = FileParamValue(entry["file"], entry["key"])
+#             self.values.append(newValue)
+#             logger.debug("Appending " + str(newValue) + newValue.tostring())
+#         except KeyError as err:
+#             # KeyError because the key-field is missing, in this case ignore
+#             # todo: different possible exceptions
+#             logger.exception(
+#                 "Either the file or the key field of the " + "entry are missing."
+#             )
+#             # only abort if the file is missing. Missing keyword is possible.
+#             try:
+#                 forgetfile = entry["file"]
+#             except KeyError as err:
+#                 raise ValueError("There is no file given to the file param!")
+#                 # todo: is it important to have a value error or can I change
+#                 # it to KeyError?
+#             pass
+#         except IOError as err:
+#             # given filepath does not exist, so stop execution
+#             raise ValueError("The filepath to the file param does not exist.")
+#             # todo ValueError is catched somewhere. Rename to IOError there!
+#
+#     def appendValuesFromRange(self, entry):
+#         """
+#         Appends all values within a range given in the JSON or YAML data to
+#         Param.values
+#
+#         Parameters
+#         ----------
+#         entry (dict):
+#             dict with fields start, stop and step.
+#
+#         Raises
+#         ------
+#         KeyError:
+#             If a field of the entry is missing.
+#         """
+#         logger.debug("More values are given by a range.")
+#         try:
+#             i = entry["start"]
+#             stop = entry["stop"]
+#             step = entry["step"]
+#         except KeyError as err:
+#             raise KeyError(
+#                 "The start, stop or step field of " + str(entry) + "are missing."
+#             )
+#         valid_start = isinstance(i, int) or isinstance(i, float)
+#         valid_stop = isinstance(stop, int) or isinstance(stop, float)
+#         valid_step = isinstance(step, int) or isinstance(step, float)
+#         valid = valid_start and valid_step and valid_stop
+#         if not valid:
+#             warnings.warn(
+#                 "The start, step and stop value of a parameter range"
+#                 + " need to by of type int or float, so an empty list"
+#                 + " was appended! Check for correctness!"
+#             )
+#             return
+#         # get the direction of the range before using <= or >=
+#         if i < stop and step > 0:
+#             # add all values within range
+#             while i <= stop:
+#                 logger.debug("Adding value " + str(i))
+#                 self.values.append(i)
+#                 i = i + step
+#         elif i > stop and step < 0:
+#             # add all values within range
+#             while i >= stop:
+#                 logger.debug("Adding value " + str(i))
+#                 self.values.append(i)
+#                 i = i + step
+#         else:
+#             warnings.warn(
+#                 "The start "
+#                 + str(i)
+#                 + ", stop "
+#                 + str(stop)
+#                 + " and step "
+#                 + str(step)
+#                 + " of the range leave an empty list for"
+#                 + " this paramter. Please check if this is intended."
+#             )
+#
+#     def appendEntry(self, entry):
+#         """
+#         Appends a single entry within the JSON or YAML data received from the
+#         flavour file.
+#
+#         Parameters
+#         ----------
+#         entry (dict):
+#             file or range or any other value
+#         """
+#         try:
+#             type = entry["type"]
+#         except KeyError as err:
+#             logger.debug(
+#                 "There is no type specified to this entry. It will"
+#                 + " be interpreted and appended as a dictionary."
+#             )
+#             self.values.append(entry)
+#             return
+#         except TypeError as err:
+#             # entry is not a dictionary
+#             logger.debug("The entry is not a dictionary. It is appended normally.")
+#             self.values.append(entry)
+#             return
+#         # if there is a type to the entry, test if it is known
+#         logger.debug("It is of type " + type)
+#         if type == "file":
+#             try:
+#                 self.appendFileParam(entry)
+#             # todo: capture and handle this exception inside appenFileParam
+#             except ValueError as err:
+#                 pass
+#         elif type == "range":
+#             self.appendValuesFromRange(entry)
+#         else:
+#             # allow everything else by default, value could also be a list.
+#             warnings.warn(
+#                 "There is a type specified to "
+#                 + str(entry)
+#                 + ", but neither 'range' nor 'file'. It will be "
+#                 + "appended as a dictionary."
+#             )
+#             self.values.append(entry)
+#
+#     def tostring(self):
+#         """
+#         Returns a printable and formatted string that shows the Parameter
+#         and its values.
+#
+#         Returns
+#         -------
+#             String thta holds the content of the parameter
+#         """
+#         content = "Parameter name: " + self.name + "\n  "
+#         for value in self.values:
+#             if type(value) is FileParamValue:
+#                 for line in value.tostring.split():
+#                     content += "  " + value.tostring()
+#             else:
+#                 content += "  " + str(value) + "\n  "
+#         return content
 
-        Returns
-        ----------
-        String that holds structured content of the flavour object
-        """
-        content = "The flavour file contains: "
-        for key in self:
-            content += "\n  " + self[key].tostring()
-        return content
+# ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    # todo overwrite return of the parameter values list so that
-    # flavour["param_name"] returns flavour["param_name"][0] if there is only
-    # one element in the list
-
-
-class FileParamValue:
-    """
-    A single parameter value which is a file, defined by filepath and optional
-    key/passphrase to the file.
-    """
-
-    key = ""  #: Saves optional passphrase to the given file, defaults to "".
-    file = ""  #: Saves the filepath, if the given file exists, defaults to "".
-
-    def __init__(self, filepath, key):
-        """
-        Initialises a new parameter value, that holds a file.
-
-        Parameters
-        ----------
-        filepath (str):
-            file path as given in flavour.json or flacour.yaml
-        key (str or None):
-            optional key or passphrase to the file
-
-        Raises
-        -------
-        IOError:
-            In case, the filepath is None or the path does not exist, there \
-            is an IOError raised and the functions returns.
-        """
-        logger.debug("Creating new FileParamValue")
-        logger.debug("Filepath (dict): " + str(filepath))
-        logger.debug("Key (dict): " + str(key))
-        self.key = key
-        logger.debug("Key: " + str(self.key))
-        if filepath is None:
-            raise IOError("The filepath is None.")
-            return
-        if os.path.isfile(filepath):
-            self.file = filepath
-            logger.debug("Filepath: " + str(self.file))
-        else:
-            warnings.warn("The file " + filepath + " does not exist.")
-            raise IOError("The file " + filepath + " does not exist.")
-            return
-
-    def tostring(self):
-        """
-        Returns a printable and formatted string that shows the
-        FileParamValue and its values.
-
-        Returns
-        -------
-        String that holds structured information on the FileParamValue
-        """
-        content = "Value is following file: \n  "
-        content += self.file + "\n  Key: " + str(self.key)
-        return content
-
-
-class Param:
-    """
-    A parameter with all values attached to it.
-    """
-
-    # todo: make Param class extend list so that Param returns Param.values
-    values = []  #: All possible values of the parameter
-
-    def __init__(self, name, entry):
-        """
-        Creates a new paramter from the data gotten from the flavour file.
-
-        Parameters
-        ----------
-        name (str):
-            name as provided as in flavour file
-        entry (dict):
-            if the falvour file was a dict, it was flavour['name']
-        """
-        self.values = []
-        logger.debug("Creating a new parameter " + str(name))
-        self.name = name
-        if type(entry) is not list:  # a single value so to say
-            logger.debug("It has a single value: " + str(entry))
-            self.appendEntry(entry)
-        else:
-            logger.debug("It has more than one value.")
-            for sub_entry in entry:  # the entry in the json file
-                self.appendEntry(sub_entry)
-        logger.debug("Fin.")
-
-    def appendFileParam(self, entry):
-        """
-        Appends a file parameter given in the JSON or YAML data to the
-        Param.values list.
-
-        Parameters
-        ----------
-        entry (dict):
-            dict with fields type, file and key
-
-        Raises
-        ------
-        ValueError:
-            If there is no 'file' field to the entry or if the given file \
-            path does not exist
-        """
-        try:
-            newValue = FileParamValue(entry["file"], entry["key"])
-            self.values.append(newValue)
-            logger.debug("Appending " + str(newValue) + newValue.tostring())
-        except KeyError as err:
-            # KeyError because the key-field is missing, in this case ignore
-            # todo: different possible exceptions
-            logger.exception(
-                "Either the file or the key field of the "
-                + "entry are missing."
-            )
-            # only abort if the file is missing. Missing keyword is possible.
-            try:
-                forgetfile = entry["file"]
-            except KeyError as err:
-                raise ValueError("There is no file given to the file param!")
-                # todo: is it important to have a value error or can I change
-                # it to KeyError?
-            pass
-        except IOError as err:
-            # given filepath does not exist, so stop execution
-            raise ValueError("The filepath to the file param does not exist.")
-            # todo ValueError is catched somewhere. Rename to IOError there!
-
-    def appendValuesFromRange(self, entry):
-        """
-        Appends all values within a range given in the JSON or YAML data to
-        Param.values
-
-        Parameters
-        ----------
-        entry (dict):
-            dict with fields start, stop and step.
-
-        Raises
-        ------
-        KeyError:
-            If a field of the entry is missing.
-        """
-        logger.debug("More values are given by a range.")
-        try:
-            i = entry["start"]
-            stop = entry["stop"]
-            step = entry["step"]
-        except KeyError as err:
-            raise KeyError(
-                "The start, stop or step field of "
-                + str(entry)
-                + "are missing."
-            )
-        valid_start = isinstance(i, int) or isinstance(i, float)
-        valid_stop = isinstance(stop, int) or isinstance(stop, float)
-        valid_step = isinstance(step, int) or isinstance(step, float)
-        valid = valid_start and valid_step and valid_stop
-        if not valid:
-            warnings.warn(
-                "The start, step and stop value of a parameter range"
-                + " need to by of type int or float, so an empty list"
-                + " was appended! Check for correctness!"
-            )
-            return
-        # get the direction of the range before using <= or >=
-        if i < stop and step > 0:
-            # add all values within range
-            while i <= stop:
-                logger.debug("Adding value " + str(i))
-                self.values.append(i)
-                i = i + step
-        elif i > stop and step < 0:
-            # add all values within range
-            while i >= stop:
-                logger.debug("Adding value " + str(i))
-                self.values.append(i)
-                i = i + step
-        else:
-            warnings.warn(
-                "The start "
-                + str(i)
-                + ", stop "
-                + str(stop)
-                + " and step "
-                + str(step)
-                + " of the range leave an empty list for"
-                + " this paramter. Please check if this is intended."
-            )
-
-    def appendEntry(self, entry):
-        """
-        Appends a single entry within the JSON or YAML data received from the
-        flavour file.
-
-        Parameters
-        ----------
-        entry (dict):
-            file or range or any other value
-        """
-        try:
-            type = entry["type"]
-        except KeyError as err:
-            logger.debug(
-                "There is no type specified to this entry. It will"
-                + " be interpreted and appended as a dictionary."
-            )
-            self.values.append(entry)
-            return
-        except TypeError as err:
-            # entry is not a dictionary
-            logger.debug(
-                "The entry is not a dictionary. It is appended normally."
-            )
-            self.values.append(entry)
-            return
-        # if there is a type to the entry, test if it is known
-        logger.debug("It is of type " + type)
-        if type == "file":
-            try:
-                self.appendFileParam(entry)
-            # todo: capture and handle this exception inside appenFileParam
-            except ValueError as err:
-                pass
-        elif type == "range":
-            self.appendValuesFromRange(entry)
-        else:
-            # allow everything else by default, value could also be a list.
-            warnings.warn(
-                "There is a type specified to "
-                + str(entry)
-                + ", but neither 'range' nor 'file'. It will be "
-                + "appended as a dictionary."
-            )
-            self.values.append(entry)
-
-    def tostring(self):
-        """
-        Returns a printable and formatted string that shows the Parameter
-        and its values.
-
-        Returns
-        -------
-            String thta holds the content of the parameter
-        """
-        content = "Parameter name: " + self.name + "\n  "
-        for value in self.values:
-            if type(value) is FileParamValue:
-                for line in value.tostring.split():
-                    content += "  " + value.tostring()
-            else:
-                content += "  " + str(value) + "\n  "
-        return content
-
-
-def readrecipe(filename):
+def readrecipe(dict):
     """
     Opens a YAML file and parses it into a recipe object. Then outputs
     the data inside the recipe.
@@ -805,74 +760,74 @@ def readrecipe(filename):
     Object of class Recipe
     :rtype: Recipe
     """
-    data = {}
-    type = filename[-4:]
-    if type == "yaml":
-        data = openyaml(filename)
-    recipe = dictToRecipe(data)
+
+    recipe = dictToRecipe(dict)
     recipe.inputIntegrity()
-    recipe.findCircles()
-    printRecipe(recipe)
+    recipe.makeGraph()
+    if recipe.graph.has_cycles():
+        raise Exception("There is a Cycle in your recipe, please check")
+    # recipe.findCircles()
+    # printRecipe(recipe)
     return recipe
 
 
-def readflavour(filename):
-    """
-    Opens a YAML file and parses it into a flavour object. Then outputs
-    the data inside the flavour file.
+# def readflavour(filename):
+#     """
+#     Opens a YAML file and parses it into a flavour object. Then outputs
+#     the data inside the flavour file.
+#
+#     Parameters
+#     ----------
+#     filename (str):
+#         file path
+#
+#     Returns
+#     --------
+#     flavour - object of type flavour.
+#     :rtype: Flavour
+#     """
+#     data = {}
+#     type = filename[-4:]
+#     if type == "yaml":
+#         data = openyaml(filename)
+#     flavour = dictToFlavour(data)
+#     print(flavour.tostring())
+#     # todo: input Integrity checks
+#     return flavour
 
-    Parameters
-    ----------
-    filename (str):
-        file path
 
-    Returns
-    --------
-    flavour - object of type flavour.
-    :rtype: Flavour
-    """
-    data = {}
-    type = filename[-4:]
-    if type == "yaml":
-        data = openyaml(filename)
-    flavour = dictToFlavour(data)
-    print(flavour.tostring())
-    # todo: input Integrity checks
-    return flavour
-
-
-def openyaml(filename):
-    """
-    Opens a YAML file, makes sure it is valid YAML and the file exists
-    at the given path. Loads the whole file at once. File should there-
-    fore not be too big.
-
-    Parameters
-    ----------
-    filename (str):
-        file path
-
-    Returns
-    --------
-    data - dict or list depending on YAML structure
-
-    Raises
-    ------
-    IOError:
-        If the file path or file name are incorrect.
-    ValueError:
-        If the given file is no valid YAML format.
-    """
-    if not os.path.isfile(filename):
-        raise IOError("The file path or file name is incorrect.")
-    with open(filename) as f:
-        try:
-            data = yaml.load(f, Loader=yaml.SafeLoader)
-            # That's the whole file at once. Hope files dont get too big
-        except ValueError as err:
-            raise ValueError("This is no valid YAML file.")
-
-    return data
+# def openyaml(filename): #containern
+#     """
+#     Opens a YAML file, makes sure it is valid YAML and the file exists
+#     at the given path. Loads the whole file at once. File should there-
+#     fore not be too big.
+#
+#     Parameters
+#     ----------
+#     filename (str):
+#         file path
+#
+#     Returns
+#     --------
+#     data - dict or list depending on YAML structure
+#
+#     Raises
+#     ------
+#     IOError:
+#         If the file path or file name are incorrect.
+#     ValueError:
+#         If the given file is no valid YAML format.
+#     """
+#     if not os.path.isfile(filename):
+#         raise IOError("The file path or file name is incorrect.")
+#     with open(filename) as f:
+#         try:
+#             data = yaml.load(f, Loader=yaml.SafeLoader)
+#             # That's the whole file at once. Hope files dont get too big
+#         except ValueError as err:
+#             raise ValueError("This is no valid YAML file.")
+#
+#     return data
 
 
 def dictToRecipe(data):
@@ -897,74 +852,19 @@ def dictToRecipe(data):
     Exception:
         Error while parsing YAML data into recipe object.
     """
-    if not isinstance(data, dict):
+    if not isinstance(data, dict) and not isinstance(data, YAMLContainer) and not isinstance(data, JSONContainer):
         raise TypeError("Function dictToRecipe expects dictionary as input.")
     recipe = Recipe([])
     for node in data["nodes"]:
         try:
             newNode = Node(
-                node["name"],
-                node["inputs"],
-                node["outputs"],
-                node["stepsource"],
+                node["name"], node["inputs"], node["outputs"], node["stepsource"],
             )
             recipe.nodes.append(newNode)
         except KeyError as err:
             raise KeyError("Error while parsing data into recipe object.")
 
     return recipe
-
-
-def dictToFlavour(data):
-    """
-    Turns data loaded from a yaml file into a flavour object.
-
-    Parameters
-    ----------
-    data (dict or list):
-        dict or list depending on yaml file.
-
-    Returns
-    -------
-    flavour - object of class Flavour
-    :rtype: Flavour
-
-    Raises
-    ------
-    TypeError:
-        If some data to the flavour file is missing.
-    Exception:
-        If some random error should occur.
-    """
-    # todo: if the flavour file has an entry that misses the "type" field, there
-    # should be a warning and this parameter should be skipped instead of
-    # having a random key error
-    if not isinstance(data, dict):
-        raise TypeError(
-            "Function dictToFlavour expects a dictionary as input."
-        )
-    flavour = Flavour({})
-    for param in data:
-        try:
-            newParam = Param(
-                param,  # name which is also key
-                data[param],  # will be handled in Param init
-            )
-            if len(newParam.values) > 0:
-                flavour[param] = newParam  # new entry to dict
-            else:
-                warnings.warn(
-                    "The parameter "
-                    + param
-                    + " has no valid"
-                    + " value and will be excluded from the flavour."
-                )
-        except TypeError as errorMessage:
-            raise TypeError(errorMessage)
-        except Exception as err:
-            raise Exception("Error while parsing data into flavour object.")
-
-    return flavour
 
 
 def printRecipe(recipe):
@@ -992,37 +892,36 @@ def printRecipe(recipe):
 
 
 # called by typing "chef read /file/path/.."
-def readfile(type, filename):
-    """
-    Wrapper function that calls either `readrecipe` or `readflavour`
-    depending on the parameter `type`.
-
-    Parameters
-    ----------
-    type (str):
-        Type of YAML file that should be converted into a \
-        dictionary: {"recipe", "flavour"}
-
-    Returns
-    -------
-    Recipe or Flavour object depending on the `type` parameter.
-
-    Raises
-    ------
-    TypeError:
-        If type is none of the above.
-
-    """
-    if type == "recipe":
-        return readrecipe(filename)
-    if type == "flavour":
-        return readflavour(filename)
-    else:
-        raise TypeError(
-            "The function readyaml only takes 'recipe' or"
-            + "'flavour' as type."
-        )
-
+# def readfile(type, filename):
+#     """
+#     Wrapper function that calls either `readrecipe` or `readflavour`
+#     depending on the parameter `type`.
+#
+#     Parameters
+#     ----------
+#     type (str):
+#         Type of YAML file that should be converted into a \
+#         dictionary: {"recipe", "flavour"}
+#
+#     Returns
+#     -------
+#     Recipe or Flavour object depending on the `type` parameter.
+#
+#     Raises
+#     ------
+#     TypeError:
+#         If type is none of the above.
+#
+#     """
+#     if type == "recipe":
+#         return readrecipe(filename)
+#     if type == "flavour":
+#         return readflavour(filename)
+#     else:
+#         raise TypeError(
+#             "The function readyaml only takes 'recipe' or" + "'flavour' as type."
+#         )
+#
 
 # def readyaml(type, filename):
 #     """
