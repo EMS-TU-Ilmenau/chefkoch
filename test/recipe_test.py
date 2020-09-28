@@ -1,4 +1,4 @@
-import chefkoch.recipe as rcp
+# import chefkoch.recipe as rcp
 
 # flav = rec.readfile('flavour',
 # 'flavour.yaml')
