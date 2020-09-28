@@ -67,9 +67,10 @@ class Configuration:
         return self.items[keyname]
 
     def output(self, filename):
-        container = JSONContainer()
-        container.data = self.items
-        container.save(filename)
+        if self.items["options"]["configOut"]:
+            container = JSONContainer()
+            container.data = self.items
+            container.save(filename)
 
     def __init__(self, container, path, arguments):
         """
@@ -115,7 +116,7 @@ class Configuration:
                 else:
                     self.items[element] = self.file.data[element]
         # vllt nochmal an andere Stelle speichern, aber über eine Zusatsoption
-        self.output(path + "/" + "test.json")
+        self.output(path + "/" + "Configtest.json")
 
 
 class Chefkoch:
@@ -181,11 +182,4 @@ class Chefkoch:
             things/steps that should be cooked
 
         """
-        pass
-
-
-class Name(str):
-    SEPARATOR = "."
-
-    def __init__(self, *tokens):
         pass

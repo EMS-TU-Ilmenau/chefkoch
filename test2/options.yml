@@ -1,1 +1,1 @@
-{another_switch: false, directory: false, some_switch: true, the_answer: 42}
+{test: True, directory: false, configOut: true}

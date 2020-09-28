@@ -110,6 +110,16 @@ if __name__ == "__main__":
         print(vars(arguments))
         chef = chefkoch.Chefkoch(cheffile, vars(arguments))
 
+    HELP_HELP = "pointers how to use the current version of chefkoch"
+
+    @subcmd("help", help=HELP_HELP)
+    def cmd_help(parser, context, arguments):
+        parser.description = HELP_HELP
+        print("Hey, Listen!")
+        print("current options available: ")
+        print("directory: should the fridge be a folder structure")
+        print("configOut: printing the complete config as file")
+
     HELP_COOK = "Cook something from the scope of your recipe"
 
     @subcmd("cook", help=HELP_COOK)
