@@ -291,6 +291,7 @@ class Recipe:
 
         # 4. Loop until all nodes are reachable
         return None, None
+
 ########################
 
     def makeGraph(self):

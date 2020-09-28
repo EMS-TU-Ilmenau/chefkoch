@@ -5,6 +5,7 @@ import chefkoch.core
 from chefkoch.item import Item
 from chefkoch.container import JSONContainer
 from abc import ABC, abstractmethod
+import inspect
 
 
 class Step(Item, ABC):

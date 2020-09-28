@@ -1,5 +1,10 @@
 import inspect
 
+def execute(a, b):
+    print("hello my darling")
+    print(a)
+    print(b)
+
 def aFunction(bla=123, blub='abc'):
     pass
 

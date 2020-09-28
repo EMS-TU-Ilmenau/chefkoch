@@ -704,7 +704,9 @@ class TestFridge(unittest.TestCase):
         }
         for x in flavour_result:
             if isinstance(self.fridge.shelfs[x].items[0], str):
-                self.assertEqual(self.fridge.shelfs[x].items, flavour_result[x])
+                self.assertEqual(
+                    self.fridge.shelfs[x].items, flavour_result[x]
+                )
             else:
                 i = 0
                 for element in flavour_result[x]:
