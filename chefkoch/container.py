@@ -12,19 +12,16 @@ class JSONContainer:
     A Container for JSON Files
     """
 
-    # def __init__(self):
-    #     """
-    #     Initializes the container
-    #     """
-    #     self.data = dict()
-    #     self.read_only = False
-
     def __init__(self, filename: str = None, data: dict = None):
         """
-        Initializes the container from file if path is given,
-        else create empty Container
+        Initializes the container from file if path is given or
+        a given dictionary else it creates an empty container
 
-        :param filename:
+        Parameters
+        ----------
+            filename(str): name of a given file
+            data(dict): a initialized dictionary
+
         """
         if filename is not None:
             with open(filename) as f:

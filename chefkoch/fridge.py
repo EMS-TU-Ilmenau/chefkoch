@@ -180,6 +180,8 @@ class Fridge:
 
         """
         for x in outputs:
+            if x in self.shelfs:
+                raise Exception(x + " already exists in this fridge!")
             shelf = ItemShelf(self, x)
             self.shelfs[x] = shelf
 
@@ -273,7 +275,7 @@ class FlavourShelf(Shelf):
             print("difficult")
             f = Flavours
             self.items = self.ranges(f)
-        print(self.items)
+        # print(self.items)
 
     def printFlavour(self, name):
         if os.path.exists(self.path):

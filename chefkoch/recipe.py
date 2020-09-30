@@ -43,9 +43,7 @@ BUILT_INS = ["collect"]
 
 
 class Plan:
-    """
-
-    """
+    """"""
 
     nodes = []
     constructiontree = {}
@@ -72,10 +70,9 @@ class Plan:
                     targetnode = recipe[target]
                 elif type(target) == Node:
                     targetnode = target
-                self.constructiontree[targetnode.name] = \
-                    self.createConstructionTree(
-                    recipe, target
-                )
+                self.constructiontree[
+                    targetnode.name
+                ] = self.createConstructionTree(recipe, target)
         for node in self.nodes:
             # for i in range(len(node.inputs)):
             #     inputKey, inputValue = node.inputs
@@ -83,8 +80,9 @@ class Plan:
                 if inputValue not in self.required:
                     self.required.append(inputValue)
         self.remaining = self.required.copy()
-# self.requi()
-####################################################
+
+    # self.requi()
+    ####################################################
 
     def createConstructionTree(self, recipe, target):
         """
@@ -173,7 +171,8 @@ class Recipe:
             for node in self.nodes:
                 if node.name == item:
                     return node
-#########################
+
+    #########################
 
     def getPrerequisits(self, item):
         """
@@ -184,7 +183,8 @@ class Recipe:
         ret = []
         for inputKey, inputValue in (
             self[item].inputs.items()
-            if type(item) == int else item.inputs.items()
+            if type(item) == int
+            else item.inputs.items()
         ):
             prerequisites = self.inputIsOutput(inputValue)
             if len(prerequisites) > 0:
@@ -194,7 +194,8 @@ class Recipe:
                     # print(i.name)
                     ret.extend(self.getPrerequisits(i))
         return ret
-##################################
+
+    ##################################
 
     def inputIsOutput(self, input):
         """
@@ -209,7 +210,8 @@ class Recipe:
                     if node not in ret:
                         ret.append(node)
         return ret
-##################################
+
+    ##################################
 
     def inputIsValid(self, input):
         """
@@ -292,7 +294,7 @@ class Recipe:
         # 4. Loop until all nodes are reachable
         return None, None
 
-########################
+    ########################
 
     def makeGraph(self):
         """
@@ -409,8 +411,9 @@ class Name:
             is_unicode = isinstance(name, unicode)
         except NameError as mimimi:
             logger.debug(mimimi)
-            logger.debug("You are using python 3, "
-                         "but don't worry, we make it work.")
+            logger.debug(
+                "You are using python 3, " "but don't worry, we make it work."
+            )
             pass
         if not (isinstance(name, str) or is_unicode):
             raise TypeError("The name of a node must be a string.")
@@ -582,16 +585,20 @@ def dictToRecipe(data):
     Exception:
         Error while parsing YAML data into recipe object.
     """
-    if not isinstance(data, dict) and \
-            not isinstance(data, YAMLContainer) and \
-            not isinstance(data, JSONContainer):
+    if (
+        not isinstance(data, dict)
+        and not isinstance(data, YAMLContainer)
+        and not isinstance(data, JSONContainer)
+    ):
         raise TypeError("Function dictToRecipe expects dictionary as input.")
     recipe = Recipe([])
     for node in data["nodes"]:
         try:
             newNode = Node(
-                node["name"], node["inputs"],
-                node["outputs"], node["stepsource"],
+                node["name"],
+                node["inputs"],
+                node["outputs"],
+                node["stepsource"],
             )
             recipe.nodes.append(newNode)
         except KeyError as err:
