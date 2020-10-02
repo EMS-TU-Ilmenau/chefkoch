@@ -169,7 +169,7 @@ class Fridge:
             # optional printing of the different Flavours in a json
             self.shelfs[x].printFlavour(x)
 
-    def makeItemShelfs(self, outputs):
+    def makeItemShelves(self, outputs):
         """
         creates the necessary itemshelfs
 

@@ -737,15 +737,15 @@ class TestFridge(unittest.TestCase):
         for x in resources_recipe:
             assert x in self.fridge.shelfs
 
-    def test_fridge_makeItemShelfs(self):
-        self.fridge.makeItemShelfs(["z", "figure_z", "paper"])
+    def test_fridge_makeItemShelves(self):
+        self.fridge.makeItemShelves(["z", "figure_z", "paper"])
         items = ["z", "figure_z", "paper"]
         for x in items:
             assert x in self.fridge.shelfs
 
         with self.assertRaises(Exception) as context:
-            self.fridge.makeItemShelfs(["z"])
+            self.fridge.makeItemShelves(["z"])
 
         self.assertTrue(
-            'z already exists in this fridge!' in str(context.exception)
+            "z already exists in this fridge!" in str(context.exception)
         )

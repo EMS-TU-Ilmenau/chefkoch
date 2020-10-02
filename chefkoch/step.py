@@ -29,8 +29,8 @@ class StepResource(Step, ABC):
     Specifies the function to be executed inside a node in the recipe.
     """
 
-    """
     def __init__(self, stepsource):
+        """
         Tests the step source if it is a recipe, a python executable or
         a built-in function and initialises it if so.
 
@@ -44,7 +44,7 @@ class StepResource(Step, ABC):
         ------
         TypeError:
             If the string does not match any of the above.
-
+        """
         # testing if step is built-in; JSON file or python function
         extension = os.path.splitext(stepsource)[1]
         if extension == ".py":
@@ -62,7 +62,11 @@ class StepResource(Step, ABC):
                 + str(stepsource)
                 + ". Must be a Python file, another recipe "
                 + "or a build-in function."
-    """
+            )
+
+    @abstractmethod
+    def executeStep(self):
+        pass
 
 
 class StepPython(StepResource):
@@ -80,6 +84,7 @@ class StepPython(StepResource):
             path to the python-module
         """
         # prototype implementation
+        super().__init__(self, shelf)
         mod_name, file_ext = os.path.splitext(os.path.split(path)[-1])
         # importing correct module
         test = importlib.__import__(mod_name)
