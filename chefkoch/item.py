@@ -102,6 +102,7 @@ class Resource(Item):
             Path to the Ressource
         """
         # später mit item abstrahiert
+        # super().__init__(self, shelf, path)
         self.shelf = shelf
         self.path = path
         pass

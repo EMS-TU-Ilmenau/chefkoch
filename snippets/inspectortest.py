@@ -1,5 +1,9 @@
 import inspect
 
+def execute(a, b):
+    print("hello my darling")
+    print(a+b)
+
 def aFunction(bla=123, blub='abc'):
     pass
 
@@ -14,6 +18,8 @@ def varnames(f):
 def fullvarnames(f):
     return inspect.getfullargspec(f)
 
+"""
 print(varnames(aFunction))
 print("erster Argumentenname: " + (varnames(aFunction)[0]))
 print(fullvarnames(aFunction))
+"""

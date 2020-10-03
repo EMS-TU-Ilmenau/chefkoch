@@ -583,7 +583,11 @@ class TestFlavour(unittest.TestCase):
 """
 # Results for comparing and using
 config_dict = {
-    "options": {"test": True, "directory": False, "configOut": True, },
+    "options": {
+        "test": True,
+        "directory": False,
+        "configOut": True,
+    },
     "resource": {
         "raw_data": "resource/raw_data.npy",
         "tex_paper": "resource/paper",
@@ -597,7 +601,12 @@ config_dict = {
                 "count": 7,
                 "base": 10,
             },
-            {"type": "log", "start": "1e7", "stop": "1e19", "count": 5, },
+            {
+                "type": "log",
+                "start": "1e7",
+                "stop": "1e19",
+                "count": 5,
+            },
             {"type": "lin", "start": 8, "stop": 12, "step": 1},
         ],
         "num_N": {"type": "lin", "start": 10, "stop": 20, "step": 2},
@@ -674,7 +683,8 @@ class TestFridge(unittest.TestCase):
     def setUp(self):
         self.fridge = fridge.Fridge(config_dict, path)
 
-    def test_flavourShelf_ranges(self):
+    def test_fridge_makeFlavours(self):
+        # test
         self.fridge.makeFlavours(config_dict["flavour"])
 
         # items = self.fridge.shelfs["flavours"].items
@@ -704,7 +714,9 @@ class TestFridge(unittest.TestCase):
         }
         for x in flavour_result:
             if isinstance(self.fridge.shelfs[x].items[0], str):
-                self.assertEqual(self.fridge.shelfs[x].items, flavour_result[x])
+                self.assertEqual(
+                    self.fridge.shelfs[x].items, flavour_result[x]
+                )
             else:
                 i = 0
                 for element in flavour_result[x]:
@@ -712,3 +724,28 @@ class TestFridge(unittest.TestCase):
                         element, self.fridge.shelfs[x].items[i], places=7
                     )
                     i = i + 1
+
+    def test_fridge_makeResources(self):
+        # Ressources in cheffile defined
+        self.fridge.makeResources(config_dict["resource"], False)
+        resources = ["raw_data", "tex_paper"]
+        for x in resources:
+            assert x in self.fridge.shelfs
+        # Ressources in recipe defined
+        self.fridge.makeResources(config_dict["recipe"], True)
+        resources_recipe = ["compute_a", "render_figure_z", "compile_latex"]
+        for x in resources_recipe:
+            assert x in self.fridge.shelfs
+
+    def test_fridge_makeItemShelves(self):
+        self.fridge.makeItemShelves(["z", "figure_z", "paper"])
+        items = ["z", "figure_z", "paper"]
+        for x in items:
+            assert x in self.fridge.shelfs
+
+        with self.assertRaises(Exception) as context:
+            self.fridge.makeItemShelves(["z"])
+
+        self.assertTrue(
+            "z already exists in this fridge!" in str(context.exception)
+        )

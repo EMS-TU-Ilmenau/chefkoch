@@ -5,6 +5,7 @@ import chefkoch.core
 from chefkoch.item import Item
 from chefkoch.container import JSONContainer
 from abc import ABC, abstractmethod
+import inspect
 
 
 class Step(Item, ABC):
@@ -28,8 +29,8 @@ class StepResource(Step, ABC):
     Specifies the function to be executed inside a node in the recipe.
     """
 
-    """
     def __init__(self, stepsource):
+        """
         Tests the step source if it is a recipe, a python executable or
         a built-in function and initialises it if so.
 
@@ -43,7 +44,7 @@ class StepResource(Step, ABC):
         ------
         TypeError:
             If the string does not match any of the above.
-
+        """
         # testing if step is built-in; JSON file or python function
         extension = os.path.splitext(stepsource)[1]
         if extension == ".py":
@@ -61,7 +62,11 @@ class StepResource(Step, ABC):
                 + str(stepsource)
                 + ". Must be a Python file, another recipe "
                 + "or a build-in function."
-    """
+            )
+
+    @abstractmethod
+    def executeStep(self):
+        pass
 
 
 class StepPython(StepResource):
@@ -69,16 +74,54 @@ class StepPython(StepResource):
     A simulation step specified in a Python-file
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, path):
+        """
+        initializes a Python-Step
+
+        Parameters
+        ----------
+        path(str):
+            path to the python-module
+        """
+        # prototype implementation
+        super().__init__(self, shelf)
+        mod_name, file_ext = os.path.splitext(os.path.split(path)[-1])
+        # importing correct module
+        test = importlib.__import__(mod_name)
+        print(mod_name)
+        list = inspect.getmembers(test, predicate=inspect.isfunction)
+
+        # aktuell nur für Korrektur
+        found = False
+        for p in list:
+            if p[0] == "execute":
+                found = True
+
+        if found:
+            print("able to execute")
+            # getting the signature
+            # how to get the correct parameters?
+            # example dic
+            dic = {"a": 10, "b": 20}
+            calldic = {}
+            # filling the dictionary with the specific values
+            for x in sig.parameteres.values():
+                # let's call it dic for now
+                calldic[str(x)] = dic[str(x)]
+
+            # not sure if executing should be a different option
+            # if it is done later
+            test.execute(**calldic)
+        else:
+            warnings.warn("There is no execute in this module: " + path)
 
 
 class StepShell(StepResource):
     """
-    A simulation step specified in a shell-command ??
+    A simulation step specified in a shell-skript
     """
 
-    def __init__(self):
+    def __init__(self, path):
         pass
 
 
