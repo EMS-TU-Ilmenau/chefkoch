@@ -86,35 +86,35 @@ class Plan:
 # self.requi()
 ####################################################
 
-    def createConstructionTree(self, recipe, target):
-        """
-        build recursively a construction tree based on a recipe and a target
-        :param recipe:
-        :param target: calculation target given as string (name of the node),
-                        int (list index of the node in recipe object)
-                        or node object
-        :return:
-        """
-        tree = {}
-        if type(target) == str or type(target) == int:
-            node = recipe[target]
-        elif type(target) == Node:
-            node = target
-        for inputKey, inputValue in node.inputs.items():
-            children = recipe.inputIsOutput(inputValue)
-            for child in children:
-                if child.name in self.targets:
-                    self.targets.remove(child.name)
-                if child.name not in self.constructiontree.keys():
-                    tree[child.name] = self.createConstructionTree(
-                        recipe, child
-                    )
-                else:
-                    tree[child.name] = self.constructiontree[child.name]
-                    self.constructiontree.pop(child.name)
-        if node not in self.nodes:
-            self.nodes.append(node)
-        return tree
+    # def createConstructionTree(self, recipe, target):
+    #     """
+    #     build recursively a construction tree based on a recipe and a target
+    #     :param recipe:
+    #     :param target: calculation target given as string (name of the node),
+    #                     int (list index of the node in recipe object)
+    #                     or node object
+    #     :return:
+    #     """
+    #     tree = {}
+    #     if type(target) == str or type(target) == int:
+    #         node = recipe[target]
+    #     elif type(target) == Node:
+    #         node = target
+    #     for inputKey, inputValue in node.inputs.items():
+    #         children = recipe.inputIsOutput(inputValue)
+    #         for child in children:
+    #             if child.name in self.targets:
+    #                 self.targets.remove(child.name)
+    #             if child.name not in self.constructiontree.keys():
+    #                 tree[child.name] = self.createConstructionTree(
+    #                     recipe, child
+    #                 )
+    #             else:
+    #                 tree[child.name] = self.constructiontree[child.name]
+    #                 self.constructiontree.pop(child.name)
+    #     if node not in self.nodes:
+    #         self.nodes.append(node)
+    #     return tree
 
     # def requi(self):
     #     for root in self.constructiontree.values():
@@ -328,7 +328,7 @@ class Node:
     as value in another inputdict).
     """
 
-    def __init__(self, name, inputdict, outputdict, stepsource):
+    def __init__(self, name, inputdict, outputdict, stepsource, steptype):
         """
         Initializes a node of the recipe. A node represents a simulation
         step.
@@ -377,8 +377,9 @@ class Node:
             )
             return
         self.outputs = outputdict
-        step_obj = StepSource(stepsource)
-        self.step = step_obj.step
+        # step_obj = StepSource(stepsource)
+        self.step = stepsource
+        self.type = steptype
         # todo abort in higher level and ignore whole node
 
 
@@ -433,45 +434,45 @@ class Name:
         return all(ord(c) < 128 for c in name)
 
 
-class StepSource:
-    """
-    Specifies the function to be executed inside a node in the recipe.
-    """
-
-    def __init__(self, stepsource):
-        """
-        Tests the step source if it is a recipe, a python executable or
-        a built-in function and initialises it if so.
-
-        Parameters
-        ----------
-        stepsource (str):
-            file path to a sub-recipe, a python executable or the name \
-            of a built-in function
-
-        Raises
-        ------
-        TypeError:
-            If the string does not match any of the above.
-        """
-        # testing if step is built-in; JSON file or python function
-        extension = os.path.splitext(stepsource)[1]
-        if extension == ".py":
-            self.step = stepsource
-        elif extension == ".json":
-            self.step = stepsource
-        elif str(stepsource) in BUILT_INS:
-            self.step = stepsource
-            # done: research on assigning functions as attributes
-            # (so that it can be accessed no matter where the object
-            # is used)
-        else:
-            raise TypeError(
-                "Stepsource : "
-                + str(stepsource)
-                + ". Must be a Python file, another recipe "
-                + "or a build-in function."
-            )
+# class StepSource:
+#     """
+#     Specifies the function to be executed inside a node in the recipe.
+#     """
+#
+#     def __init__(self, stepsource):
+#         """
+#         Tests the step source if it is a recipe, a python executable or
+#         a built-in function and initialises it if so.
+#
+#         Parameters
+#         ----------
+#         stepsource (str):
+#             file path to a sub-recipe, a python executable or the name \
+#             of a built-in function
+#
+#         Raises
+#         ------
+#         TypeError:
+#             If the string does not match any of the above.
+#         """
+#         # testing if step is built-in; JSON file or python function
+#         extension = os.path.splitext(stepsource)[1]
+#         if extension == ".py":
+#             self.step = stepsource
+#         elif extension == ".json":
+#             self.step = stepsource
+#         elif str(stepsource) in BUILT_INS:
+#             self.step = stepsource
+#             # done: research on assigning functions as attributes
+#             # (so that it can be accessed no matter where the object
+#             # is used)
+#         else:
+#             raise TypeError(
+#                 "Stepsource : "
+#                 + str(stepsource)
+#                 + ". Must be a Python file, another recipe "
+#                 + "or a build-in function."
+#             )
 
 
 def readrecipe(dict):
@@ -586,11 +587,13 @@ def dictToRecipe(data):
             not isinstance(data, JSONContainer):
         raise TypeError("Function dictToRecipe expects dictionary as input.")
     recipe = Recipe([])
-    for node in data["nodes"]:
+    for node in data.items(): #["nodes"]:
+        # print("node: ", node[0], node[1], " ", type(node[0]), len(node)) #, node.inputs, node.outputs)
         try:
             newNode = Node(
-                node["name"], node["inputs"],
-                node["outputs"], node["stepsource"],
+                node[0], node[1]["inputs"],
+                node[1]["outputs"], node[1]["resource"],
+                node[1]["type"]
             )
             recipe.nodes.append(newNode)
         except KeyError as err:

@@ -7,7 +7,7 @@ import chefkoch.fridge as fridge
 import chefkoch.scheduler as scheduler
 
 # from scheduler import Scheduler
-# import recipe
+import chefkoch.recipe as recipe
 # from recipe import Recipe
 from chefkoch.container import YAMLContainer
 from chefkoch.container import JSONContainer
@@ -139,6 +139,7 @@ class Chefkoch:
 
         """
         # loading the cheffile
+        print(type(arguments["cheffile"]))
         if arguments["cheffile"] is not None:
             self.cheffile = YAMLContainer(arguments["cheffile"])
         else:
@@ -162,8 +163,9 @@ class Chefkoch:
         # dealing with configuration.recipe
         # print(self.configuration.items["recipe"])
         self.fridge.makeResources(self.configuration.items["recipe"], True)
-
-        self.recipe = None  # beinhaltet den kompletten Namen
+        # print("ddddd2",  type(self.configuration.items["recipe"]))
+        self.recipe = recipe.readrecipe(self.configuration.items["recipe"])
+        # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf
         # festgelegte Stelle für Fridge, durch Config mglweiser änderbar
