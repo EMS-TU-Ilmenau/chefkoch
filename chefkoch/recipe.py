@@ -587,8 +587,9 @@ def dictToRecipe(data):
             not isinstance(data, JSONContainer):
         raise TypeError("Function dictToRecipe expects dictionary as input.")
     recipe = Recipe([])
-    for node in data.items(): #["nodes"]:
-        # print("node: ", node[0], node[1], " ", type(node[0]), len(node)) #, node.inputs, node.outputs)
+    for node in data.items():
+        # print("node: ", node[0], node[1], " ", type(node[0]), len(node))
+        # #, node.inputs, node.outputs)
         try:
             newNode = Node(
                 node[0], node[1]["inputs"],
