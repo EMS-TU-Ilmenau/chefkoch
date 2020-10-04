@@ -278,10 +278,11 @@ class FlavourShelf(Shelf):
         # print(self.items)
 
     def printFlavour(self, name):
-        if os.path.exists(self.path):
-            container = JSONContainer(None, self.items)
-            container.save(self.path + "/" + name + ".json")
-        else:
-            warnings.warn(
-                "unable to print these flavours, there is no directory"
-            )
+        if self.fridge.config["options"]["directory"]:
+            if os.path.exists(self.path):
+                container = JSONContainer(None, self.items)
+                container.save(self.path + "/" + name + ".json")
+            else:
+                warnings.warn(
+                    "unable to print these flavours, there is no directory"
+                )

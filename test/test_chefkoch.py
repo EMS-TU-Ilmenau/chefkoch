@@ -586,11 +586,11 @@ config_dict = {
     "options": {
         "test": True,
         "directory": False,
-        "configOut": True,
+        "configOut": True
     },
     "resource": {
         "raw_data": "resource/raw_data.npy",
-        "tex_paper": "resource/paper",
+        "tex_paper": "resource/paper"
     },
     "flavour": {
         "num_lambda": [
@@ -599,48 +599,74 @@ config_dict = {
                 "start": "1e-3",
                 "stop": "1e3",
                 "count": 7,
-                "base": 10,
+                "base": 10
             },
             {
                 "type": "log",
                 "start": "1e7",
                 "stop": "1e19",
-                "count": 5,
+                "count": 5
             },
-            {"type": "lin", "start": 8, "stop": 12, "step": 1},
+            {
+                "type": "lin",
+                "start": 8,
+                "stop": 12,
+                "step": 1
+            }
         ],
-        "num_N": {"type": "lin", "start": 10, "stop": 20, "step": 2},
-        "num_K": [1, 2, 3, 7, 8],
-        "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
+        "num_N": {
+            "type": "lin",
+            "start": 10,
+            "stop": 20,
+            "step": 2
+        },
+        "num_K": [
+            1,
+            2,
+            3,
+            7,
+            8
+        ],
+        "algorithm": [
+            "BP",
+            "OMP",
+            "ISTA",
+            "FISTA",
+            "TWISTA"
+        ]
     },
-    "kitchen": {"stove": "local"},
+    "kitchen": {
+        "stove": "local"
+    },
     "recipe": {
         "compute_a": {
             "type": "python",
             "resource": "steps/dosomething.py",
-            "inputs": {"data": "raw_data", "some_parameter": "y"},
-            "outputs": {"result": "z"},
+            "inputs": {
+                "some_parameters": "num_K"
+            },
+            "outputs": {
+                "result": "z"
+            }
         },
-        "render_figure_z": {
+        "doItTwice_z": {
             "type": "python",
-            "resource": "steps/render_figure.py",
-            "inputs": {"data": "z"},
-            "outputs": {"result": "figure_z"},
-        },
-        "compile_latex": {
-            "inputs": None,
-            "outputs": {1: "paper"},
-            "type": "shell",
-            "resource": "steps/compile_latex.sh",
-        },
+            "resource": "steps/step2.py",
+            "inputs": {
+                "data": "z"
+            },
+            "outputs": {
+                "result": "seconds"
+            }
+        }
     },
     "link": {
         "figure_z": "results/figures/figure_z.pdf",
-        "paper": "results/paper.pdf",
-    },
+        "paper": "results/paper.pdf"
+    }
 }
 
-path = "./test2"
+path = "./testdirectory"
 
 
 class TestConfiguration(unittest.TestCase):
@@ -733,13 +759,13 @@ class TestFridge(unittest.TestCase):
             assert x in self.fridge.shelfs
         # Ressources in recipe defined
         self.fridge.makeResources(config_dict["recipe"], True)
-        resources_recipe = ["compute_a", "render_figure_z", "compile_latex"]
+        resources_recipe = ["compute_a", "doItTwice_z"]
         for x in resources_recipe:
             assert x in self.fridge.shelfs
 
     def test_fridge_makeItemShelves(self):
-        self.fridge.makeItemShelves(["z", "figure_z", "paper"])
-        items = ["z", "figure_z", "paper"]
+        self.fridge.makeItemShelves(["z", "seconds"])
+        items = ["z", "seconds"]
         for x in items:
             assert x in self.fridge.shelfs
 

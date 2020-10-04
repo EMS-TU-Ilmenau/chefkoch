@@ -139,7 +139,7 @@ class Chefkoch:
 
         """
         # loading the cheffile
-        print(type(arguments["cheffile"]))
+        # print(type(arguments["cheffile"]))
         if arguments["cheffile"] is not None:
             self.cheffile = YAMLContainer(arguments["cheffile"])
         else:
