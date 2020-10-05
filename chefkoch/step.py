@@ -28,6 +28,7 @@ class StepResource(Step, ABC):
     """
     Specifies the function to be executed inside a node in the recipe.
     """
+
     @abstractmethod
     def __init__(self, stepsource):
         """
@@ -72,7 +73,9 @@ class StepPython(StepResource):
         # importing correct module
         self.module = importlib.__import__(mod_name)
         print(mod_name)
-        functionlist = inspect.getmembers(self.module, predicate=inspect.isfunction)
+        functionlist = inspect.getmembers(
+            self.module, predicate=inspect.isfunction
+        )
 
         # aktuell nur für Korrektur
         self.found = False
@@ -80,7 +83,7 @@ class StepPython(StepResource):
             if p[0] == "execute":
                 self.found = True
 
-        if self.found == False:
+        if self.found is False:
             raise Exception("There is no execute in " + str(mod_name))
 
     def executeStep():

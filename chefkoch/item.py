@@ -23,7 +23,6 @@ class Item(ABC):
         if container is not None:
             self.dependencies = container
 
-
     def createHash(self):
         """
         create a hashfile for the dataset
