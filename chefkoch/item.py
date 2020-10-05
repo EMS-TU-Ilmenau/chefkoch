@@ -20,20 +20,9 @@ class Item(ABC):
         # erstmal vorläufiges dict
         # zugeordneter Shelf
         self.shelf = shelf
+        if container is not None:
+            self.dependencies = container
 
-        # legt passenden JSON-Container an
-        # muss wahrscheinlich nochmal ausgelagert werden
-        # self.hashName = zlib.adler32(dict.encode('utf-8'))
-
-        if True:  # falls es ein neuer Container ist self.check()
-            self.refLog = JSONContainer()
-            self.refLog["test"] = "hua"
-            self.hashName = self.refLog.hash()
-            self.refLog.save((self.shelf.path + "/" + self.hashName + ".json"))
-        else:  # ansonsten neuen Container
-            self.refLog = JSONContainer()
-
-        # self.refLog = container
 
     def createHash(self):
         """

@@ -10,7 +10,7 @@ class Node:
     as value in another inputdict).
     """
 
-    def __init__(self, name, inputdict, outputdict, stepsource):
+    def __init__(self, name, inputdict, outputdict, stepsource, steptype):
         """
         Initializes a node of the recipe. A node represents a simulation
         step.
@@ -65,10 +65,10 @@ class Node:
         # wir brauchen hier irgenwie die konkreten shelves
         # müssen hier irgendwie richtig übergeben werden
         # test ob wir die korrekt übergeben können
-        rightStep(stepsource)
+        rightStep(steptype)
         # todo abort in higher level and ignore whole node
     
-    def rightStep(self, stepsource):
+    def rightStep(self, steptype):
         """
         defining the right step
 
@@ -78,13 +78,12 @@ class Node:
             filepath to the source
         """
         # missing some options
-        extension = os.path.splitext(stepsource)[1]
-        if extension == ".py":
+        if steptype == "python":
             self.step = StepPython(self, stepsource)
-        elif extension == ".sh":
+        elif steptype == "shell":
             self.step = StepShell(stepsource)
-        elif extension == ".json":
-            self.step = StepSubRecipe(stepsource)
+        # elif extension == ".json":
+        #     self.step = StepSubRecipe(stepsource)
         else:
             raise TypeError(
                 "Stepsource : "

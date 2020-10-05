@@ -21,14 +21,14 @@ class Step(Item, ABC):
         """
         self.logfile = None
         self.mapping = None
-        self.dependencies = JSONContainer()
+        super().__init__(shelf, None, JSONContainer())
 
 
 class StepResource(Step, ABC):
     """
     Specifies the function to be executed inside a node in the recipe.
     """
-
+    @abstractmethod
     def __init__(self, stepsource):
         """
         Tests the step source if it is a recipe, a python executable or
@@ -45,24 +45,7 @@ class StepResource(Step, ABC):
         TypeError:
             If the string does not match any of the above.
         """
-        # testing if step is built-in; JSON file or python function
-        extension = os.path.splitext(stepsource)[1]
-        if extension == ".py":
-            self.step = stepsource
-        elif extension == ".json":
-            self.step = stepsource
-        elif str(stepsource) in BUILT_INS:
-            self.step = stepsource
-            # done: research on assigning functions as attributes
-            # (so that it can be accessed no matter where the object
-            # is used)
-        else:
-            raise TypeError(
-                "Stepsource : "
-                + str(stepsource)
-                + ". Must be a Python file, another recipe "
-                + "or a build-in function."
-            )
+        super().__init__()
 
     @abstractmethod
     def executeStep(self):
@@ -87,18 +70,22 @@ class StepPython(StepResource):
         super().__init__(self, shelf)
         mod_name, file_ext = os.path.splitext(os.path.split(path)[-1])
         # importing correct module
-        test = importlib.__import__(mod_name)
+        self.module = importlib.__import__(mod_name)
         print(mod_name)
-        list = inspect.getmembers(test, predicate=inspect.isfunction)
+        functionlist = inspect.getmembers(self.module, predicate=inspect.isfunction)
 
         # aktuell nur für Korrektur
-        found = False
-        for p in list:
+        self.found = False
+        for p in functionlist:
             if p[0] == "execute":
-                found = True
+                self.found = True
 
-        if found:
-            print("able to execute")
+        if self.found == False:
+            raise Exception("There is no execute in " + str(mod_name))
+
+    def executeStep():
+        if self.found:
+            print("going to execute the step")
             # getting the signature
             # how to get the correct parameters?
             # example dic
@@ -111,9 +98,7 @@ class StepPython(StepResource):
 
             # not sure if executing should be a different option
             # if it is done later
-            test.execute(**calldic)
-        else:
-            warnings.warn("There is no execute in this module: " + path)
+            self.module.execute(**calldic)
 
 
 class StepShell(StepResource):
