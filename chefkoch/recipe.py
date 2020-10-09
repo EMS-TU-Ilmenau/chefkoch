@@ -63,6 +63,7 @@ class Plan:
         """
         # targets = []
         self.recipe = recipe
+        self.subGraph = Graph()
         if len(targets) == 0:
             self.nodes = recipe
         else:
@@ -83,6 +84,11 @@ class Plan:
                 if inputValue not in self.required:
                     self.required.append(inputValue)
         self.remaining = self.required.copy()
+
+    def makeSubGraph(self, recipe, target):
+        if target not in self.subGraph:
+            for startingnode in recipe.graph.nodes(in_degree=2):
+                print(recipe.graph.all_paths(startingnode, target))
 # self.requi()
 ####################################################
 
