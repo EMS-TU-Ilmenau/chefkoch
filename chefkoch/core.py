@@ -116,6 +116,11 @@ class Configuration:
                     self.items[element] = help.data
                 else:
                     self.items[element] = self.file.data[element]
+        # adding target if existing
+        if arguments["targets"] is None:
+            self.items["targets"] = "all"
+        else:
+            self.items["targets"] = arguments["targets"]
         # vllt nochmal an andere Stelle speichern, aber über eine Zusatsoption
         self.output(path + "/" + "Configtest.json")
 
