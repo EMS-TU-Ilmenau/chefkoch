@@ -623,6 +623,7 @@ config_dict = {
         "figure_z": "results/figures/figure_z.pdf",
         "paper": "results/paper.pdf",
     },
+    "targets" : "all"
 }
 
 path = "./testdirectory"
@@ -633,6 +634,7 @@ class TestConfiguration(unittest.TestCase):
     def test_init(self):
         self.cheffile = container.YAMLContainer(path + "/cheffile.yml")
         arg = {
+            "targets": None,
             "options": None,
             "cheffile": None,
             "resource": None,
