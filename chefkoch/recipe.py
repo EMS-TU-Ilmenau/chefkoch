@@ -48,10 +48,11 @@ class Plan:
     """
 
     nodes = []
+    items = []
     constructiontree = {}
     required = []
     remaining = []
-    targets = []
+    # targets = []
 
     def __init__(self, recipe, *targets):
         """
@@ -63,32 +64,56 @@ class Plan:
         """
         # targets = []
         self.recipe = recipe
-        self.subGraph = Graph()
-        if len(targets) == 0:
-            self.nodes = recipe
-        else:
-            self.targets.append(targets)
-            for target in targets:
-                if type(target) == str or type(target) == int:
-                    targetnode = recipe[target]
-                elif type(target) == Node:
-                    targetnode = target
-                self.constructiontree[targetnode.name] = \
-                    self.createConstructionTree(
-                    recipe, target
-                )
-        for node in self.nodes:
-            # for i in range(len(node.inputs)):
-            #     inputKey, inputValue = node.inputs
-            for inputValue in node.inputs.values():
-                if inputValue not in self.required:
-                    self.required.append(inputValue)
-        self.remaining = self.required.copy()
+        # self.subGraph = Graph()
+        nodelist = []
+        for target in targets:
+            if target[:4] != "item":
+                for targetitem in recipe.graph.nodes(from_node=target):
+                    nodelist.extend(self.getSubGraphNodes(recipe, targetitem))
+            else:
+                nodelist.extend(self.getSubGraphNodes(recipe, target))
+        # print(nodelist)
+        self.subGraph = recipe.graph.subgraph_from_nodes(nodelist)
+        for node in nodelist:
+            if node[:4] == "item":
+                print(type(node))
+                self.items.append(node[5:])
+            else:
+                print(type(node))
+                self.nodes.append(node)
+        # if len(targets) == 0:
+        #     self.nodes = recipe
+        # else:
+        #     self.targets.append(targets)
+        #     for target in targets:
+        #         if type(target) == str or type(target) == int:
+        #             targetnode = recipe[target]
+        #         elif type(target) == Node:
+        #             targetnode = target
+        #         self.constructiontree[targetnode.name] = \
+        #             self.createConstructionTree(
+        #             recipe, target
+        #         )
+        # for node in self.nodes:
+        #     # for i in range(len(node.inputs)):
+        #     #     inputKey, inputValue = node.inputs
+        #     for inputValue in node.inputs.values():
+        #         if inputValue not in self.required:
+        #             self.required.append(inputValue)
+        # self.remaining = self.required.copy()
 
-    def makeSubGraph(self, recipe, target):
-        if target not in self.subGraph:
-            for startingnode in recipe.graph.nodes(in_degree=2):
-                print(recipe.graph.all_paths(startingnode, target))
+    def getItems(self):
+        return self.items
+
+    def getSubGraphNodes(self, recipe, target):
+        nodelist = []
+        for startingnode in recipe.graph.nodes(in_degree=0):
+            print(startingnode, type(startingnode))
+            print(recipe.graph.all_paths(startingnode, target))
+            for liste in recipe.graph.all_paths(startingnode, target):
+                nodelist.extend(liste)
+        return nodelist
+
 # self.requi()
 ####################################################
 
@@ -498,7 +523,7 @@ def readrecipe(dict):
     """
 
     recipe = dictToRecipe(dict)
-    recipe.inputIntegrity()
+    # recipe.inputIntegrity()
     recipe.makeGraph()
     if recipe.graph.has_cycles():
         raise Exception("There is a Cycle in your recipe, please check")
