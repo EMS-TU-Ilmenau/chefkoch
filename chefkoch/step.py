@@ -46,7 +46,8 @@ class StepResource(Step, ABC):
         TypeError:
             If the string does not match any of the above.
         """
-        super().__init__()
+        super().__init__(shelf)
+        self.resource = Null
 
     @abstractmethod
     def executeStep(self):
@@ -58,17 +59,19 @@ class StepPython(StepResource):
     A simulation step specified in a Python-file
     """
 
-    def __init__(self, path):
+    def __init__(self, shelf, path):
         """
         initializes a Python-Step
 
         Parameters
         ----------
-        path(str):
+        shelf(str):
             path to the python-module
+            will probably changed, that the step gets its
+            resource directly from the fridge
         """
         # prototype implementation
-        super().__init__(self, shelf)
+        super().__init__(self, shelf, path)
         mod_name, file_ext = os.path.splitext(os.path.split(path)[-1])
         # importing correct module
         self.module = importlib.__import__(mod_name)

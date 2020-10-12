@@ -43,9 +43,7 @@ BUILT_INS = ["collect"]
 
 
 class Plan:
-    """
-
-    """
+    """"""
 
     nodes = []
     constructiontree = {}
@@ -72,10 +70,9 @@ class Plan:
                     targetnode = recipe[target]
                 elif type(target) == Node:
                     targetnode = target
-                self.constructiontree[targetnode.name] = \
-                    self.createConstructionTree(
-                    recipe, target
-                )
+                self.constructiontree[
+                    targetnode.name
+                ] = self.createConstructionTree(recipe, target)
         for node in self.nodes:
             # for i in range(len(node.inputs)):
             #     inputKey, inputValue = node.inputs
@@ -83,56 +80,58 @@ class Plan:
                 if inputValue not in self.required:
                     self.required.append(inputValue)
         self.remaining = self.required.copy()
+
+
 # self.requi()
 ####################################################
 
-    # def createConstructionTree(self, recipe, target):
-    #     """
-    #     build recursively a construction tree based on a recipe and a target
-    #     :param recipe:
-    #     :param target: calculation target given as string (name of the node),
-    #                     int (list index of the node in recipe object)
-    #                     or node object
-    #     :return:
-    #     """
-    #     tree = {}
-    #     if type(target) == str or type(target) == int:
-    #         node = recipe[target]
-    #     elif type(target) == Node:
-    #         node = target
-    #     for inputKey, inputValue in node.inputs.items():
-    #         children = recipe.inputIsOutput(inputValue)
-    #         for child in children:
-    #             if child.name in self.targets:
-    #                 self.targets.remove(child.name)
-    #             if child.name not in self.constructiontree.keys():
-    #                 tree[child.name] = self.createConstructionTree(
-    #                     recipe, child
-    #                 )
-    #             else:
-    #                 tree[child.name] = self.constructiontree[child.name]
-    #                 self.constructiontree.pop(child.name)
-    #     if node not in self.nodes:
-    #         self.nodes.append(node)
-    #     return tree
+# def createConstructionTree(self, recipe, target):
+#     """
+#     build recursively a construction tree based on a recipe and a target
+#     :param recipe:
+#     :param target: calculation target given as string (name of the node),
+#                     int (list index of the node in recipe object)
+#                     or node object
+#     :return:
+#     """
+#     tree = {}
+#     if type(target) == str or type(target) == int:
+#         node = recipe[target]
+#     elif type(target) == Node:
+#         node = target
+#     for inputKey, inputValue in node.inputs.items():
+#         children = recipe.inputIsOutput(inputValue)
+#         for child in children:
+#             if child.name in self.targets:
+#                 self.targets.remove(child.name)
+#             if child.name not in self.constructiontree.keys():
+#                 tree[child.name] = self.createConstructionTree(
+#                     recipe, child
+#                 )
+#             else:
+#                 tree[child.name] = self.constructiontree[child.name]
+#                 self.constructiontree.pop(child.name)
+#     if node not in self.nodes:
+#         self.nodes.append(node)
+#     return tree
 
-    # def requi(self):
-    #     for root in self.constructiontree.values():
-    #         # print(root)
-    #         self.buildNodes(root)
-    #         self.required.append(self.recipe[root.key])
-    #
-    # def buildNodes(self, node):
-    #     print(type(node))
-    #     print(node)
-    #     if node.values:
-    #         for value in node.values():
-    #             self.buildNodes(value)
-    #             print("build " + value.keys())
-    #             self.required.append(self.recipe[value.keys()])
-    #     else:
-    #         self.required.append(self.recipe[node.keys()])
-    #         print("test " + node.key())
+# def requi(self):
+#     for root in self.constructiontree.values():
+#         # print(root)
+#         self.buildNodes(root)
+#         self.required.append(self.recipe[root.key])
+#
+# def buildNodes(self, node):
+#     print(type(node))
+#     print(node)
+#     if node.values:
+#         for value in node.values():
+#             self.buildNodes(value)
+#             print("build " + value.keys())
+#             self.required.append(self.recipe[value.keys()])
+#     else:
+#         self.required.append(self.recipe[node.keys()])
+#         print("test " + node.key())
 
 
 class Recipe:
@@ -173,7 +172,8 @@ class Recipe:
             for node in self.nodes:
                 if node.name == item:
                     return node
-#########################
+
+    #########################
 
     def getPrerequisits(self, item):
         """
@@ -184,7 +184,8 @@ class Recipe:
         ret = []
         for inputKey, inputValue in (
             self[item].inputs.items()
-            if type(item) == int else item.inputs.items()
+            if type(item) == int
+            else item.inputs.items()
         ):
             prerequisites = self.inputIsOutput(inputValue)
             if len(prerequisites) > 0:
@@ -194,7 +195,8 @@ class Recipe:
                     # print(i.name)
                     ret.extend(self.getPrerequisits(i))
         return ret
-##################################
+
+    ##################################
 
     def inputIsOutput(self, input):
         """
@@ -209,7 +211,8 @@ class Recipe:
                     if node not in ret:
                         ret.append(node)
         return ret
-##################################
+
+    ##################################
 
     def inputIsValid(self, input):
         """
@@ -291,7 +294,8 @@ class Recipe:
 
         # 4. Loop until all nodes are reachable
         return None, None
-########################
+
+    ########################
 
     def makeGraph(self):
         """
@@ -409,8 +413,9 @@ class Name:
             is_unicode = isinstance(name, unicode)
         except NameError as mimimi:
             logger.debug(mimimi)
-            logger.debug("You are using python 3, "
-                         "but don't worry, we make it work.")
+            logger.debug(
+                "You are using python 3, " "but don't worry, we make it work."
+            )
             pass
         if not (isinstance(name, str) or is_unicode):
             raise TypeError("The name of a node must be a string.")
@@ -582,9 +587,11 @@ def dictToRecipe(data):
     Exception:
         Error while parsing YAML data into recipe object.
     """
-    if not isinstance(data, dict) and \
-            not isinstance(data, YAMLContainer) and \
-            not isinstance(data, JSONContainer):
+    if (
+        not isinstance(data, dict)
+        and not isinstance(data, YAMLContainer)
+        and not isinstance(data, JSONContainer)
+    ):
         raise TypeError("Function dictToRecipe expects dictionary as input.")
     recipe = Recipe([])
     for node in data.items():
@@ -592,9 +599,11 @@ def dictToRecipe(data):
         # #, node.inputs, node.outputs)
         try:
             newNode = Node(
-                node[0], node[1]["inputs"],
-                node[1]["outputs"], node[1]["resource"],
-                node[1]["type"]
+                node[0],
+                node[1]["inputs"],
+                node[1]["outputs"],
+                node[1]["resource"],
+                node[1]["type"],
             )
             recipe.nodes.append(newNode)
         except KeyError as err:

@@ -3,7 +3,7 @@ Definition of the different simulation steps available.
 """
 import yaml
 import json
-import zlib
+import hashlib
 import os.path
 
 
@@ -65,8 +65,12 @@ class JSONContainer:
         compute hashname over data
         """
         json_object = json.dumps(self.data, indent=4)
-        # Problem vllt wegen Kollisionen
-        hashName = zlib.adler32(json_object.encode("utf-8"))
+        # geänderter Hash zu sha256
+        h = hashlib.sha256()
+        h.update(json_object.encode("utf-8"))
+        hashName = h.hexdigest()
+        return hashName
+
         return str(hashName)
 
     def __eq__(self, container):

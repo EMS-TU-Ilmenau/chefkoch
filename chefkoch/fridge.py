@@ -142,13 +142,19 @@ class Fridge:
                 name = zlib.adler32(
                     Resources[element]["resource"].encode("utf-8")
                 )
+                # not correct
+                # name = resource.createHash()
             else:
                 resource = chefkoch.item.Resource(
                     self.shelfs[element], Resources[element]
                 )
                 name = zlib.adler32(Resources[element].encode("utf-8"))
+                # the real code, can't use to test
+                # name = resource.createHash()
 
             self.shelfs[element].items[name] = resource
+            print(element)
+            print(self.shelfs[element].items)
 
     def makeFlavours(self, Flavours):
         """
@@ -281,7 +287,8 @@ class FlavourShelf(Shelf):
         if self.fridge.config["options"]["directory"]:
             if os.path.exists(self.path):
                 container = JSONContainer(None, self.items)
-                container.save(self.path + "/" + name + ".json")
+                hashName = container.hash()
+                container.save(self.path + "/" + hashName + ".json")
             else:
                 warnings.warn(
                     "unable to print these flavours, there is no directory"

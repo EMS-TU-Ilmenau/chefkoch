@@ -623,7 +623,7 @@ config_dict = {
         "figure_z": "results/figures/figure_z.pdf",
         "paper": "results/paper.pdf",
     },
-    "targets" : "all"
+    "targets": "all",
 }
 
 path = "./testdirectory"

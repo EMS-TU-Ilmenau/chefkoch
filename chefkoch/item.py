@@ -7,7 +7,7 @@ import chefkoch.core
 import chefkoch.tarball
 import os
 import warnings
-import zlib
+import hashlib
 from abc import ABC, abstractmethod
 
 
@@ -23,11 +23,11 @@ class Item(ABC):
         if container is not None:
             self.dependencies = container
 
+    @abstractmethod
     def createHash(self):
         """
         create a hashfile for the dataset
         """
-
         pass
 
     def checkHash(self):
@@ -94,3 +94,16 @@ class Resource(Item):
         self.shelf = shelf
         self.path = path
         pass
+
+    def createHash(self):
+        BLOCK_SIZE = 65536  # 64 kb
+
+        file_hash = hashlib.sha256()
+        with open(self.path, "rb") as f:
+            fblock = f.read(BLOCK_SIZE)
+            while len(fblock) > 0:
+                file_hash.update(fblock)
+                fblock = f.read(BLOCK_SIZE)
+
+        hashname = file_hash.hexdigest()
+        return hashname
