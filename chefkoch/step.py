@@ -4,6 +4,7 @@ Definition of the different simulation steps available.
 import chefkoch.core
 from chefkoch.item import Item
 from chefkoch.container import JSONContainer
+from chefkoch.fridge import *
 from abc import ABC, abstractmethod
 import inspect
 
@@ -14,13 +15,14 @@ class Step(Item, ABC):
     """
 
     @abstractmethod
-    def __init__(self, shelf):
+    def __init__(self, shelf, dependencies):
         """
         Initializes the logfile for this step and the
         name-mapping
         """
         self.logfile = None
-        self.mapping = None
+        self.mapping = dependencies
+        # this will change
         super().__init__(shelf, None, JSONContainer())
 
 
@@ -30,7 +32,7 @@ class StepResource(Step, ABC):
     """
 
     @abstractmethod
-    def __init__(self, stepsource):
+    def __init__(self, shelf, dependencies):
         """
         Tests the step source if it is a recipe, a python executable or
         a built-in function and initialises it if so.
@@ -46,11 +48,22 @@ class StepResource(Step, ABC):
         TypeError:
             If the string does not match any of the above.
         """
-        super().__init__(shelf)
-        self.resource = Null
+        super().__init__(shelf, dependencies)
+        # self.resource = step
+
+        # einmal ein wahrscheinlich unnötiger check
+        if isinstance(shelf, FlavourShelf):
+            raise Exception("can't get Ressources from a flavourshelf!")
+
+        # ich bin mir nicht sicher, ob das von Nöten ist
+        for x in shelf.items:
+            if isinstance(x, Resource):
+                self.resource = x
+                break
 
     @abstractmethod
     def executeStep(self):
+        # maybe check resource
         pass
 
 
@@ -59,20 +72,25 @@ class StepPython(StepResource):
     A simulation step specified in a Python-file
     """
 
-    def __init__(self, shelf, path):
+    def __init__(self, shelf, dependencies):
         """
         initializes a Python-Step
 
         Parameters
         ----------
         shelf(str):
-            path to the python-module
+            shelf of the specific step
             will probably changed, that the step gets its
             resource directly from the fridge
+        dependencies(dict):
+            inputs and ouptuts of this step
         """
         # prototype implementation
-        super().__init__(self, shelf, path)
-        mod_name, file_ext = os.path.splitext(os.path.split(path)[-1])
+        super().__init__(shelf, dependencies)
+        # this will be changed a bit, bc we use the path of the resource
+        mod_name, file_ext = os.path.splitext(
+            os.path.split(self.resource.path)[-1]
+        )
         # importing correct module
         self.module = importlib.__import__(mod_name)
         print(mod_name)
@@ -94,17 +112,19 @@ class StepPython(StepResource):
             print("going to execute the step")
             # getting the signature
             # how to get the correct parameters?
+            # with self.shelf.fridge
             # example dic
-            dic = {"a": 10, "b": 20}
+            # dic = {"a": 10, "b": 20}
             calldic = {}
             # filling the dictionary with the specific values
             for x in sig.parameteres.values():
                 # let's call it dic for now
-                calldic[str(x)] = dic[str(x)]
+                # calldic[str(x)] = dic[str(x)]
+                calldic[str(x)] = self.shelf.fridge.getItem(str(x))
 
             # not sure if executing should be a different option
             # if it is done later
-            self.module.execute(**calldic)
+            result = self.module.execute(**calldic)
 
 
 class StepShell(StepResource):

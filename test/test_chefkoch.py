@@ -649,6 +649,10 @@ class TestConfiguration(unittest.TestCase):
 
 
 class TestFridge(unittest.TestCase):
+    """
+    Testcases for the functionality of the fridge
+    """
+
     # das ist vermutlich unnötig
     resource = {
         "num_lambda": [
@@ -700,15 +704,15 @@ class TestFridge(unittest.TestCase):
             "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
         }
         for x in flavour_result:
-            if isinstance(self.fridge.shelfs[x].items[0], str):
+            if isinstance(self.fridge.shelves[x].items[0], str):
                 self.assertEqual(
-                    self.fridge.shelfs[x].items, flavour_result[x]
+                    self.fridge.shelves[x].items, flavour_result[x]
                 )
             else:
                 i = 0
                 for element in flavour_result[x]:
                     self.assertAlmostEqual(
-                        element, self.fridge.shelfs[x].items[i], places=7
+                        element, self.fridge.shelves[x].items[i], places=7
                     )
                     i = i + 1
 
@@ -717,18 +721,18 @@ class TestFridge(unittest.TestCase):
         self.fridge.makeResources(config_dict["resource"], False)
         resources = ["raw_data", "tex_paper"]
         for x in resources:
-            assert x in self.fridge.shelfs
+            assert x in self.fridge.shelves
         # Ressources in recipe defined
         self.fridge.makeResources(config_dict["recipe"], True)
         resources_recipe = ["compute_a", "doItTwice_z"]
         for x in resources_recipe:
-            assert x in self.fridge.shelfs
+            assert x in self.fridge.shelves
 
     def test_fridge_makeItemShelves(self):
         self.fridge.makeItemShelves(["z", "seconds"])
         items = ["z", "seconds"]
         for x in items:
-            assert x in self.fridge.shelfs
+            assert x in self.fridge.shelves
 
         with self.assertRaises(Exception) as context:
             self.fridge.makeItemShelves(["z"])
@@ -736,3 +740,28 @@ class TestFridge(unittest.TestCase):
         self.assertTrue(
             "z already exists in this fridge!" in str(context.exception)
         )
+
+    def test_getItem(self):
+        # test for failing
+        testFalse = "nope"
+        with self.assertRaises(Exception) as context:
+            self.fridge.getItem(testFalse)
+
+        self.assertTrue(str(testFalse) + " doesn't exist in this fridge")
+
+        # test for correct behaviour falvour
+        self.fridge.makeFlavours(config_dict["flavour"])
+        testTrue = "num_K"
+        result = self.fridge.getItem(testTrue)
+        self.assertEqual(result, [1, 2, 3, 7, 8])
+
+        # TODO: Test for correct behaviour with items
+
+
+class TestStepPython(unittest.TestCase):
+    """
+    Tests for checking the correct behaviour of a python-step
+    """
+
+    def setUp(self):
+        self.fridge = fridge.Fridge(config_dict, path)

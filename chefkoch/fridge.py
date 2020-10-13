@@ -36,7 +36,7 @@ class Fridge:
         """
         # self.chef = chef
         self.config = config
-        self.shelfs = dict()
+        self.shelves = dict()
         self.basePath = basePath
         self.makeDirectory(self.basePath + "/fridge")
 
@@ -134,10 +134,10 @@ class Fridge:
         for element in Resources:
             # FlavourShelf wird angelegt
             shelf = ItemShelf(self, element)
-            self.shelfs[element] = shelf
+            self.shelves[element] = shelf
             if recipe:
                 resource = chefkoch.item.Resource(
-                    self.shelfs[element], Resources[element]["resource"]
+                    self.shelves[element], Resources[element]["resource"]
                 )
                 name = zlib.adler32(
                     Resources[element]["resource"].encode("utf-8")
@@ -146,15 +146,15 @@ class Fridge:
                 # name = resource.createHash()
             else:
                 resource = chefkoch.item.Resource(
-                    self.shelfs[element], Resources[element]
+                    self.shelves[element], Resources[element]
                 )
                 name = zlib.adler32(Resources[element].encode("utf-8"))
                 # the real code, can't use to test
                 # name = resource.createHash()
 
-            self.shelfs[element].items[name] = resource
+            self.shelves[element].items[name] = resource
             print(element)
-            print(self.shelfs[element].items)
+            print(self.shelves[element].items)
 
     def makeFlavours(self, Flavours):
         """
@@ -170,10 +170,10 @@ class Fridge:
         # vllt will man es ja doch irgendwann mal schön machen
         for x in Flavours:
             shelf = FlavourShelf(self, x)
-            self.shelfs[x] = shelf
-            self.shelfs[x].makeFullList(Flavours[x])
+            self.shelves[x] = shelf
+            self.shelves[x].makeFullList(Flavours[x])
             # optional printing of the different Flavours in a json
-            self.shelfs[x].printFlavour(x)
+            self.shelves[x].printFlavour(x)
 
     def makeItemShelves(self, outputs):
         """
@@ -186,10 +186,28 @@ class Fridge:
 
         """
         for x in outputs:
-            if x in self.shelfs:
+            if x in self.shelves:
                 raise Exception(x + " already exists in this fridge!")
             shelf = ItemShelf(self, x)
-            self.shelfs[x] = shelf
+            self.shelves[x] = shelf
+
+    def getItem(self, name):
+        """
+        prototpye function for getting the correct item
+        maybe needs some checks later, like is it still valid
+
+        Parameters
+        ----------
+        name(str):
+            name of the wanted item
+        """
+        if name not in self.shelves:
+            raise Exception(name + " doesn't exist in this fridge")
+        else:
+            if isinstance(self.shelves[name], FlavourShelf):
+                return self.shelves[name].items
+            else:
+                print("this is a wip")
 
 
 class Shelf(ABC):
@@ -278,7 +296,6 @@ class FlavourShelf(Shelf):
                 self.items = Flavours
 
         elif isinstance(Flavours, dict):
-            print("difficult")
             f = Flavours
             self.items = self.ranges(f)
         # print(self.items)
