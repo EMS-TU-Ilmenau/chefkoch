@@ -49,7 +49,7 @@ class Plan:
 
     nodes = []
     items = []
-    constructiontree = {}
+    # constructiontree = {}
     required = []
     remaining = []
     # targets = []
@@ -81,6 +81,7 @@ class Plan:
             else:
                 print(type(node))
                 self.nodes.append(node)
+
         # if len(targets) == 0:
         #     self.nodes = recipe
         # else:
