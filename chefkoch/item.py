@@ -23,7 +23,6 @@ class Item(ABC):
         if container is not None:
             self.dependencies = container
 
-    @abstractmethod
     def createHash(self):
         """
         create a hashfile for the dataset
@@ -107,3 +106,6 @@ class Resource(Item):
 
         hashname = file_hash.hexdigest()
         return hashname
+
+    def __str__(self):
+        return f"this item is a ressource with path {self.path}"

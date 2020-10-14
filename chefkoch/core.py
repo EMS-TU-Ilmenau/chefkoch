@@ -15,6 +15,10 @@ from chefkoch.container import JSONContainer
 import ast
 import chefkoch.step as step
 
+# ist das eine gute Idee?
+import sys
+import pkgutil
+
 
 class Logger:
     """
@@ -144,6 +148,8 @@ class Chefkoch:
             extra configuration settings, specified in commandline
 
         """
+        # learning about the path-problem
+        sys.path.append(str(path) + "/steps/")
         # loading the cheffile
         # print(type(arguments["cheffile"]))
         if arguments["cheffile"] is not None:
@@ -175,6 +181,10 @@ class Chefkoch:
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf
         # festgelegte Stelle für Fridge, durch Config mglweiser änderbar
+
+        # testing from the steps
+        teststep = step.StepPython(self.fridge.shelves["compute_a"], {})
+        teststep.executeStep()
         self.logger = None
         self.scheduler = None
         print("This is your evil overlord")

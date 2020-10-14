@@ -1,3 +1,3 @@
 def execute(num_K):
-    num_K = num_K + 1
-    return num_K
+    result = [( x +1 ) for x in num_K]
+    return result

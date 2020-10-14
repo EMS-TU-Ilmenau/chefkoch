@@ -2,7 +2,7 @@ import inspect
 # import inspectortest
 import importlib
 import os
-
+import sys
 """
 The following snippet demonstrates how to call a function from a different
 unknown python-module using inspect and importlib
@@ -11,6 +11,7 @@ def inspectMembers(path):
     # getting the module namr and the file ending
     mod_name, file_ext = os.path.splitext(os.path.split(path)[-1])
     # importing the correct module
+    sys.path.insert(0, '/home/wiebke/Arbeit/chefkoch/testdirectory/steps')
     test = importlib.__import__(mod_name)
     print(mod_name)
     # getting all functionsname occuring in this module
@@ -42,4 +43,4 @@ def inspectMembers(path):
     else:
         print("not an option")
     
-inspectMembers("./inspectortest.py")
+inspectMembers("./testdirectory/steps/test.py")
