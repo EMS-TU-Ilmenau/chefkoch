@@ -765,3 +765,4 @@ class TestStepPython(unittest.TestCase):
 
     def setUp(self):
         self.fridge = fridge.Fridge(config_dict, path)
+        # könnte korrecte shelves anlegen

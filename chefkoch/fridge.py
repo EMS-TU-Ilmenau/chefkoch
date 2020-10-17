@@ -3,7 +3,6 @@ The fridge is responsible for storing the data and steps and checking if
 they are still up-to-date.
 """
 from chefkoch.container import JSONContainer
-import chefkoch.core
 import chefkoch.item
 import os
 import warnings
@@ -206,8 +205,14 @@ class Fridge:
         else:
             if isinstance(self.shelves[name], FlavourShelf):
                 return self.shelves[name].items
-            else:
+            elif isinstance(self.shelves[name], ItemShelf):
                 print("this is a wip")
+                # prototypmäßig, erstmal die unpraktischere Variante
+                for x in self.shelves[name].items:
+                    if isinstance(x, chefkoch.item.Result):
+                        return x
+            else:
+                print("you have a really strange shelf there")
 
 
 class Shelf(ABC):

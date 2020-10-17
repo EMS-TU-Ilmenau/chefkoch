@@ -17,7 +17,6 @@ import chefkoch.step as step
 
 # ist das eine gute Idee?
 import sys
-import pkgutil
 
 
 class Logger:

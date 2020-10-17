@@ -68,12 +68,20 @@ class Item(ABC):
 
 
 class Result(Item):
-    pass
+    """
+    contains the result from a specific step
+    may need the step?
+    """
+
+    def __init__(self, shelf, result):
+        super().__init__(shelf)
+        self.result = result
+        print("this is a result!")
 
 
 class Resource(Item):
     """
-    Resources used to create a specific item
+    A resource needed for a specific step
     """
 
     def __init__(self, shelf, path):

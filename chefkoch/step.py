@@ -2,13 +2,14 @@
 Definition of the different simulation steps available.
 """
 import chefkoch.core
-from chefkoch.item import Item, Resource
+from chefkoch.item import Item, Resource, Result
 from chefkoch.container import JSONContainer
 from chefkoch.fridge import *
 from abc import ABC, abstractmethod
 import importlib
 import inspect
-import sys
+import subprocess
+import shlex
 
 
 class Step(Item, ABC):
@@ -29,24 +30,21 @@ class Step(Item, ABC):
 
 class StepResource(Step, ABC):
     """
-    Specifies the function to be executed inside a node in the recipe.
+    Abstract class for steps depending on resources
     """
 
     def __init__(self, shelf, dependencies):
         """
-        Tests the step source if it is a recipe, a python executable or
-        a built-in function and initialises it if so.
+        Initliazes the step
 
         Parameters
         ----------
-        stepsource (str):
-            file path to a sub-recipe, a python executable or the name \
-            of a built-in function
+        shelf (Shelf):
+            contains the shelf, which the step belongs to
 
-        Raises
-        ------
-        TypeError:
-            If the string does not match any of the above.
+        dependencies(dict):
+            contains all dependencies, which were needed to create the step
+
         """
         super().__init__(shelf, dependencies)
 
@@ -123,13 +121,17 @@ class StepPython(StepResource):
 
             calldic = {}  # initialise calldictionary
             # filling the dictionary with the specific values
+            # should test if it's a flavour shelf (than everything is allright)
+            # or if it's an Itemshelf -> then we need the result-Item
             for x in sig._parameters.values():
                 calldic[str(x)] = self.shelf.fridge.getItem(str(x))
 
             # execute the function
-            result = self.module.execute(**calldic)
-            print(result)
-            # TODO: process result
+            r = self.module.execute(**calldic)
+            print(r)
+            # das muss aber noch ordentlich in den shelf eingeordnet werden
+            # result_hash als namen, aber irgendwie auch doof?
+            result = Result(self.shelf, r)
 
 
 class StepShell(StepResource):
@@ -137,8 +139,20 @@ class StepShell(StepResource):
     A simulation step specified in a shell-skript
     """
 
-    def __init__(self, path):
-        pass
+    def __init__(self, shelf, dependencies):
+        super().__inti__(shelf, dependencies)
+        self.script = ""
+
+    def executeStep(self):
+        super().executeStep()
+        # vielleicht
+        self.ins = ""
+        for x in dependencies["inputs"]:
+            self.ins = ins + " "
+            self.ins = ins + str(self.shelf.fridge.getItem(str(x)))
+
+        script = self.resource.path
+        subprocess.call(shlex.split(self.script + self.ins))
 
 
 class StepSubRecipe(StepResource):
@@ -146,7 +160,9 @@ class StepSubRecipe(StepResource):
     A simulation step where a SubRecipe is cooked
     """
 
-    def __init__(self):
+    def __init__(self, shelf, dependencies):
+        super().__init__(shelf, dependencies)
+        # inputs-> just check if they are there
         pass
 
 
