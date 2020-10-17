@@ -9,8 +9,10 @@ reci = rcp.readrecipe(recdict.data)
 
 gr = reci.graph
 
-print("matrix ", gr.adjacency_matrix())
+shortest = gr.components()
 
+print("matrix2 ", gr.adjacency_matrix())
+print(len(shortest))
 
 # g = Graph()
 # g.add_node((0, 0))

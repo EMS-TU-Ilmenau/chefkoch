@@ -63,9 +63,13 @@ class Plan:
                         or node object
         """
         # targets = []
-        self.recipe = recipe
+        # self.recipe = recipe
         # self.subGraph = Graph()
         nodelist = []
+
+        if len(targets) == 0:
+            targets = self.fillTargets(recipe)
+
         for target in targets:
             if target[:4] != "item":
                 for targetitem in recipe.graph.nodes(from_node=target):
@@ -82,26 +86,12 @@ class Plan:
                 print(type(node))
                 self.nodes.append(node)
 
-        # if len(targets) == 0:
-        #     self.nodes = recipe
-        # else:
-        #     self.targets.append(targets)
-        #     for target in targets:
-        #         if type(target) == str or type(target) == int:
-        #             targetnode = recipe[target]
-        #         elif type(target) == Node:
-        #             targetnode = target
-        #         self.constructiontree[targetnode.name] = \
-        #             self.createConstructionTree(
-        #             recipe, target
-        #         )
-        # for node in self.nodes:
-        #     # for i in range(len(node.inputs)):
-        #     #     inputKey, inputValue = node.inputs
-        #     for inputValue in node.inputs.values():
-        #         if inputValue not in self.required:
-        #             self.required.append(inputValue)
-        # self.remaining = self.required.copy()
+
+    def fillTargets(self, recipe):
+        targets = []
+        for endnode in recipe.graph.nodes(out_degree=0):
+            targets.append(endnode)
+        return targets
 
     def getItems(self):
         return self.items
@@ -114,57 +104,6 @@ class Plan:
             for liste in recipe.graph.all_paths(startingnode, target):
                 nodelist.extend(liste)
         return nodelist
-
-# self.requi()
-####################################################
-
-    # def createConstructionTree(self, recipe, target):
-    #     """
-    #     build recursively a construction tree based on a recipe and a target
-    #     :param recipe:
-    #     :param target: calculation target given as string (name of the node),
-    #                     int (list index of the node in recipe object)
-    #                     or node object
-    #     :return:
-    #     """
-    #     tree = {}
-    #     if type(target) == str or type(target) == int:
-    #         node = recipe[target]
-    #     elif type(target) == Node:
-    #         node = target
-    #     for inputKey, inputValue in node.inputs.items():
-    #         children = recipe.inputIsOutput(inputValue)
-    #         for child in children:
-    #             if child.name in self.targets:
-    #                 self.targets.remove(child.name)
-    #             if child.name not in self.constructiontree.keys():
-    #                 tree[child.name] = self.createConstructionTree(
-    #                     recipe, child
-    #                 )
-    #             else:
-    #                 tree[child.name] = self.constructiontree[child.name]
-    #                 self.constructiontree.pop(child.name)
-    #     if node not in self.nodes:
-    #         self.nodes.append(node)
-    #     return tree
-
-    # def requi(self):
-    #     for root in self.constructiontree.values():
-    #         # print(root)
-    #         self.buildNodes(root)
-    #         self.required.append(self.recipe[root.key])
-    #
-    # def buildNodes(self, node):
-    #     print(type(node))
-    #     print(node)
-    #     if node.values:
-    #         for value in node.values():
-    #             self.buildNodes(value)
-    #             print("build " + value.keys())
-    #             self.required.append(self.recipe[value.keys()])
-    #     else:
-    #         self.required.append(self.recipe[node.keys()])
-    #         print("test " + node.key())
 
 
 class Recipe:
@@ -294,32 +233,11 @@ class Recipe:
                 )
             else:
                 outputs_of_all_nodes.update(node_outputs)
-        # 2. see if inputs are from flavour, are file paths to existing files
-        # or are in output list
-        try_again = True
-        while try_again:
-            unreachable_nodes = set([])
-            for node in self.nodes:
-                nodeIsValid = True
-                node_inputs = set(node.inputs.values())
-                for input in node_inputs.difference(outputs_of_all_nodes):
-                    if not self.inputIsValid(input):
-                        nodeIsValid = False
-                if not nodeIsValid:
-                    unreachable_nodes.add(node)
-            # 3. Delete unreachable nodes and unreachable outputs and do
-            # it again.
-            try_again = len(unreachable_nodes) > 0
-            for node in unreachable_nodes:
-                warnings.warn(
-                    "Node "
-                    + node.name
-                    + " or one of its previous nodes has an invalid input"
-                    + " and therefore cannot be computed. "
-                )
-                node_outputs = set(node.outputs.values())
-                outputs_of_all_nodes.difference_update(node_outputs)
-                self.nodes.remove(node)
+        if len(self.graph.components()) > 1:
+            raise ImportError(
+                "One or more Nodes are not "
+                "reachable from the others"
+            )
 
         # 4. Loop until all nodes are reachable
         return None, None
@@ -524,10 +442,10 @@ def readrecipe(dict):
     """
 
     recipe = dictToRecipe(dict)
-    # recipe.inputIntegrity()
     recipe.makeGraph()
     if recipe.graph.has_cycles():
         raise Exception("There is a Cycle in your recipe, please check")
+    recipe.inputIntegrity()
     # recipe.findCircles()
     # printRecipe(recipe)
     return recipe

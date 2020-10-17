@@ -2,7 +2,7 @@ import chefkoch.recipe as rcp
 import chefkoch.container as cntnr
 # flav = rec.readfile('flavour',
 # 'flavour.yaml')
-recdict = cntnr.YAMLContainer('/home/maka/Downloads/recipe.yml')
+recdict = cntnr.YAMLContainer('/mnt/c/Users/makle/PycharmProjects/chefkoch/test2/recipe.yml')
 
 reci = rcp.readrecipe(recdict.data)
 # reci = rcp.readfile('recipe',
