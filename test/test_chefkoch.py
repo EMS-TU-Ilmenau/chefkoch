@@ -40,6 +40,7 @@ import chefkoch.core as core
 import chefkoch.recipe as backbone
 import chefkoch.fridge as fridge
 import chefkoch.container as container
+import chefkoch.step as step
 import numpy
 
 # todo: Konsultiere Fabian
@@ -764,5 +765,35 @@ class TestStepPython(unittest.TestCase):
     """
 
     def setUp(self):
+        # appending correct module-path
+        sys.path.append(str(path) + "/steps/")
         self.fridge = fridge.Fridge(config_dict, path)
-        # könnte korrecte shelves anlegen
+        # self.fridge.makeResources(config_dict["resource"], False)
+        self.fridge.makeResources(config_dict["recipe"], True)
+        self.fridge.makeFlavours(config_dict["flavour"])
+        self.step = step.StepPython(self.fridge.shelves["compute_a"], {})
+        # missing the dependencies
+
+    def test_executeStep(self):
+        self.step.executeStep()
+        r = self.fridge.shelves["compute_a"].items["result"].result
+        expected = [2, 3, 4, 8, 9]
+        self.assertEqual(r, expected)
+
+
+class TestStepShell(unittest.TestCase):
+    """
+    Tests for checking the correct behaviour of a python-step
+    """
+
+    def setUp(self):
+        # appending correct module-path
+        sys.path.append(str(path) + "/steps/")
+        self.fridge = fridge.Fridge(config_dict, path)
+        # self.fridge.makeResources(config_dict["resource"], False)
+        self.fridge.makeResources(config_dict["recipe"], True)
+        self.fridge.makeFlavours(config_dict["flavour"])
+        # self.step = step.StepPython(self.fridge.shelves["compute_a"], {})
+
+    def test_executeStep(self):
+        pass

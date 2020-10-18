@@ -132,6 +132,7 @@ class StepPython(StepResource):
             # das muss aber noch ordentlich in den shelf eingeordnet werden
             # result_hash als namen, aber irgendwie auch doof?
             result = Result(self.shelf, r)
+            self.shelf.addItem(result)
 
 
 class StepShell(StepResource):

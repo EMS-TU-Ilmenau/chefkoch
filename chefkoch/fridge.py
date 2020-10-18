@@ -43,63 +43,13 @@ class Fridge:
         """
         Updates the internal item map
         """
+        # not sure if this is somehting we need
         pass
 
     def checkItem(self, item):
         """
-        WIP, sollte man auseinandernehmen und wieder vernünftig zusammenbauen
-        Ist diese Funktion überhaupt sinnvoll?
-        man bekommt ein Item und entweder wird der entsprechende Itemshelf
-        anegelegt und das Item darin angelegt oder oder es existiert bereits
-        -> prüft erstmal nicht auf Konsistenz, da mache ich eine Extra-Funktion
-        -> also nur, gibt es Shelf mit dem Item schon: False
-        -> gibt es den nicht, wird er angelegt und das Item eingeordnet: True
-        Problem: brauche dem entsprechend Namen
+        checks if the item exists and maby if the hash is still valid
         """
-        """
-        if (item.shelf.name in self.shelfs):
-            # wenn es unter den Namen einen Ordner gibt
-            # erstmal grob
-            item = self.shelfs[name].items[name]  # dann holen wir uns das Item
-            # speichern den Pfad zu der existierenden Json
-            itempath = self.shelfs[name].path + "/" + str(name) + ".json"
-            # überprüfen Dateigröße
-            if JSONContainer(itempath) == container:
-                # das ist schon das passende Item
-                return (item, None)
-            else:
-                # Hashkollision
-                # create new Item mit anderem Namen und neuem shelf
-                # erstmal mit Indizes dann
-                i = 1  # zähler
-            begin = self.shelfs[name].path + "/" + str(name) + "_"
-            end = false
-            # gehe die shelfs mit den Indizes durch
-            while (str(name) + "_" + str(i)) in self.shelfs:
-                if JSONContainer(begin + i + ".json") == container:
-                    # wenn passende Item gefunden
-                    end = true
-                    break
-                else:
-                    i += 1
-
-            name = name + "_" + i
-            if end:
-                # wir können passendes Item zurückgeben
-                return (self.shelfs[name].items[name], None)
-            else:
-                # wir müssen einen neuen Shelf für das Item zurückgeben
-                shelf = FridgeShelf(self, name)
-                self.shelfs[name] = shelf
-                return (None, self.shelfs[name])
-
-        else:
-            # wenn es das noch gar nicht gibt,
-            # wird neuer Shelf angelegt und der Namen des Shelfs zurückgegeben
-            shelf = FridgeShelf(self, name)
-            self.shelfs[name] = shelf
-            return (None, self.shelfs[name])
-    """
 
     def makeDirectory(self, path):
         """
@@ -152,8 +102,8 @@ class Fridge:
                 # name = resource.createHash()
 
             self.shelves[element].items[name] = resource
-            print(element)
-            print(self.shelves[element].items)
+            # print(element)
+            # print(self.shelves[element].items)
 
     def makeFlavours(self, Flavours):
         """
@@ -208,9 +158,10 @@ class Fridge:
             elif isinstance(self.shelves[name], ItemShelf):
                 print("this is a wip")
                 # prototypmäßig, erstmal die unpraktischere Variante
-                for x in self.shelves[name].items:
-                    if isinstance(x, chefkoch.item.Result):
-                        return x
+                if "result" in self.shelves[name].items:
+                    return self.shelves[name].items["result"]
+                else:
+                    raise Error(f"item {name} doesn't exist")
             else:
                 print("you have a really strange shelf there")
 
@@ -248,6 +199,17 @@ class ItemShelf(Shelf):
             return self.items[name]
         else:
             return None
+
+    def addItem(self, item):
+        # erstmal zum Hinzufügen von results, vllt später noch
+        # für etwas anderes geeignet
+        # something like checking, if it isn't there
+        # packen wir es mal unter result
+        if "result" in self.items:
+            print("Woowie, you alreade have a result")
+        else:
+            print("added item")
+            self.items["result"] = item
 
 
 class FlavourShelf(Shelf):
