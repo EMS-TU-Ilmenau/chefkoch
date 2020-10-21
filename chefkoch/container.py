@@ -135,10 +135,3 @@ class YAMLContainer:
             yaml.dump(self.data, default_flow_style=False, allow_unicode=True)
         )
         f.close()
-
-
-# import chefkoch.container as cont
-# yam = cont.YAMLContainer("/home/maka/PycharmProjects
-#                           /chefkoch/test/example.yaml")
-# yeet = yam.xmas_fifth_day
-# print( yeet["calling-birds"])

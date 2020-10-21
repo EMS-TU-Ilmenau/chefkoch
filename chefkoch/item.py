@@ -46,6 +46,7 @@ class Item(ABC):
         """
         makes a hash over the jsonfile, to check if it already exists
         """
+        # TODO: das nochmal überarbieten
         hashName = zlib.adler32(json_object.encode("utf-8"))
         # return str(hashName)
         return None
@@ -71,6 +72,7 @@ class Result(Item):
     """
     contains the result from a specific step
     may need the step?
+    printing of the result
     """
 
     def __init__(self, shelf, result):

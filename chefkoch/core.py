@@ -147,10 +147,9 @@ class Chefkoch:
             extra configuration settings, specified in commandline
 
         """
-        # learning about the path-problem
+        # loading the correct path
         sys.path.append(str(path) + "/steps/")
         # loading the cheffile
-        # print(type(arguments["cheffile"]))
         if arguments["cheffile"] is not None:
             self.cheffile = YAMLContainer(arguments["cheffile"])
         else:
@@ -160,7 +159,6 @@ class Chefkoch:
         # using the path to main directory
         self.configuration = Configuration(self.cheffile, path, arguments)
         # generate the fridge
-        # self.fridge = fridge.Fridge(self, path)
         self.fridge = fridge.Fridge(self.configuration, path)
 
         # generate Resource-Shelfs from configuration
@@ -174,7 +172,8 @@ class Chefkoch:
         # dealing with configuration.recipe
         # print(self.configuration.items["recipe"])
         self.fridge.makeResources(self.configuration.items["recipe"], True)
-        # print("ddddd2",  type(self.configuration.items["recipe"]))
+
+        # print(type(self.configuration.items["recipe"]))
         self.recipe = recipe.readrecipe(self.configuration.items["recipe"])
         # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent
@@ -185,7 +184,8 @@ class Chefkoch:
         teststep = step.StepPython(self.fridge.shelves["compute_a"], {})
         teststep.executeStep()
         self.logger = None
-        self.scheduler = None
+        # dann an fridge, recipe
+        # wir loggen alles
         print("This is your evil overlord")
         print("(͠≖ ͜ʖ͠≖)👌")
 
@@ -199,4 +199,7 @@ class Chefkoch:
             things/steps that should be cooked
 
         """
+        self.Plan = None
+        # output-shelfs
+        self.scheduler = None
         pass

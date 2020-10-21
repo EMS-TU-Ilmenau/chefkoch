@@ -48,7 +48,7 @@ class Fridge:
 
     def checkItem(self, item):
         """
-        checks if the item exists and maby if the hash is still valid
+        checks if the item exists and maybe if the hash is still valid
         """
 
     def makeDirectory(self, path):
@@ -60,7 +60,6 @@ class Fridge:
         path(str):
             describes path to the directory
         """
-        # if self.chef.configuration["options"]["directory"]:
         if self.config["options"]["directory"]:
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -86,24 +85,21 @@ class Fridge:
             self.shelves[element] = shelf
             if recipe:
                 resource = chefkoch.item.Resource(
-                    self.shelves[element], Resources[element]["resource"]
+                    self.shelves[element],
+                    self.basePath + "/" + Resources[element]["resource"],
                 )
-                name = zlib.adler32(
-                    Resources[element]["resource"].encode("utf-8")
-                )
-                # not correct
-                # name = resource.createHash()
+                name = resource.createHash()
             else:
+                print(Resources[element])
                 resource = chefkoch.item.Resource(
-                    self.shelves[element], Resources[element]
+                    self.shelves[element],
+                    self.basePath + "/" + Resources[element],
                 )
                 name = zlib.adler32(Resources[element].encode("utf-8"))
                 # the real code, can't use to test
                 # name = resource.createHash()
 
             self.shelves[element].items[name] = resource
-            # print(element)
-            # print(self.shelves[element].items)
 
     def makeFlavours(self, Flavours):
         """
@@ -219,7 +215,7 @@ class FlavourShelf(Shelf):
 
     def ranges(self, f):
         """
-        translates the log-range-entries to valuelists
+        translates the logarithmic-range-entries to valuelists
 
         Parameters:
         -----------
@@ -268,6 +264,7 @@ class FlavourShelf(Shelf):
         # print(self.items)
 
     def printFlavour(self, name):
+        # wieso habe ich hier einen Namen??
         if self.fridge.config["options"]["directory"]:
             if os.path.exists(self.path):
                 container = JSONContainer(None, self.items)

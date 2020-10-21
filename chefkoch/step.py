@@ -154,6 +154,7 @@ class StepShell(StepResource):
 
         script = self.resource.path
         subprocess.call(shlex.split(self.script + self.ins))
+        # TODO: Result im Output-Ordner suchen
 
 
 class StepSubRecipe(StepResource):
