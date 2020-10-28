@@ -142,7 +142,8 @@ class StepShell(StepResource):
 
     def __init__(self, shelf, dependencies):
         super().__inti__(shelf, dependencies)
-        self.script = ""
+        # get the correct path from the resource
+        self.script = self.resource.path
 
     def executeStep(self):
         super().executeStep()
@@ -155,6 +156,13 @@ class StepShell(StepResource):
         script = self.resource.path
         subprocess.call(shlex.split(self.script + self.ins))
         # TODO: Result im Output-Ordner suchen
+        # von dependencies den output bekommen
+        output = self.dependencies["output"]
+        # und dann über fridge-getItem das korrekte Item holen
+        # wenn es denn in dem shelf gelanden ist
+        # das braucht nochmal extra Spezifikation
+        # so funktioniert das noch nicht
+        result = Result(self.path, self.shelf.fridge.getItem(str(output)))
 
 
 class StepSubRecipe(StepResource):

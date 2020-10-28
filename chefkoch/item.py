@@ -17,7 +17,6 @@ class Item(ABC):
     """
 
     def __init__(self, shelf, dict=None, container=None):
-        # erstmal vorläufiges dict
         # zugeordneter Shelf
         self.shelf = shelf
         if container is not None:
@@ -27,7 +26,8 @@ class Item(ABC):
         """
         create a hashfile for the dataset
         """
-        pass
+        # over dependencies, so it would be
+        self.hash = self.dependencies.hash()
 
     def checkHash(self):
         """
@@ -39,17 +39,11 @@ class Item(ABC):
             true,....
 
         """
-        pass
-
-    def jsonHash(self, input):
-        # wird vermutlich erstmal nicht weiter betrachtet
-        """
-        makes a hash over the jsonfile, to check if it already exists
-        """
-        # TODO: das nochmal überarbieten
-        hashName = zlib.adler32(json_object.encode("utf-8"))
-        # return str(hashName)
-        return None
+        if self.hash == self.dependencies.hash():
+            return True
+        else:
+            print(f"this hash isn't accurate anymore")
+            return False
 
     def check(self):
         """
@@ -62,6 +56,8 @@ class Item(ABC):
             true,....
 
         """
+        # only check if directory=True and probably also check if log exists
+        # in incorporate a checkHash
         if os.path.isfile(self.shelf.path + "/" + self.hashName + ".json"):
             return True
         else:
@@ -105,6 +101,14 @@ class Resource(Item):
         pass
 
     def createHash(self):
+        """
+        creates a hash over the resource
+
+        Returns
+        .......
+        hashname(str):
+            sha256 hash over the content of the resource-file
+        """
         BLOCK_SIZE = 65536  # 64 kb
 
         file_hash = hashlib.sha256()
@@ -118,4 +122,5 @@ class Resource(Item):
         return hashname
 
     def __str__(self):
+        # just for debugging purposes
         return f"this item is a ressource with path {self.path}"

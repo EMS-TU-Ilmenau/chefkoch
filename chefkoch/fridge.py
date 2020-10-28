@@ -88,6 +88,7 @@ class Fridge:
                     self.shelves[element],
                     self.basePath + "/" + Resources[element]["resource"],
                 )
+                # print(self.basePath + "/" + Resources[element]["resource"])
                 name = resource.createHash()
             else:
                 print(Resources[element])
@@ -95,6 +96,7 @@ class Fridge:
                     self.shelves[element],
                     self.basePath + "/" + Resources[element],
                 )
+                # print(self.basePath + "/" + Resources[element])
                 name = zlib.adler32(Resources[element].encode("utf-8"))
                 # the real code, can't use to test
                 # name = resource.createHash()
@@ -111,8 +113,6 @@ class Fridge:
             dictionary with the different flavours
 
         """
-        # shelf = FlavourShelf(self, "flavours")
-        # vllt will man es ja doch irgendwann mal schön machen
         for x in Flavours:
             shelf = FlavourShelf(self, x)
             self.shelves[x] = shelf

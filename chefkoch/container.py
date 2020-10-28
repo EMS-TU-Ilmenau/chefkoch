@@ -69,8 +69,6 @@ class JSONContainer:
         h = hashlib.sha256()
         h.update(json_object.encode("utf-8"))
         hashName = h.hexdigest()
-        return hashName
-
         return str(hashName)
 
     def __eq__(self, container):

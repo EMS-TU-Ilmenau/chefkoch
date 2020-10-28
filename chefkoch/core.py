@@ -17,6 +17,8 @@ import chefkoch.step as step
 
 # ist das eine gute Idee?
 import sys
+import logging
+import warnings
 
 
 class Logger:
@@ -35,6 +37,7 @@ class Logger:
 
         """
         pass
+        # that's probably not how this is gonna work
 
     def log(self, level, message, *objects):
         """
@@ -154,7 +157,10 @@ class Chefkoch:
             self.cheffile = YAMLContainer(arguments["cheffile"])
         else:
             self.cheffile = YAMLContainer(path + "/cheffile.yml")
-
+        # wir loggen alles, auch das cheffile,
+        # oder lassen wir da noch Änderungen für Logger spezifizieren
+        # fridge, steps
+        self.logger = None
         # generate the configuration-item
         # using the path to main directory
         self.configuration = Configuration(self.cheffile, path, arguments)
@@ -183,9 +189,7 @@ class Chefkoch:
         # testing from the steps
         teststep = step.StepPython(self.fridge.shelves["compute_a"], {})
         teststep.executeStep()
-        self.logger = None
-        # dann an fridge, recipe
-        # wir loggen alles
+
         print("This is your evil overlord")
         print("(͠≖ ͜ʖ͠≖)👌")
 
