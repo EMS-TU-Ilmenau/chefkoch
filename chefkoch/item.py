@@ -10,6 +10,8 @@ import warnings
 import hashlib
 from abc import ABC, abstractmethod
 
+# TODO: das Ganze mal vernünftig aufdröseln
+
 
 class Item(ABC):
     """

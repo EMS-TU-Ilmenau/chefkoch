@@ -50,6 +50,8 @@ class Fridge:
         """
         checks if the item exists and maybe if the hash is still valid
         """
+        # do we need this -> Item has this function
+        pass
 
     def makeDirectory(self, path):
         """
@@ -122,7 +124,7 @@ class Fridge:
 
     def makeItemShelves(self, outputs):
         """
-        creates the necessary itemshelfs
+        creates the necessary itemshelfs for outputs
 
         Parameters
         ----------
@@ -160,6 +162,17 @@ class Fridge:
                     raise Error(f"item {name} doesn't exist")
             else:
                 print("you have a really strange shelf there")
+
+    def getShelf(self, name):
+        """
+        returns the correct shelf
+        Maybe an other shelf
+        """
+        if name in self.shelves:
+            # check if still empty?
+            return self.shelves[str(name)]
+        else:
+            return None
 
 
 class Shelf(ABC):

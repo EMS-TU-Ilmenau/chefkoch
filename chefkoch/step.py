@@ -131,7 +131,11 @@ class StepPython(StepResource):
             print(r)
             # das muss aber noch ordentlich in den shelf eingeordnet werden
             # result_hash als namen, aber irgendwie auch doof?
+            # das result muss in den ouput-Shelf!
             result = Result(self.shelf, r)
+            # correct behaivour, bit still missing the outputs
+            # shelf = self.shelf.fridge.getShelf(self.dependencies["outputs"])
+            # shelf.addItem(result)
             self.shelf.addItem(result)
 
 
@@ -163,6 +167,7 @@ class StepShell(StepResource):
         # das braucht nochmal extra Spezifikation
         # so funktioniert das noch nicht
         result = Result(self.path, self.shelf.fridge.getItem(str(output)))
+        self.shelf.addItem(result)
 
 
 class StepSubRecipe(StepResource):
