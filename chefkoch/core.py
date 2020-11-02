@@ -15,7 +15,7 @@ from chefkoch.container import JSONContainer
 import ast
 import chefkoch.step as step
 
-# ist das eine gute Idee?
+# das ist eine bezaubernde Idee
 import sys
 import logging
 import warnings
@@ -26,35 +26,54 @@ class Logger:
     creates a logfile
     """
 
-    def __init__(self, filename):
+    formatter = "%(asctime)s %(levelname)s %(message)s"
+
+    def __init__(self, options):
         """
-        Create a logfile and use this container for logging.
+        creates the basic logger which can be calles from all instances
 
         Parameters
         ----------
-        filename(string):
-            name of logfile
-
+        options(dic):
+            options specified in configuration
         """
-        pass
-        # that's probably not how this is gonna work
+        # too look up the options later
+        self.options = options
+        logging.basicConfig(format=Logger.formatter)
+        console = logging.StreamHandler()
+        console.setLevel(logging.ERROR)  # will be specified in options
+        logging.getLogger("").addHandler(console)
 
-    def log(self, level, message, *objects):
+    def logspec(self, name, filename):
         """
-        Creates a log entry
+        specifies the logs for the different steps
+        wird später nochmal etwas überarbeitet
 
         Parameters
         ----------
-        level(int):
-            type and importance of log-message
-
-        message(string):
-            log-message
-
-        objects():
-            describes the used objects
+        name(str):
+            the name of this logger
+        filename(str):
+            filepath to this particular log-file
         """
-        pass
+        # this will be ridicules, if it works
+        testdic = {}
+        foo = name
+        testdic[foo] = logging.FileHandler(filename, mode="w")
+        # testdic[name].setFormatter(Logger.formatter)
+        # this will be later changed according to the options
+        testdic[foo].setLevel(logging.INFO)
+
+        # next we will need a correct working filter
+        filter_test = logging.Filter(name=str(name))
+        # will probably be passed to a certain logger
+        # testdic[foo].addFilter(filter_test)
+
+        logger = logging.getLogger(name)
+        logger.addFilter(filter_test)
+        logger.addHandler(testdic[foo])
+        print("we are all gonna die")
+        return logger
 
 
 class Configuration:
@@ -157,13 +176,15 @@ class Chefkoch:
             self.cheffile = YAMLContainer(arguments["cheffile"])
         else:
             self.cheffile = YAMLContainer(path + "/cheffile.yml")
-        # wir loggen alles, auch das cheffile,
-        # oder lassen wir da noch Änderungen für Logger spezifizieren
-        # fridge, steps
-        self.logger = None
         # generate the configuration-item
         # using the path to main directory
         self.configuration = Configuration(self.cheffile, path, arguments)
+
+        # cheffile legt noch Änderungen an logger fest
+        self.logger = Logger(self.configuration)
+        logger = self.logger.logspec(__name__, path + "/core.log")
+        logger.warn("This is maybe a bad idea!")
+
         # generate the fridge
         self.fridge = fridge.Fridge(self.configuration, path)
 
@@ -187,7 +208,9 @@ class Chefkoch:
         # festgelegte Stelle für Fridge, durch Config mglweiser änderbar
 
         # testing from the steps
-        teststep = step.StepPython(self.fridge.shelves["compute_a"], {})
+        teststep = step.StepPython(
+            self.fridge.shelves["compute_a"], {}, self.logger
+        )
         teststep.executeStep()
 
         print("This is your evil overlord")

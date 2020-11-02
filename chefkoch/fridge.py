@@ -148,6 +148,7 @@ class Fridge:
         name(str):
             name of the wanted item
         """
+        # needs some checks if item is up-to-date
         if name not in self.shelves:
             raise Exception(name + " doesn't exist in this fridge")
         else:
@@ -185,6 +186,7 @@ class Shelf(ABC):
         self.fridge = fridge
         self.path = fridge.basePath + "/fridge/" + str(name)
         self.fridge.makeDirectory(self.path)
+        self.name = name
 
     def __len__(self):
         return len(self.items)
@@ -262,6 +264,7 @@ class FlavourShelf(Shelf):
             flavour dictionary from flavour-file
 
         """
+        # probably needs some checks for correct input
         if isinstance(Flavours, list):
             if isinstance(Flavours[0], dict):
                 vals = []

@@ -1,11 +1,17 @@
 """
 Definition of the different simulation steps available.
 """
-import chefkoch.core
 from chefkoch.item import Item, Resource, Result
 from chefkoch.container import JSONContainer
 from chefkoch.fridge import *
 from abc import ABC, abstractmethod
+
+# wenn ich das zum Loggen brauche
+import chefkoch.core
+
+# alternative
+import logging
+
 import importlib
 import inspect
 import subprocess
@@ -22,10 +28,17 @@ class Step(Item, ABC):
         Initializes the logfile for this step and the
         name-mapping
         """
-        self.logfile = None
         self.mapping = dependencies
         # this will change
         super().__init__(shelf, None, JSONContainer())
+        """
+        self.logfile = chefkoch.core.Logger(
+            __name__, self.shelf.path + "/step.log"
+        )
+        self.logfile.log.debug(
+            f"This is a debug message with dependencies {self.mapping}"
+        )
+        """
 
 
 class StepResource(Step, ABC):
@@ -33,7 +46,7 @@ class StepResource(Step, ABC):
     Abstract class for steps depending on resources
     """
 
-    def __init__(self, shelf, dependencies):
+    def __init__(self, shelf, dependencies, logger):
         """
         Initliazes the step
 
@@ -59,8 +72,17 @@ class StepResource(Step, ABC):
                 self.resource = shelf.items[x]
                 break
 
+        self.logger = logger.logspec(
+            shelf.name, shelf.path + "/" + shelf.name + ".log"
+        )
+
     def executeStep(self):
         # maybe check resource
+        pass
+
+    def createLogger(self):
+        # can change the path later
+        print(self.shelf.path + "/step.log")
         pass
 
 
@@ -69,7 +91,7 @@ class StepPython(StepResource):
     A simulation step specified in a Python-file
     """
 
-    def __init__(self, shelf, dependencies):
+    def __init__(self, shelf, dependencies, logger):
         """
         initializes a Python-Step
 
@@ -83,7 +105,8 @@ class StepPython(StepResource):
             inputs and ouptuts of this step
         """
         # prototype implementation
-        super().__init__(shelf, dependencies)
+        super().__init__(shelf, dependencies, logger)
+        self.logger.warn("This might work")
         # read the module-name
         mod_name, file_ext = os.path.splitext(
             os.path.split(self.resource.path)[-1]
@@ -111,13 +134,12 @@ class StepPython(StepResource):
             raise Exception("There is no execute in " + str(mod_name))
 
     def executeStep(self):
-        # will probably be useful
         super().executeStep()
         if self.found:
             print("going to execute the step")
             # getting the signature of execute
             sig = inspect.signature(self.module.execute)
-            print(sig)
+            # print(sig)
 
             calldic = {}  # initialise calldictionary
             # filling the dictionary with the specific values
@@ -128,7 +150,7 @@ class StepPython(StepResource):
 
             # execute the function
             r = self.module.execute(**calldic)
-            print(r)
+            # print(r)
             # das muss aber noch ordentlich in den shelf eingeordnet werden
             # result_hash als namen, aber irgendwie auch doof?
             # das result muss in den ouput-Shelf!
@@ -144,8 +166,8 @@ class StepShell(StepResource):
     A simulation step specified in a shell-skript
     """
 
-    def __init__(self, shelf, dependencies):
-        super().__inti__(shelf, dependencies)
+    def __init__(self, shelf, dependencies, logger):
+        super().__inti__(shelf, dependencies, logger)
         # get the correct path from the resource
         self.script = self.resource.path
 
@@ -175,8 +197,8 @@ class StepSubRecipe(StepResource):
     A simulation step where a SubRecipe is cooked
     """
 
-    def __init__(self, shelf, dependencies):
-        super().__init__(shelf, dependencies)
+    def __init__(self, shelf, dependencies, logger):
+        super().__init__(shelf, dependencies, logger)
         # inputs-> just check if they are there
         pass
 

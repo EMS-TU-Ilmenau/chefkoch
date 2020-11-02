@@ -767,11 +767,14 @@ class TestStepPython(unittest.TestCase):
     def setUp(self):
         # appending correct module-path
         sys.path.append(str(path) + "/steps/")
+        self.logger = core.Logger(config_dict)
         self.fridge = fridge.Fridge(config_dict, path)
         # self.fridge.makeResources(config_dict["resource"], False)
         self.fridge.makeResources(config_dict["recipe"], True)
         self.fridge.makeFlavours(config_dict["flavour"])
-        self.step = step.StepPython(self.fridge.shelves["compute_a"], {})
+        self.step = step.StepPython(
+            self.fridge.shelves["compute_a"], {}, self.logger
+        )
         # missing the dependencies
 
     def test_executeStep(self):
