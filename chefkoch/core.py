@@ -43,6 +43,7 @@ class Logger:
         console = logging.StreamHandler()
         console.setLevel(logging.ERROR)  # will be specified in options
         logging.getLogger("").addHandler(console)
+        # maybe need a central log, if there's no directory
 
     def logspec(self, name, filename):
         """
@@ -56,24 +57,27 @@ class Logger:
         filename(str):
             filepath to this particular log-file
         """
-        # this will be ridicules, if it works
-        testdic = {}
-        foo = name
-        testdic[foo] = logging.FileHandler(filename, mode="w")
-        # testdic[name].setFormatter(Logger.formatter)
-        # this will be later changed according to the options
-        testdic[foo].setLevel(logging.INFO)
+        if self.options["options"]["directory"]:
+            # this will be ridicules, if it works
+            testdic = {}
+            foo = name
+            testdic[foo] = logging.FileHandler(filename, mode="w")
+            # testdic[name].setFormatter(Logger.formatter)
+            # this will be later changed according to the options
+            testdic[foo].setLevel(logging.INFO)
 
-        # next we will need a correct working filter
-        filter_test = logging.Filter(name=str(name))
-        # will probably be passed to a certain logger
-        # testdic[foo].addFilter(filter_test)
+            # next we will need a correct working filter
+            filter_test = logging.Filter(name=str(name))
+            # will probably be passed to a certain logger
+            # testdic[foo].addFilter(filter_test)
 
-        logger = logging.getLogger(name)
-        logger.addFilter(filter_test)
-        logger.addHandler(testdic[foo])
-        print("we are all gonna die")
-        return logger
+            logger = logging.getLogger(name)
+            logger.addFilter(filter_test)
+            logger.addHandler(testdic[foo])
+            print("we are all gonna die")
+            return logger
+        else:
+            return logging.getLogger(name)
 
 
 class Configuration:

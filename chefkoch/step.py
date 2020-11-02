@@ -106,7 +106,7 @@ class StepPython(StepResource):
         """
         # prototype implementation
         super().__init__(shelf, dependencies, logger)
-        self.logger.warn("This might work")
+        # self.logger.warn("This might work")
         # read the module-name
         mod_name, file_ext = os.path.splitext(
             os.path.split(self.resource.path)[-1]
