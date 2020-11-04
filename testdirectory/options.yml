@@ -1,1 +1,4 @@
-{test: True, directory: false, configOut: true}
+test: True
+directory: false 
+configOut: true
+logLevel: DEBUG

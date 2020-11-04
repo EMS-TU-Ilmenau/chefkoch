@@ -6,12 +6,6 @@ from chefkoch.container import JSONContainer
 from chefkoch.fridge import *
 from abc import ABC, abstractmethod
 
-# wenn ich das zum Loggen brauche
-import chefkoch.core
-
-# alternative
-import logging
-
 import importlib
 import inspect
 import subprocess
@@ -31,14 +25,6 @@ class Step(Item, ABC):
         self.mapping = dependencies
         # this will change
         super().__init__(shelf, None, JSONContainer())
-        """
-        self.logfile = chefkoch.core.Logger(
-            __name__, self.shelf.path + "/step.log"
-        )
-        self.logfile.log.debug(
-            f"This is a debug message with dependencies {self.mapping}"
-        )
-        """
 
 
 class StepResource(Step, ABC):
@@ -72,17 +58,13 @@ class StepResource(Step, ABC):
                 self.resource = shelf.items[x]
                 break
 
+        # logging
         self.logger = logger.logspec(
             shelf.name, shelf.path + "/" + shelf.name + ".log"
         )
 
     def executeStep(self):
         # maybe check resource
-        pass
-
-    def createLogger(self):
-        # can change the path later
-        print(self.shelf.path + "/step.log")
         pass
 
 
@@ -101,6 +83,7 @@ class StepPython(StepResource):
             shelf of the specific step
             will probably changed, that the step gets its
             resource directly from the fridge
+
         dependencies(dict):
             inputs and ouptuts of this step
         """

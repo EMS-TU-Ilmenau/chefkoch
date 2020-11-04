@@ -34,7 +34,7 @@ from graph import Graph
 from chefkoch.container import YAMLContainer, JSONContainer
 
 # logs need to be imported this way to not write logs.logger all the time
-from .logs import *
+# from .logs import *
 
 
 # constants
@@ -412,10 +412,12 @@ class Name:
         try:
             is_unicode = isinstance(name, unicode)
         except NameError as mimimi:
+            """
             logger.debug(mimimi)
             logger.debug(
                 "You are using python 3, " "but don't worry, we make it work."
             )
+            """
             pass
         if not (isinstance(name, str) or is_unicode):
             raise TypeError("The name of a node must be a string.")

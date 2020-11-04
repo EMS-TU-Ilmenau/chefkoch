@@ -120,6 +120,7 @@ if __name__ == "__main__":
         print("current options available: ")
         print("directory: should the fridge be a folder structure")
         print("configOut: printing the complete config as file")
+        print("debugLevel: setting the debugLevel to your preference")
 
     HELP_COOK = "Cook something from the scope of your recipe"
 

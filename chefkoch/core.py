@@ -41,9 +41,18 @@ class Logger:
         self.options = options
         logging.basicConfig(format=Logger.formatter)
         console = logging.StreamHandler()
-        console.setLevel(logging.ERROR)  # will be specified in options
-        logging.getLogger("").addHandler(console)
+        # form = logging.Formatter(Logger.formatter)
+        # console.setFormatter(form)
+
+        # setting the console-logger to specific level doesn't work yet
+        console = self.loglevel(console, options["logLevel"])
+        # console.setLevel(logging.WARNING)  # will be specified in options
+        l_main = logging.getLogger("main")
+        l_main.addHandler(console)
+        l_main.propagate = False
         # maybe need a central log, if there's no directory
+        # logging.captureWarnings(True)
+        # warnings.filterwarnings("always", category=UserWarning)
 
     def logspec(self, name, filename):
         """
@@ -57,27 +66,44 @@ class Logger:
         filename(str):
             filepath to this particular log-file
         """
-        if self.options["options"]["directory"]:
-            # this will be ridicules, if it works
-            testdic = {}
-            foo = name
-            testdic[foo] = logging.FileHandler(filename, mode="w")
-            # testdic[name].setFormatter(Logger.formatter)
+        if self.options["directory"]:
+            handler = logging.FileHandler(filename, mode="w")
+            form = logging.Formatter(Logger.formatter)
+            handler.setFormatter(form)
             # this will be later changed according to the options
-            testdic[foo].setLevel(logging.INFO)
+            Logger.loglevel(self, handler, self.options["logLevel"])
 
             # next we will need a correct working filter
             filter_test = logging.Filter(name=str(name))
-            # will probably be passed to a certain logger
-            # testdic[foo].addFilter(filter_test)
 
             logger = logging.getLogger(name)
             logger.addFilter(filter_test)
-            logger.addHandler(testdic[foo])
-            print("we are all gonna die")
+            logger.addHandler(handler)
             return logger
         else:
+            # this is not how it's supposed to be
             return logging.getLogger(name)
+
+    def loglevel(self, handler, level):
+        """
+        Hilfsfunktion um ein bestimmtes loglevel zu setzen
+        vllt geht das schöner
+        könnte man später noch nach main Logger und file-loggers differenzieren
+        """
+        if level == "INFO":
+            handler.setLevel(10)
+        elif level == "DEBUG":
+            handler.setLevel(20)
+        elif level == "WARNING":
+            handler.setLevel(30)
+        elif level == "ERROR":
+            handler.setLevel(40)
+        elif level == "CRITICAL":
+            handler.setLevel(50)
+        else:
+            # raise an error here
+            print("Something is rotten in the state of denmark")
+        return handler
 
 
 class Configuration:
@@ -185,9 +211,9 @@ class Chefkoch:
         self.configuration = Configuration(self.cheffile, path, arguments)
 
         # cheffile legt noch Änderungen an logger fest
-        self.logger = Logger(self.configuration)
-        logger = self.logger.logspec(__name__, path + "/core.log")
-        logger.warn("This is maybe a bad idea!")
+        self.logger = Logger(self.configuration["options"])
+        corelogger = self.logger.logspec(__name__, path + "/core.log")
+        corelogger.warn("This is maybe a bad idea!")
 
         # generate the fridge
         self.fridge = fridge.Fridge(self.configuration, path)
@@ -205,7 +231,7 @@ class Chefkoch:
         self.fridge.makeResources(self.configuration.items["recipe"], True)
 
         # print(type(self.configuration.items["recipe"]))
-        self.recipe = recipe.readrecipe(self.configuration.items["recipe"])
+        # self.recipe = recipe.readrecipe(self.configuration.items["recipe"])
         # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf
