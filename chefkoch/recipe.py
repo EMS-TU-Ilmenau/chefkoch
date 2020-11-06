@@ -86,7 +86,6 @@ class Plan:
                 print(type(node))
                 self.nodes.append(node)
 
-
     def fillTargets(self, recipe):
         targets = []
         for endnode in recipe.graph.nodes(out_degree=0):
@@ -94,9 +93,21 @@ class Plan:
         return targets
 
     def getItems(self):
+        """
+        Returns every item which is an input or output of a node
+
+        :return: list of String
+        """
         return self.items
 
     def getSubGraphNodes(self, recipe, target):
+        """
+        Creates a list of nodes needed to calculate the target object
+
+        :param recipe: recipe object
+        :param target: string (name of the target node)
+        :return: list of nodes
+        """
         nodelist = []
         for startingnode in recipe.graph.nodes(in_degree=0):
             print(startingnode, type(startingnode))
@@ -144,7 +155,6 @@ class Recipe:
             for node in self.nodes:
                 if node.name == item:
                     return node
-#########################
 
     def getPrerequisits(self, item):
         """
@@ -153,34 +163,10 @@ class Recipe:
         :return: List of nodes
         """
         ret = []
-        for inputKey, inputValue in (
-            self[item].inputs.items()
-            if type(item) == int else item.inputs.items()
-        ):
-            prerequisites = self.inputIsOutput(inputValue)
-            if len(prerequisites) > 0:
-                ret.extend(prerequisites)
-                for i in prerequisites:
-                    # print("i is: ")
-                    # print(i.name)
-                    ret.extend(self.getPrerequisits(i))
+        for previousNode in self.graph.nodes(to_node=item):
+            ret.append(previousNode)
+            ret.append(self.getPrerequisits(previousNode))
         return ret
-##################################
-
-    def inputIsOutput(self, input):
-        """
-        Checks if given input is also output of other nodes and returns them
-        :param input: name of the ipnut
-        :return: list of nodes
-        """
-        ret = []
-        for node in self.nodes:
-            for outputKey, outputValue in node.outputs.items():
-                if input == outputValue:
-                    if node not in ret:
-                        ret.append(node)
-        return ret
-##################################
 
     def inputIsValid(self, input):
         """
@@ -245,9 +231,7 @@ class Recipe:
 
     def makeGraph(self):
         """
-
-        :param dict:
-        :return:
+        Builds a Graph according to the recipe nodes saved in self.nodes
         """
         for node in self.nodes:
             print("adding node: " + node.name)
@@ -361,6 +345,7 @@ class Name:
             logger.debug(mimimi)
             logger.debug("You are using python 3, "
                          "but don't worry, we make it work.")
+            """
             pass
         if not (isinstance(name, str) or is_unicode):
             raise TypeError("The name of a node must be a string.")
@@ -382,47 +367,6 @@ class Name:
         `True`, if name only contains ascii characters.
         """
         return all(ord(c) < 128 for c in name)
-
-
-# class StepSource:
-#     """
-#     Specifies the function to be executed inside a node in the recipe.
-#     """
-#
-#     def __init__(self, stepsource):
-#         """
-#         Tests the step source if it is a recipe, a python executable or
-#         a built-in function and initialises it if so.
-#
-#         Parameters
-#         ----------
-#         stepsource (str):
-#             file path to a sub-recipe, a python executable or the name \
-#             of a built-in function
-#
-#         Raises
-#         ------
-#         TypeError:
-#             If the string does not match any of the above.
-#         """
-#         # testing if step is built-in; JSON file or python function
-#         extension = os.path.splitext(stepsource)[1]
-#         if extension == ".py":
-#             self.step = stepsource
-#         elif extension == ".json":
-#             self.step = stepsource
-#         elif str(stepsource) in BUILT_INS:
-#             self.step = stepsource
-#             # done: research on assigning functions as attributes
-#             # (so that it can be accessed no matter where the object
-#             # is used)
-#         else:
-#             raise TypeError(
-#                 "Stepsource : "
-#                 + str(stepsource)
-#                 + ". Must be a Python file, another recipe "
-#                 + "or a build-in function."
-#             )
 
 
 def readrecipe(dict):
@@ -449,65 +393,6 @@ def readrecipe(dict):
     # recipe.findCircles()
     # printRecipe(recipe)
     return recipe
-
-
-# def readflavour(filename):
-#     """
-#     Opens a YAML file and parses it into a flavour object. Then outputs
-#     the data inside the flavour file.
-#
-#     Parameters
-#     ----------
-#     filename (str):
-#         file path
-#
-#     Returns
-#     --------
-#     flavour - object of type flavour.
-#     :rtype: Flavour
-#     """
-#     data = {}
-#     type = filename[-4:]
-#     if type == "yaml":
-#         data = openyaml(filename)
-#     flavour = dictToFlavour(data)
-#     print(flavour.tostring())
-#     # todo: input Integrity checks
-#     return flavour
-
-
-# def openyaml(filename): #containern
-#     """
-#     Opens a YAML file, makes sure it is valid YAML and the file exists
-#     at the given path. Loads the whole file at once. File should there-
-#     fore not be too big.
-#
-#     Parameters
-#     ----------
-#     filename (str):
-#         file path
-#
-#     Returns
-#     --------
-#     data - dict or list depending on YAML structure
-#
-#     Raises
-#     ------
-#     IOError:
-#         If the file path or file name are incorrect.
-#     ValueError:
-#         If the given file is no valid YAML format.
-#     """
-#     if not os.path.isfile(filename):
-#         raise IOError("The file path or file name is incorrect.")
-#     with open(filename) as f:
-#         try:
-#             data = yaml.load(f, Loader=yaml.SafeLoader)
-#             # That's the whole file at once. Hope files dont get too big
-#         except ValueError as err:
-#             raise ValueError("This is no valid YAML file.")
-#
-#     return data
 
 
 def dictToRecipe(data):
@@ -575,68 +460,3 @@ def printRecipe(recipe):
         print("Executes:")
         print("  " + str(node.step))
         print("\n")
-
-
-# called by typing "chef read /file/path/.."
-# def readfile(type, filename):
-#     """
-#     Wrapper function that calls either `readrecipe` or `readflavour`
-#     depending on the parameter `type`.
-#
-#     Parameters
-#     ----------
-#     type (str):
-#         Type of YAML file that should be converted into a \
-#         dictionary: {"recipe", "flavour"}
-#
-#     Returns
-#     -------
-#     Recipe or Flavour object depending on the `type` parameter.
-#
-#     Raises
-#     ------
-#     TypeError:
-#         If type is none of the above.
-#
-#     """
-#     if type == "recipe":
-#         return readrecipe(filename)
-#     if type == "flavour":
-#         return readflavour(filename)
-#     else:
-#         raise TypeError(
-#             "The function readyaml only takes
-#             'recipe' or" + "'flavour' as type."
-#         )
-#
-
-# def readyaml(type, filename):
-#     """
-#     Wrapper function that calls either `readrecipe` or `readflavour`
-#     depending on the parameter `type`.
-#
-#     Parameters
-#     ----------
-#     type (str):
-#         Type of YAML-file that should be converted into a \
-#         dictionary: {"recipe", "flavour"}
-#
-#     Returns
-#     -------
-#     Recipe or Flavour object depending on the `type` parameter.
-#
-#     Raises
-#     ------
-#     TypeError:
-#         If type is none of the above.
-#
-#     """
-#     if type == "recipe":
-#         return readrecipe(filename)
-#     if type == "flavour":
-#         return readflavour(filename)
-#     else:
-#         raise TypeError(
-#             "The function parameter type hase to be 'recipe' or"
-#             + "'flavour'."
-#         )
