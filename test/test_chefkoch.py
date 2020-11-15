@@ -588,7 +588,7 @@ config_dict = {
         "test": True,
         "directory": False,
         "configOut": True,
-        "logLevel": "DEBUG",
+        "logLevel": "WARNING",
     },
     "resource": {
         "raw_data": "resource/raw_data.npy",
@@ -772,7 +772,7 @@ class TestStepPython(unittest.TestCase):
     def setUp(self):
         # appending correct module-path
         sys.path.append(str(path) + "/steps/")
-        self.logger = core.Logger(config_dict["options"])
+        self.logger = core.Logger(config_dict["options"], path)
         self.fridge = fridge.Fridge(config_dict, path)
         # self.fridge.makeResources(config_dict["resource"], False)
         self.fridge.makeResources(config_dict["recipe"], True)

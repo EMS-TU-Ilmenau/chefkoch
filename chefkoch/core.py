@@ -26,9 +26,9 @@ class Logger:
     creates a logfile
     """
 
-    formatter = "%(asctime)s %(levelname)s %(message)s"
+    formatter = "%(asctime)s - %(levelname)s - %(message)s"
 
-    def __init__(self, options):
+    def __init__(self, options, path):
         """
         creates the basic logger which can be calles from all instances
 
@@ -39,20 +39,20 @@ class Logger:
         """
         # too look up the options later
         self.options = options
-        logging.basicConfig(format=Logger.formatter)
-        console = logging.StreamHandler()
-        # form = logging.Formatter(Logger.formatter)
-        # console.setFormatter(form)
+        # main path
+        self.path = path
+        # standard initialzing
+        logging.basicConfig(format=Logger.formatter, level=logging.DEBUG)
 
-        # setting the console-logger to specific level doesn't work yet
-        console = self.loglevel(console, options["logLevel"])
-        # console.setLevel(logging.WARNING)  # will be specified in options
-        l_main = logging.getLogger("main")
-        l_main.addHandler(console)
-        l_main.propagate = False
-        # maybe need a central log, if there's no directory
-        # logging.captureWarnings(True)
-        # warnings.filterwarnings("always", category=UserWarning)
+        if not self.options["directory"]:
+            filename = self.path + "/chef.log"
+            handler = logging.FileHandler(filename, mode="w")
+            form = logging.Formatter(Logger.formatter)
+            handler.setFormatter(form)
+            Logger.loglevel(self, handler, self.options["logLevel"])
+            # probably won't need a filter
+            logger = logging.getLogger("main")
+            logger.addHandler(handler)
 
     def logspec(self, name, filename):
         """
@@ -66,9 +66,17 @@ class Logger:
         filename(str):
             filepath to this particular log-file
         """
+        logger = logging.getLogger(name)
+        logger.propagate = False
+
+        form = logging.Formatter(Logger.formatter)
+        console = logging.StreamHandler()
+        console.setFormatter(form)
+        Logger.loglevel(self, console, self.options["logLevel"])
+        logger.addHandler(console)
         if self.options["directory"]:
             handler = logging.FileHandler(filename, mode="w")
-            form = logging.Formatter(Logger.formatter)
+            # form = logging.Formatter(Logger.formatter)
             handler.setFormatter(form)
             # this will be later changed according to the options
             Logger.loglevel(self, handler, self.options["logLevel"])
@@ -76,13 +84,13 @@ class Logger:
             # next we will need a correct working filter
             filter_test = logging.Filter(name=str(name))
 
-            logger = logging.getLogger(name)
+            # logger = logging.getLogger(name)
             logger.addFilter(filter_test)
             logger.addHandler(handler)
             return logger
         else:
             # this is not how it's supposed to be
-            return logging.getLogger(name)
+            return logging.getLogger("main")
 
     def loglevel(self, handler, level):
         """
@@ -137,7 +145,6 @@ class Configuration:
         filename(string):
             file, that specifies configuration
         """
-
         self.file = container
 
         self.items = dict()
@@ -211,9 +218,9 @@ class Chefkoch:
         self.configuration = Configuration(self.cheffile, path, arguments)
 
         # cheffile legt noch Änderungen an logger fest
-        self.logger = Logger(self.configuration["options"])
+        self.logger = Logger(self.configuration["options"], path)
         corelogger = self.logger.logspec(__name__, path + "/core.log")
-        corelogger.warn("This is maybe a bad idea!")
+        corelogger.warn("CHEF: " + "This is maybe a bad idea!")
 
         # generate the fridge
         self.fridge = fridge.Fridge(self.configuration, path)
