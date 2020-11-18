@@ -30,7 +30,9 @@ class Logger:
 
     def __init__(self, options, path):
         """
-        creates the basic logger which can be calles from all instances
+        creates the basic logger which can be called from all instances
+        If the directory-options is set to false, there will be only
+        one log-file which collects all logging-information
 
         Parameters
         ----------
@@ -242,11 +244,15 @@ class Chefkoch:
         # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf
-        # festgelegte Stelle für Fridge, durch Config mglweiser änderbar
 
         # testing from the steps
         teststep = step.StepPython(
             self.fridge.shelves["compute_a"], {}, self.logger
+        )
+        teststep.executeStep()
+
+        teststep = step.StepPython(
+            self.fridge.shelves["anotherStep"], {}, self.logger
         )
         teststep.executeStep()
 

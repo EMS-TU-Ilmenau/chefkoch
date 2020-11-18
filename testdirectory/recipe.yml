@@ -15,3 +15,12 @@ doItTwice_z:
     
     outputs:
         result: seconds
+
+anotherStep:
+    type: python
+    resource: steps/LogToLin.py
+    inputs:
+        data: beampatternLog
+    
+    outputs:
+        result: beampatternLin

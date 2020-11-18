@@ -9,6 +9,7 @@ import os
 import warnings
 import hashlib
 from abc import ABC, abstractmethod
+import numpy as np
 
 # TODO: das Ganze mal vernünftig aufdröseln
 
@@ -100,7 +101,18 @@ class Resource(Item):
         # super().__init__(self, shelf, path)
         self.shelf = shelf
         self.path = path
-        pass
+        name, file_ext = os.path.splitext(
+            os.path.split(self.path)[-1]
+        )
+        if (file_ext == ".npy"):
+            self.type = "numpy"
+            print(self.type)
+        elif (file_ext == ".py"):
+            self.type = "python"
+        else:
+            print("so weit bin ich noch nicht")
+        # print(f"This resource has path: {self.path}")
+        
 
     def createHash(self):
         """
@@ -122,6 +134,16 @@ class Resource(Item):
 
         hashname = file_hash.hexdigest()
         return hashname
+
+    def getContent(self):
+        """
+        this function returns the correct data type, if the ressource
+        isn't of type python-file
+        """
+        if self.type is "numpy":
+            return np.load(self.path)
+        else:
+            print("I've no idea")
 
     def __str__(self):
         # just for debugging purposes

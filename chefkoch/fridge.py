@@ -99,9 +99,10 @@ class Fridge:
                     self.basePath + "/" + Resources[element],
                 )
                 # print(self.basePath + "/" + Resources[element])
-                name = zlib.adler32(Resources[element].encode("utf-8"))
+                # name = zlib.adler32(Resources[element].encode("utf-8"))
                 # the real code, can't use to test
-                # name = resource.createHash()
+                name = resource.createHash()
+                print(name)
 
             self.shelves[element].items[name] = resource
 
@@ -120,7 +121,7 @@ class Fridge:
             self.shelves[x] = shelf
             self.shelves[x].makeFullList(Flavours[x])
             # optional printing of the different Flavours in a json
-            self.shelves[x].printFlavour(x)
+            self.shelves[x].printFlavour()
 
     def makeItemShelves(self, outputs):
         """
@@ -138,7 +139,7 @@ class Fridge:
             shelf = ItemShelf(self, x)
             self.shelves[x] = shelf
 
-    def getItem(self, name):
+    def getItem(self, name, logger):
         """
         prototpye function for getting the correct item
         maybe needs some checks later, like is it still valid
@@ -150,6 +151,7 @@ class Fridge:
         """
         # needs some checks if item is up-to-date
         if name not in self.shelves:
+            logger.critical(name + "doesn't exist in this fridge")
             raise Exception(name + " doesn't exist in this fridge")
         else:
             if isinstance(self.shelves[name], FlavourShelf):
@@ -160,9 +162,16 @@ class Fridge:
                 if "result" in self.shelves[name].items:
                     return self.shelves[name].items["result"]
                 else:
-                    raise Error(f"item {name} doesn't exist")
+                    # logger.critical(f"item {name} doesn't exist")
+                    # raise Exception(f"item {name} doesn't exist")
+                    # return a resource -> checking, might be necessary
+                    for x in self.shelves[name].items:
+                        if isinstance(self.shelves[name].items[x], chefkoch.item.Resource):
+                            print("I return a resource")
+                            return self.shelves[name].items[x]
+                    print(self.shelves[name].items)
             else:
-                print("you have a really strange shelf there")
+                logger.error("This shelf doesn't exist")
 
     def getShelf(self, name):
         """
@@ -279,7 +288,8 @@ class FlavourShelf(Shelf):
             self.items = self.ranges(f)
         # print(self.items)
 
-    def printFlavour(self, name):
+    # def printFlavour(self, name):
+    def printFlavour(self):
         # wieso habe ich hier einen Namen??
         if self.fridge.config["options"]["directory"]:
             if os.path.exists(self.path):

@@ -1,8 +1,8 @@
 options: "/options.yml"
 
 resource:
-  raw_data: resource/raw_data.npy
-  tex_paper: resource/paper
+  beampatternLog: resources/beampatternLog.npy
+
 # recipe: !include "recipe.yml"
 
 flavour: "/flavour.yml"

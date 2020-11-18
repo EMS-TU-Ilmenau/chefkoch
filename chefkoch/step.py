@@ -89,16 +89,17 @@ class StepPython(StepResource):
         """
         # prototype implementation
         super().__init__(shelf, dependencies, logger)
-        self.logger.warn("STEP_(" + shelf.name + "): This might work")
+        self.logger.info("STEP_(" + shelf.name + "): This might work")
         # read the module-name
         mod_name, file_ext = os.path.splitext(
             os.path.split(self.resource.path)[-1]
         )
         # importing correct module
+        print(mod_name)
         try:
             self.module = importlib.__import__(mod_name)
         except ImportError as err:
-            print("Error:", err)
+            self.logger.error("Error:", err)
 
         print(mod_name)
         # get all function-names
@@ -114,7 +115,8 @@ class StepPython(StepResource):
 
         # else raise exception
         if self.found is False:
-            raise Exception("There is no execute in " + str(mod_name))
+            self.logger.critical("There is no execute in " + str(mod_name))
+            # raise Exception("There is no execute in " + str(mod_name))
 
     def executeStep(self):
         super().executeStep()
@@ -129,7 +131,14 @@ class StepPython(StepResource):
             # should test if it's a flavour shelf (than everything is allright)
             # or if it's an Itemshelf -> then we need the result-Item
             for x in sig._parameters.values():
-                calldic[str(x)] = self.shelf.fridge.getItem(str(x))
+                item = self.shelf.fridge.getItem(
+                    str(x), self.logger
+                )
+                if isinstance(item, list):
+                    calldic[str(x)] = item
+                # elif isinstance(item, Resource):
+                else:
+                    calldic[str(x)] = item.getContent()
 
             # execute the function
             r = self.module.execute(**calldic)
@@ -142,6 +151,12 @@ class StepPython(StepResource):
             # shelf = self.shelf.fridge.getShelf(self.dependencies["outputs"])
             # shelf.addItem(result)
             self.shelf.addItem(result)
+        else:
+            raise Exception(
+                "Can't execute "
+                + str(self.shelf.name)
+                + " there is no execute"
+            )
 
 
 class StepShell(StepResource):
