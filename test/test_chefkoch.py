@@ -590,10 +590,7 @@ config_dict = {
         "configOut": True,
         "logLevel": "WARNING",
     },
-    "resource": {
-        "raw_data": "resource/raw_data.npy",
-        "tex_paper": "resource/paper",
-    },
+    "resource": {"beampatternLog": "resources/beampatternLog.npy"},
     "flavour": {
         "num_lambda": [
             {
@@ -623,6 +620,12 @@ config_dict = {
             "resource": "steps/step2.py",
             "inputs": {"data": "z"},
             "outputs": {"result": "seconds"},
+        },
+        "anotherStep": {
+            "type": "python",
+            "resource": "steps/LogToLin.py",
+            "inputs": {"data": "beampatternLog"},
+            "outputs": {"result": "beampatternLin"},
         },
     },
     "link": {
@@ -679,6 +682,8 @@ class TestFridge(unittest.TestCase):
 
     def setUp(self):
         self.fridge = fridge.Fridge(config_dict, path)
+        logger = core.Logger(config_dict["options"], path)
+        self.logger = logger.logspec(__name__, path + "/test.log")
 
     def test_fridge_makeFlavours(self):
         # test
@@ -725,12 +730,12 @@ class TestFridge(unittest.TestCase):
     def test_fridge_makeResources(self):
         # Ressources in cheffile defined
         self.fridge.makeResources(config_dict["resource"], False)
-        resources = ["raw_data", "tex_paper"]
+        resources = ["beampatternLog"]
         for x in resources:
             assert x in self.fridge.shelves
         # Ressources in recipe defined
         self.fridge.makeResources(config_dict["recipe"], True)
-        resources_recipe = ["compute_a", "doItTwice_z"]
+        resources_recipe = ["compute_a", "doItTwice_z", "anotherStep"]
         for x in resources_recipe:
             assert x in self.fridge.shelves
 
@@ -758,7 +763,7 @@ class TestFridge(unittest.TestCase):
         # test for correct behaviour falvour
         self.fridge.makeFlavours(config_dict["flavour"])
         testTrue = "num_K"
-        result = self.fridge.getItem(testTrue)
+        result = self.fridge.getItem(testTrue, self.logger)
         self.assertEqual(result, [1, 2, 3, 7, 8])
 
         # TODO: Test for correct behaviour with items
@@ -785,7 +790,7 @@ class TestStepPython(unittest.TestCase):
     def test_executeStep(self):
         self.step.executeStep()
         r = self.fridge.shelves["compute_a"].items["result"].result
-        expected = [2, 3, 4, 8, 9]
+        expected = {"result": [2, 3, 4, 8, 9]}
         self.assertEqual(r, expected)
 
 

@@ -166,7 +166,9 @@ class Fridge:
                     # raise Exception(f"item {name} doesn't exist")
                     # return a resource -> checking, might be necessary
                     for x in self.shelves[name].items:
-                        if isinstance(self.shelves[name].items[x], chefkoch.item.Resource):
+                        if isinstance(
+                            self.shelves[name].items[x], chefkoch.item.Resource
+                        ):
                             print("I return a resource")
                             return self.shelves[name].items[x]
                     print(self.shelves[name].items)

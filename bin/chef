@@ -97,8 +97,8 @@ if __name__ == "__main__":
     @subcmd("test", help=HELP_TEST)
     def cmd_test(parser, context, arguments):
         parser.description = HELP_TEST
-        # cheffile = input("Path to your projektfolder: ")
-        cheffile = "./testdirectory"
+        cheffile = input("Path to your projektfolder: ")
+        # cheffile = "./testdirectory"
         parser.add_argument("-t", "--targets", action="append")
         parser.add_argument("-o", "--options", action="append")
         parser.add_argument("-chef", "--cheffile", action="append")

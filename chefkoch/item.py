@@ -101,18 +101,27 @@ class Resource(Item):
         # super().__init__(self, shelf, path)
         self.shelf = shelf
         self.path = path
-        name, file_ext = os.path.splitext(
-            os.path.split(self.path)[-1]
-        )
-        if (file_ext == ".npy"):
+
+        if shelf.fridge.config["options"]["directory"]:
+            # problems with paths
+            print(self.shelf.path + "/test.txt")
+            print(os.path.isfile(self.shelf.path + "/test.txt"))
+            if os.path.isfile(self.shelf.path + "/test.txt"):
+                print("This path exists")
+                # os.replace(self.path, self.shelf.path + "/test.txt")
+            else:
+                os.symlink(self.path, self.shelf.path + "/test.txt")
+                # pass
+
+        name, file_ext = os.path.splitext(os.path.split(self.path)[-1])
+        if file_ext == ".npy":
             self.type = "numpy"
             print(self.type)
-        elif (file_ext == ".py"):
+        elif file_ext == ".py":
             self.type = "python"
         else:
             print("so weit bin ich noch nicht")
         # print(f"This resource has path: {self.path}")
-        
 
     def createHash(self):
         """
@@ -125,6 +134,9 @@ class Resource(Item):
         """
         BLOCK_SIZE = 65536  # 64 kb
 
+        print(
+            "Maybe opening is the problem: " + str(os.path.islink(self.path))
+        )
         file_hash = hashlib.sha256()
         with open(self.path, "rb") as f:
             fblock = f.read(BLOCK_SIZE)
@@ -141,7 +153,11 @@ class Resource(Item):
         isn't of type python-file
         """
         if self.type is "numpy":
-            return np.load(self.path)
+            data = np.load(self.path)
+            copy = np.copy(data)
+            np.save(self.path, data)
+            print("es ist wieder da: " + str(os.path.islink(self.path)))
+            return copy
         else:
             print("I've no idea")
 

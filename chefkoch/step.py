@@ -131,9 +131,7 @@ class StepPython(StepResource):
             # should test if it's a flavour shelf (than everything is allright)
             # or if it's an Itemshelf -> then we need the result-Item
             for x in sig._parameters.values():
-                item = self.shelf.fridge.getItem(
-                    str(x), self.logger
-                )
+                item = self.shelf.fridge.getItem(str(x), self.logger)
                 if isinstance(item, list):
                     calldic[str(x)] = item
                 # elif isinstance(item, Resource):

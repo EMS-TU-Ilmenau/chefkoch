@@ -16,6 +16,7 @@ import ast
 import chefkoch.step as step
 
 # das ist eine bezaubernde Idee
+import os
 import sys
 import logging
 import warnings
@@ -194,7 +195,7 @@ class Chefkoch:
     main instance
     """
 
-    def __init__(self, path, arguments):
+    def __init__(self, firstpath, arguments):
         """
         Initializes everything according to he Cheffile and the needed
         components
@@ -209,6 +210,7 @@ class Chefkoch:
 
         """
         # loading the correct path
+        path = os.path.abspath(firstpath)
         sys.path.append(str(path) + "/steps/")
         # loading the cheffile
         if arguments["cheffile"] is not None:
