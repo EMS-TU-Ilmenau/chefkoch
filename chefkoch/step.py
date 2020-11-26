@@ -11,6 +11,8 @@ import inspect
 import subprocess
 import shlex
 
+# finding imported modules -> dependencies
+
 
 class Step(Item, ABC):
     """
@@ -101,7 +103,6 @@ class StepPython(StepResource):
         except ImportError as err:
             self.logger.error("Error:", err)
 
-        print(mod_name)
         # get all function-names
         functionlist = inspect.getmembers(
             self.module, predicate=inspect.isfunction
@@ -140,11 +141,8 @@ class StepPython(StepResource):
 
             # execute the function
             r = self.module.execute(**calldic)
-            # print(r)
-            # das muss aber noch ordentlich in den shelf eingeordnet werden
-            # result_hash als namen, aber irgendwie auch doof?
             # das result muss in den ouput-Shelf!
-            result = Result(self.shelf, r)
+            result = Result(self.shelf, r, {})
             # correct behaivour, bit still missing the outputs
             # shelf = self.shelf.fridge.getShelf(self.dependencies["outputs"])
             # shelf.addItem(result)

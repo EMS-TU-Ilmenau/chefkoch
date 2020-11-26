@@ -10,6 +10,7 @@ import warnings
 import hashlib
 from abc import ABC, abstractmethod
 import numpy as np
+import pickle
 
 # TODO: das Ganze mal vernünftig aufdröseln
 
@@ -24,6 +25,11 @@ class Item(ABC):
         self.shelf = shelf
         if container is not None:
             self.dependencies = container
+        elif dict is not None:
+            # für Result
+            self.dependencies = JSONContainer(data=dict)
+            self.createHash()
+            self.dependencies.save(self.hash)
 
     def createHash(self):
         """
@@ -74,9 +80,16 @@ class Result(Item):
     printing of the result
     """
 
-    def __init__(self, shelf, result):
-        super().__init__(shelf)
+    def __init__(self, shelf, result, dependencies):
+        super().__init__(shelf, dict=dependencies)
         self.result = result
+        path = self.shelf.path + "/" + self.hash
+        # besser ändern, dass nur result-shelfs ausgegeben werden
+        if self.shelf.fridge.config["options"]["directory"]:
+            with open(path, "wb") as handle:
+                pickle.dump(
+                    self.result, handle, protocol=pickle.HIGHEST_PROTOCOL
+                )
         print("this is a result!")
 
 
@@ -102,17 +115,6 @@ class Resource(Item):
         self.shelf = shelf
         self.path = path
 
-        if shelf.fridge.config["options"]["directory"]:
-            # problems with paths
-            print(self.shelf.path + "/test.txt")
-            print(os.path.isfile(self.shelf.path + "/test.txt"))
-            if os.path.isfile(self.shelf.path + "/test.txt"):
-                print("This path exists")
-                # os.replace(self.path, self.shelf.path + "/test.txt")
-            else:
-                os.symlink(self.path, self.shelf.path + "/test.txt")
-                # pass
-
         name, file_ext = os.path.splitext(os.path.split(self.path)[-1])
         if file_ext == ".npy":
             self.type = "numpy"
@@ -121,7 +123,20 @@ class Resource(Item):
             self.type = "python"
         else:
             print("so weit bin ich noch nicht")
-        # print(f"This resource has path: {self.path}")
+
+        # Hashing; not good programming style
+        self.hash = self.createHash()
+
+        if shelf.fridge.config["options"]["directory"]:
+            # problems with paths
+            # print(self.shelf.path + "/" + str(self.hash))
+            # print(os.path.isfile(self.shelf.path + "/" + str(self.hash)))
+            if os.path.isfile(self.shelf.path + "/" + self.hash):
+                print("This path exists")
+                # os.replace(self.path, self.shelf.path + "/test.txt")
+            else:
+                os.symlink(self.path, self.shelf.path + "/" + self.hash)
+                # pass
 
     def createHash(self):
         """
@@ -132,19 +147,21 @@ class Resource(Item):
         hashname(str):
             sha256 hash over the content of the resource-file
         """
+        print(self.path)
         BLOCK_SIZE = 65536  # 64 kb
-
-        print(
-            "Maybe opening is the problem: " + str(os.path.islink(self.path))
-        )
         file_hash = hashlib.sha256()
-        with open(self.path, "rb") as f:
-            fblock = f.read(BLOCK_SIZE)
-            while len(fblock) > 0:
-                file_hash.update(fblock)
+        if self.type is "numpy":
+            content = self.getContent()
+            file_hash.update(content.data)
+            hashname = file_hash.hexdigest()
+        else:
+            with open(self.path, "rb") as f:
                 fblock = f.read(BLOCK_SIZE)
+                while len(fblock) > 0:
+                    file_hash.update(fblock)
+                    fblock = f.read(BLOCK_SIZE)
 
-        hashname = file_hash.hexdigest()
+            hashname = file_hash.hexdigest()
         return hashname
 
     def getContent(self):
@@ -156,7 +173,7 @@ class Resource(Item):
             data = np.load(self.path)
             copy = np.copy(data)
             np.save(self.path, data)
-            print("es ist wieder da: " + str(os.path.islink(self.path)))
+            # print("es ist wieder da: " + str(os.path.islink(self.path)))
             return copy
         else:
             print("I've no idea")
