@@ -20,23 +20,26 @@ class Item(ABC):
     An item represent a piece of data, either an input or an output of a step
     """
 
-    def __init__(self, shelf, dict=None, container=None):
+    def __init__(self, shelf, dicti : dict = None, container=None):
         # zugeordneter Shelf
         self.shelf = shelf
         if container is not None:
+            # self.shelf = shelf
             self.dependencies = container
-        elif dict is not None:
+        elif dicti is not None:
             # für Result
-            self.dependencies = JSONContainer(data=dict)
-            self.createHash()
-            self.dependencies.save(self.hash)
+            print(dicti)
+            self.dependencies = JSONContainer(data=dicti)
+            self.hash = self.createHash()
+            print("Shelf-path in item" + self.shelf.path)
+            self.dependencies.save(self.shelf.path + "/" + self.hash + ".json")
 
     def createHash(self):
         """
         create a hashfile for the dataset
         """
         # over dependencies, so it would be
-        self.hash = self.dependencies.hash()
+        return self.dependencies.hash()
 
     def checkHash(self):
         """
@@ -81,8 +84,9 @@ class Result(Item):
     """
 
     def __init__(self, shelf, result, dependencies):
-        super().__init__(shelf, dict=dependencies)
+        super().__init__(shelf, dicti=dependencies)
         self.result = result
+        print("Wrong path??: " + self.shelf.path)
         path = self.shelf.path + "/" + self.hash
         # besser ändern, dass nur result-shelfs ausgegeben werden
         if self.shelf.fridge.config["options"]["directory"]:
@@ -125,18 +129,20 @@ class Resource(Item):
             print("so weit bin ich noch nicht")
 
         # Hashing; not good programming style
-        self.hash = self.createHash()
+        self.resourceHash = self.createHash()
 
         if shelf.fridge.config["options"]["directory"]:
             # problems with paths
             # print(self.shelf.path + "/" + str(self.hash))
             # print(os.path.isfile(self.shelf.path + "/" + str(self.hash)))
-            if os.path.isfile(self.shelf.path + "/" + self.hash):
+            if os.path.isfile(self.shelf.path + "/" + self.resourceHash):
                 print("This path exists")
                 # os.replace(self.path, self.shelf.path + "/test.txt")
             else:
-                os.symlink(self.path, self.shelf.path + "/" + self.hash)
+                os.symlink(self.path, self.shelf.path + "/" + self.resourceHash)
                 # pass
+        data = {'hash' : self.resourceHash}
+        super().__init__(shelf, data, None)
 
     def createHash(self):
         """
