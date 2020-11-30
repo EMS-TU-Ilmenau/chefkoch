@@ -1,7 +1,7 @@
 """
 The items are the Objects stored in the Fridge
-
 """
+
 from chefkoch.container import JSONContainer
 import chefkoch.core
 import chefkoch.tarball
@@ -20,7 +20,7 @@ class Item(ABC):
     An item represent a piece of data, either an input or an output of a step
     """
 
-    def __init__(self, shelf, dicti : dict = None, container=None):
+    def __init__(self, shelf, dicti: dict = None, container=None):
         # zugeordneter Shelf
         self.shelf = shelf
         if container is not None:
@@ -28,11 +28,12 @@ class Item(ABC):
             self.dependencies = container
         elif dicti is not None:
             # für Result
-            print(dicti)
             self.dependencies = JSONContainer(data=dicti)
             self.hash = self.createHash()
-            print("Shelf-path in item" + self.shelf.path)
-            self.dependencies.save(self.shelf.path + "/" + self.hash + ".json")
+            if self.shelf.fridge.config["options"]["directory"]:
+                self.dependencies.save(
+                    self.shelf.path + "/" + self.hash + ".json"
+                )
 
     def createHash(self):
         """
@@ -47,7 +48,7 @@ class Item(ABC):
 
         Returns:
         --------
-        returns:
+        bool:
             true,....
 
         """
@@ -64,7 +65,7 @@ class Item(ABC):
 
         Returns:
         --------
-        returns:
+        bool:
             true,....
 
         """
@@ -86,7 +87,6 @@ class Result(Item):
     def __init__(self, shelf, result, dependencies):
         super().__init__(shelf, dicti=dependencies)
         self.result = result
-        print("Wrong path??: " + self.shelf.path)
         path = self.shelf.path + "/" + self.hash
         # besser ändern, dass nur result-shelfs ausgegeben werden
         if self.shelf.fridge.config["options"]["directory"]:
@@ -94,7 +94,7 @@ class Result(Item):
                 pickle.dump(
                     self.result, handle, protocol=pickle.HIGHEST_PROTOCOL
                 )
-        print("this is a result!")
+        # print("this is a result!")
 
 
 class Resource(Item):
@@ -115,36 +115,32 @@ class Resource(Item):
             Path to the Ressource
         """
         # später mit item abstrahiert
-        # super().__init__(self, shelf, path)
         self.shelf = shelf
         self.path = path
 
         name, file_ext = os.path.splitext(os.path.split(self.path)[-1])
         if file_ext == ".npy":
             self.type = "numpy"
-            print(self.type)
+            # print(self.type)
         elif file_ext == ".py":
             self.type = "python"
         else:
             print("so weit bin ich noch nicht")
 
         # Hashing; not good programming style
-        self.resourceHash = self.createHash()
+        self.resourceHash = self.createResourceHash()
+        data = {"hash": self.resourceHash}
+        super().__init__(shelf, data, None)
 
         if shelf.fridge.config["options"]["directory"]:
-            # problems with paths
-            # print(self.shelf.path + "/" + str(self.hash))
-            # print(os.path.isfile(self.shelf.path + "/" + str(self.hash)))
-            if os.path.isfile(self.shelf.path + "/" + self.resourceHash):
+            if os.path.isfile(self.shelf.path + "/" + self.hash):
                 print("This path exists")
                 # os.replace(self.path, self.shelf.path + "/test.txt")
             else:
-                os.symlink(self.path, self.shelf.path + "/" + self.resourceHash)
+                os.symlink(self.path, self.shelf.path + "/" + self.hash)
                 # pass
-        data = {'hash' : self.resourceHash}
-        super().__init__(shelf, data, None)
 
-    def createHash(self):
+    def createResourceHash(self):
         """
         creates a hash over the resource
 
@@ -153,7 +149,7 @@ class Resource(Item):
         hashname(str):
             sha256 hash over the content of the resource-file
         """
-        print(self.path)
+        # print(self.path)
         BLOCK_SIZE = 65536  # 64 kb
         file_hash = hashlib.sha256()
         if self.type is "numpy":
@@ -168,6 +164,7 @@ class Resource(Item):
                     fblock = f.read(BLOCK_SIZE)
 
             hashname = file_hash.hexdigest()
+        # print("hashname of ressource: " + hashname)
         return hashname
 
     def getContent(self):

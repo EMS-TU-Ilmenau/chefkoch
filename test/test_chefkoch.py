@@ -681,9 +681,9 @@ class TestFridge(unittest.TestCase):
     }
 
     def setUp(self):
-        self.fridge = fridge.Fridge(config_dict, path)
         logger = core.Logger(config_dict["options"], path)
         self.logger = logger.logspec(__name__, path + "/test.log")
+        self.fridge = fridge.Fridge(config_dict, path, logger)
 
     def test_fridge_makeFlavours(self):
         # test
@@ -778,7 +778,7 @@ class TestStepPython(unittest.TestCase):
         # appending correct module-path
         sys.path.append(str(path) + "/steps/")
         self.logger = core.Logger(config_dict["options"], path)
-        self.fridge = fridge.Fridge(config_dict, path)
+        self.fridge = fridge.Fridge(config_dict, path, self.logger)
         # self.fridge.makeResources(config_dict["resource"], False)
         self.fridge.makeResources(config_dict["recipe"], True)
         self.fridge.makeFlavours(config_dict["flavour"])
@@ -802,7 +802,8 @@ class TestStepShell(unittest.TestCase):
     def setUp(self):
         # appending correct module-path
         sys.path.append(str(path) + "/steps/")
-        self.fridge = fridge.Fridge(config_dict, path)
+        self.logger = core.Logger(config_dict["options"], path)
+        self.fridge = fridge.Fridge(config_dict, path, self.logger)
         # self.fridge.makeResources(config_dict["resource"], False)
         self.fridge.makeResources(config_dict["recipe"], True)
         self.fridge.makeFlavours(config_dict["flavour"])

@@ -45,7 +45,10 @@ class Logger:
         # main path
         self.path = path
         # standard initialzing
-        logging.basicConfig(format=Logger.formatter, level=logging.DEBUG)
+        # filename = self.path + "/chef.log"
+        # logging.basicConfig(format=Logger.formatter,
+        # level=logging.DEBUG, filename=filename)
+        logging.basicConfig(format=Logger.formatter)
 
         if not self.options["directory"]:
             filename = self.path + "/chef.log"
@@ -54,8 +57,8 @@ class Logger:
             handler.setFormatter(form)
             Logger.loglevel(self, handler, self.options["logLevel"])
             # probably won't need a filter
-            logger = logging.getLogger("main")
-            logger.addHandler(handler)
+            self.mainlogger = logging.getLogger("main")
+            self.mainlogger.addHandler(handler)
 
     def logspec(self, name, filename):
         """
@@ -87,12 +90,23 @@ class Logger:
             # next we will need a correct working filter
             filter_test = logging.Filter(name=str(name))
 
-            # logger = logging.getLogger(name)
+            logger = logging.getLogger(name)
             logger.addFilter(filter_test)
             logger.addHandler(handler)
             return logger
         else:
-            # this is not how it's supposed to be
+            """
+            filename = self.path + "/chef.log"
+            handler = logging.FileHandler(filename, mode="a")
+            form = logging.Formatter(Logger.formatter)
+            handler.setFormatter(form)
+            Logger.loglevel(self, handler, self.options["logLevel"])
+            # probably won't need a filter
+            mainlogger = logging.getLogger("main")
+            mainlogger.addHandler(handler)
+            mainlogger.propagate = True
+            return mainlogger
+            """
             return logging.getLogger("main")
 
     def loglevel(self, handler, level):
@@ -114,7 +128,7 @@ class Logger:
         else:
             # raise an error here
             print("Something is rotten in the state of denmark")
-        return handler
+        # return handler
 
 
 class Configuration:
@@ -223,11 +237,11 @@ class Chefkoch:
 
         # cheffile legt noch Änderungen an logger fest
         self.logger = Logger(self.configuration["options"], path)
-        corelogger = self.logger.logspec(__name__, path + "/core.log")
+        corelogger = self.logger.logspec(__name__, path + "/chef.log")
         corelogger.warn("CHEF: " + "This is maybe a bad idea!")
 
         # generate the fridge
-        self.fridge = fridge.Fridge(self.configuration, path)
+        self.fridge = fridge.Fridge(self.configuration, path, self.logger)
 
         # generate Resource-Shelfs from configuration
         # print(self.configuration.items["resource"])
@@ -249,12 +263,16 @@ class Chefkoch:
 
         # testing from the steps
         teststep = step.StepPython(
-            self.fridge.shelves["compute_a"], {}, self.logger
+            self.fridge.shelves["compute_a"],
+            {},
+            self.logger,
         )
         teststep.executeStep()
 
         teststep = step.StepPython(
-            self.fridge.shelves["anotherStep"], {}, self.logger
+            self.fridge.shelves["anotherStep"],
+            {},
+            self.logger,
         )
         teststep.executeStep()
 

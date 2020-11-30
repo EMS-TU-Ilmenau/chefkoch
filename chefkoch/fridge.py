@@ -2,9 +2,13 @@
 The fridge is responsible for storing the data and steps and checking if
 they are still up-to-date.
 """
+# from chefkoch.core import Logger
 from chefkoch.container import JSONContainer
 import chefkoch.item
+
 import os
+
+# warnings should be deleted
 import warnings
 import zlib
 import numpy
@@ -20,7 +24,7 @@ class Fridge:
     """
 
     # def __init__(self, chef, basePath):
-    def __init__(self, config, basePath):
+    def __init__(self, config, basePath, logger):
         """
         Instantiate Directory as Fridge
 
@@ -38,6 +42,8 @@ class Fridge:
         self.shelves = dict()
         self.basePath = basePath
         self.makeDirectory(self.basePath + "/fridge")
+        self.logger = logger.logspec(__name__, self.basePath + "/chef.log")
+        self.logger.info("FRIDGE: we hardcode our problems")
 
     def update(self):
         """
@@ -93,16 +99,13 @@ class Fridge:
                 # print(self.basePath + "/" + Resources[element]["resource"])
                 name = resource.createHash()
             else:
-                print(Resources[element])
+                # print(Resources[element])
                 resource = chefkoch.item.Resource(
                     self.shelves[element],
                     self.basePath + "/" + Resources[element],
                 )
-                # print(self.basePath + "/" + Resources[element])
-                # name = zlib.adler32(Resources[element].encode("utf-8"))
-                # the real code, can't use to test
                 name = resource.createHash()
-                print(name)
+                # print(name)
 
             self.shelves[element].items[name] = resource
 
@@ -173,7 +176,7 @@ class Fridge:
                         ):
                             print("I return a resource")
                             return self.shelves[name].items[x]
-                    print(self.shelves[name].items)
+                    # print(self.shelves[name].items)
             else:
                 logger.error("This shelf doesn't exist")
 
