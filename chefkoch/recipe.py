@@ -29,7 +29,12 @@ import platform
 import json
 import sys
 import warnings
+import itertools
+import hashlib
+import copy
 from graph import Graph
+
+import chefkoch.fridge
 
 from chefkoch.container import YAMLContainer, JSONContainer
 
@@ -46,12 +51,13 @@ class Plan:
     """"""
 
     nodes = []
-    constructiontree = {}
+    items = []
+    # constructiontree = {}
     required = []
     remaining = []
-    targets = []
+    # targets = []
 
-    def __init__(self, recipe, *targets):
+    def __init__(self, recipe, *targets, fridge=None):
         """
         Initialize Plan Object over a given recipe and calculation targets
         :param recipe: recipe object
@@ -60,78 +66,162 @@ class Plan:
                         or node object
         """
         # targets = []
-        self.recipe = recipe
+        # self.recipe = recipe
+        # self.subGraph = Graph()
+        self.nodelist = []
+        self.flavours = {}
+        self.variants = JSONContainer()
+        # self.variants["test"] = "12345"
+        if fridge is not None:
+            self.fridge = fridge
+
         if len(targets) == 0:
-            self.nodes = recipe
+            targets = self.fillTargets(recipe)
+
+        for target in targets:
+            if target[:4] != "item":
+                for targetitem in recipe.graph.nodes(from_node=target):
+                    self.nodelist.extend(
+                        self.getSubGraphNodes(recipe, targetitem)
+                    )
+            else:
+                self.nodelist.extend(self.getSubGraphNodes(recipe, target))
+        # print(nodelist)
+        self.subGraph = recipe.graph.subgraph_from_nodes(self.nodelist)
+        for node in self.nodelist:
+            if node[:4] == "item":
+                print(type(node))
+                self.items.append(node[5:])
+            else:
+                print(type(node))
+                self.nodes.append(node)
+
+        if fridge is not None:
+            # self.planIt()
+            self.getFlavours()
+        self.makeNormalGraph()
+
+        # test = self.crossLists(([1,2,3,4], [5, 6, 7, 8]
+        # , ["a", "b", "c", "d"]))
+        # test2 = list(itertools.product(*[[1,2,3,4]
+        # , [5, 6, 7, 8], ["a", "b", "c", "d"]]))
+        # for el in test2:
+        #     print(el)
+        # pass
+        for node in self.graph.nodes(out_degree=0):
+            self.buildVariants(node)
+        # self.variants = [JSONContainer()]
+        print(None)
+
+    def isItemNode(self, node):
+        if node[0:5] == "item.":
+            return True
         else:
-            self.targets.append(targets)
-            for target in targets:
-                if type(target) == str or type(target) == int:
-                    targetnode = recipe[target]
-                elif type(target) == Node:
-                    targetnode = target
-                self.constructiontree[
-                    targetnode.name
-                ] = self.createConstructionTree(recipe, target)
-        for node in self.nodes:
-            # for i in range(len(node.inputs)):
-            #     inputKey, inputValue = node.inputs
-            for inputValue in node.inputs.values():
-                if inputValue not in self.required:
-                    self.required.append(inputValue)
-        self.remaining = self.required.copy()
+            return False
 
+    def makeNormalGraph(self):
+        self.graph = copy.deepcopy(self.subGraph)
+        for node in self.graph.nodes():
+            if self.isItemNode(node):
+                ends = self.graph.nodes(from_node=node)
+                starts = self.graph.nodes(to_node=node)
+                for x in starts:
+                    for y in ends:
+                        self.graph.add_edge(x, y)
+                self.graph.del_node(node)
 
-# self.requi()
-####################################################
+    # def getInput(self, node):
+    #     if node in self.variants:
+    #
+    #
+    # def sameInput(self, a, b):
 
-# def createConstructionTree(self, recipe, target):
-#     """
-#     build recursively a construction tree based on a recipe and a target
-#     :param recipe:
-#     :param target: calculation target given as string (name of the node),
-#                     int (list index of the node in recipe object)
-#                     or node object
-#     :return:
-#     """
-#     tree = {}
-#     if type(target) == str or type(target) == int:
-#         node = recipe[target]
-#     elif type(target) == Node:
-#         node = target
-#     for inputKey, inputValue in node.inputs.items():
-#         children = recipe.inputIsOutput(inputValue)
-#         for child in children:
-#             if child.name in self.targets:
-#                 self.targets.remove(child.name)
-#             if child.name not in self.constructiontree.keys():
-#                 tree[child.name] = self.createConstructionTree(
-#                     recipe, child
-#                 )
-#             else:
-#                 tree[child.name] = self.constructiontree[child.name]
-#                 self.constructiontree.pop(child.name)
-#     if node not in self.nodes:
-#         self.nodes.append(node)
-#     return tree
+    def buildVariants(self, node):
+        # if self.isItemNode(nodeName):
+        #     node = nodeName[5:]
+        # else:
+        #     node = nodeName
+        children = self.graph.nodes(to_node=node)
 
-# def requi(self):
-#     for root in self.constructiontree.values():
-#         # print(root)
-#         self.buildNodes(root)
-#         self.required.append(self.recipe[root.key])
-#
-# def buildNodes(self, node):
-#     print(type(node))
-#     print(node)
-#     if node.values:
-#         for value in node.values():
-#             self.buildNodes(value)
-#             print("build " + value.keys())
-#             self.required.append(self.recipe[value.keys()])
-#     else:
-#         self.required.append(self.recipe[node.keys()])
-#         print("test " + node.key())
+        if len(children) > 0:
+            if node not in self.variants:
+                h = []
+                for child in children:
+                    self.buildVariants(child)
+                    # if child in self.variants:
+                    #     h.append({child: self.variants[child]})
+        else:
+            # self.variants[node] = self.flavours[node].items
+            inputs = {}
+            ret = {}
+            a = self.graph.node(node)
+            for input in self.graph.node(node).inputs.values():
+                inputs[input] = self.flavours[input].items
+            crossed = list(itertools.product(*list(inputs.values())))
+            for c in crossed:
+                k = tuple(inputs.keys())
+                ret[hash((k, c))] = [{k[i]: c[i]} for i in range(len(k))]
+            self.variants[node] = ret
+            pass
+
+    # def crossLists(self, list):
+    #     ret = []
+    #     if len(list) == 1:
+    #         ret.extend(list[0][:])
+    #         return ret
+    #     # elif len(list) == 2:
+    #     #     return [(x, y) for x in list[0] for y in list[1]]
+    #     elif len(list) >= 2:
+    #         d = list[1:]
+    #         z = self.crossLists(d)
+    #         ret.extend([(x, y) for x in list[0] for y in z])
+    #         return ret
+
+    def getFlavours(self):
+        for node in self.nodelist:
+            if node[5:] in self.fridge.shelfs:
+                print(type(self.fridge.shelfs[node[5:]]))
+                x = type(self.fridge.shelfs[node[5:]])
+                if (
+                    type(self.fridge.shelfs[node[5:]])
+                    == chefkoch.fridge.FlavourShelf
+                ):
+                    # self.flavours.append(fridge.shelfs[node[5:]])
+                    self.flavours[node[5:]] = self.fridge.shelfs[node[5:]]
+                    self.subGraph.add_node(node, self.fridge.shelfs[node[5:]])
+
+    # def planIt(self):
+    #     for self.subGraph
+
+    def fillTargets(self, recipe):
+        targets = []
+        for endnode in recipe.graph.nodes(out_degree=0):
+            targets.append(endnode)
+        return targets
+
+    def getItems(self):
+        """
+        Returns every item which is an input or output of a node
+
+        :return: list of String
+        """
+        return self.items
+
+    def getSubGraphNodes(self, recipe, target):
+        """
+        Creates a list of nodes needed to calculate the target object
+
+        :param recipe: recipe object
+        :param target: string (name of the target node)
+        :return: list of nodes
+        """
+        nodelist = []
+        for startingnode in recipe.graph.nodes(in_degree=0):
+            print(startingnode, type(startingnode))
+            print(recipe.graph.all_paths(startingnode, target))
+            for liste in recipe.graph.all_paths(startingnode, target):
+                nodelist.extend(liste)
+        return nodelist
 
 
 class Recipe:
@@ -173,8 +263,6 @@ class Recipe:
                 if node.name == item:
                     return node
 
-    #########################
-
     def getPrerequisits(self, item):
         """
         Returns all nodes required to calculate a given item of the recipe
@@ -182,37 +270,10 @@ class Recipe:
         :return: List of nodes
         """
         ret = []
-        for inputKey, inputValue in (
-            self[item].inputs.items()
-            if type(item) == int
-            else item.inputs.items()
-        ):
-            prerequisites = self.inputIsOutput(inputValue)
-            if len(prerequisites) > 0:
-                ret.extend(prerequisites)
-                for i in prerequisites:
-                    # print("i is: ")
-                    # print(i.name)
-                    ret.extend(self.getPrerequisits(i))
+        for previousNode in self.graph.nodes(to_node=item):
+            ret.append(previousNode)
+            ret.append(self.getPrerequisits(previousNode))
         return ret
-
-    ##################################
-
-    def inputIsOutput(self, input):
-        """
-        Checks if given input is also output of other nodes and returns them
-        :param input: name of the ipnut
-        :return: list of nodes
-        """
-        ret = []
-        for node in self.nodes:
-            for outputKey, outputValue in node.outputs.items():
-                if input == outputValue:
-                    if node not in ret:
-                        ret.append(node)
-        return ret
-
-    ##################################
 
     def inputIsValid(self, input):
         """
@@ -265,32 +326,10 @@ class Recipe:
                 )
             else:
                 outputs_of_all_nodes.update(node_outputs)
-        # 2. see if inputs are from flavour, are file paths to existing files
-        # or are in output list
-        try_again = True
-        while try_again:
-            unreachable_nodes = set([])
-            for node in self.nodes:
-                nodeIsValid = True
-                node_inputs = set(node.inputs.values())
-                for input in node_inputs.difference(outputs_of_all_nodes):
-                    if not self.inputIsValid(input):
-                        nodeIsValid = False
-                if not nodeIsValid:
-                    unreachable_nodes.add(node)
-            # 3. Delete unreachable nodes and unreachable outputs and do
-            # it again.
-            try_again = len(unreachable_nodes) > 0
-            for node in unreachable_nodes:
-                warnings.warn(
-                    "Node "
-                    + node.name
-                    + " or one of its previous nodes has an invalid input"
-                    + " and therefore cannot be computed. "
-                )
-                node_outputs = set(node.outputs.values())
-                outputs_of_all_nodes.difference_update(node_outputs)
-                self.nodes.remove(node)
+        if len(self.graph.components()) > 1:
+            raise ImportError(
+                "One or more Nodes are not " "reachable from the others"
+            )
 
         # 4. Loop until all nodes are reachable
         return None, None
@@ -299,9 +338,7 @@ class Recipe:
 
     def makeGraph(self):
         """
-
-        :param dict:
-        :return:
+        Builds a Graph according to the recipe nodes saved in self.nodes
         """
         for node in self.nodes:
             print("adding node: " + node.name)
@@ -355,11 +392,11 @@ class Node:
         """
         # for empty name enter "" into recipe
         # unicode and string needed
-        try:
-            name_obj = Name(name)
-            self.name = name_obj.name  # Willi, ist das wirklich so gemeint?
-        except TypeError as err:
-            pass
+        # try:
+        #     name_obj = Name(name)
+        #     self.name = name_obj.name  # Willi, ist das wirklich so gemeint?
+        # except TypeError as err:
+        #     pass
         # testing the input to be delivered in a dict
         if not (isinstance(inputdict, dict)):
             raise TypeError(
@@ -369,6 +406,7 @@ class Node:
                 + ' step": value, ...}'
             )
             return
+        self.name = name
         self.inputs = inputdict
         # later replace strings by values in flavour?
         # testing the output to be delivered in a dict
@@ -412,7 +450,6 @@ class Name:
         try:
             is_unicode = isinstance(name, unicode)
         except NameError as mimimi:
-            """
             logger.debug(mimimi)
             logger.debug(
                 "You are using python 3, " "but don't worry, we make it work."
@@ -423,7 +460,7 @@ class Name:
             raise TypeError("The name of a node must be a string.")
         if not self.is_ascii(name):
             raise ValueError("The name of a node must be ascii.")
-        self.name = name
+        self.name = name"""
 
     def is_ascii(self, name):
         """
@@ -439,47 +476,6 @@ class Name:
         `True`, if name only contains ascii characters.
         """
         return all(ord(c) < 128 for c in name)
-
-
-# class StepSource:
-#     """
-#     Specifies the function to be executed inside a node in the recipe.
-#     """
-#
-#     def __init__(self, stepsource):
-#         """
-#         Tests the step source if it is a recipe, a python executable or
-#         a built-in function and initialises it if so.
-#
-#         Parameters
-#         ----------
-#         stepsource (str):
-#             file path to a sub-recipe, a python executable or the name \
-#             of a built-in function
-#
-#         Raises
-#         ------
-#         TypeError:
-#             If the string does not match any of the above.
-#         """
-#         # testing if step is built-in; JSON file or python function
-#         extension = os.path.splitext(stepsource)[1]
-#         if extension == ".py":
-#             self.step = stepsource
-#         elif extension == ".json":
-#             self.step = stepsource
-#         elif str(stepsource) in BUILT_INS:
-#             self.step = stepsource
-#             # done: research on assigning functions as attributes
-#             # (so that it can be accessed no matter where the object
-#             # is used)
-#         else:
-#             raise TypeError(
-#                 "Stepsource : "
-#                 + str(stepsource)
-#                 + ". Must be a Python file, another recipe "
-#                 + "or a build-in function."
-#             )
 
 
 def readrecipe(dict):
@@ -499,72 +495,13 @@ def readrecipe(dict):
     """
 
     recipe = dictToRecipe(dict)
-    recipe.inputIntegrity()
     recipe.makeGraph()
     if recipe.graph.has_cycles():
         raise Exception("There is a Cycle in your recipe, please check")
+    recipe.inputIntegrity()
     # recipe.findCircles()
     # printRecipe(recipe)
     return recipe
-
-
-# def readflavour(filename):
-#     """
-#     Opens a YAML file and parses it into a flavour object. Then outputs
-#     the data inside the flavour file.
-#
-#     Parameters
-#     ----------
-#     filename (str):
-#         file path
-#
-#     Returns
-#     --------
-#     flavour - object of type flavour.
-#     :rtype: Flavour
-#     """
-#     data = {}
-#     type = filename[-4:]
-#     if type == "yaml":
-#         data = openyaml(filename)
-#     flavour = dictToFlavour(data)
-#     print(flavour.tostring())
-#     # todo: input Integrity checks
-#     return flavour
-
-
-# def openyaml(filename): #containern
-#     """
-#     Opens a YAML file, makes sure it is valid YAML and the file exists
-#     at the given path. Loads the whole file at once. File should there-
-#     fore not be too big.
-#
-#     Parameters
-#     ----------
-#     filename (str):
-#         file path
-#
-#     Returns
-#     --------
-#     data - dict or list depending on YAML structure
-#
-#     Raises
-#     ------
-#     IOError:
-#         If the file path or file name are incorrect.
-#     ValueError:
-#         If the given file is no valid YAML format.
-#     """
-#     if not os.path.isfile(filename):
-#         raise IOError("The file path or file name is incorrect.")
-#     with open(filename) as f:
-#         try:
-#             data = yaml.load(f, Loader=yaml.SafeLoader)
-#             # That's the whole file at once. Hope files dont get too big
-#         except ValueError as err:
-#             raise ValueError("This is no valid YAML file.")
-#
-#     return data
 
 
 def dictToRecipe(data):
@@ -636,68 +573,3 @@ def printRecipe(recipe):
         print("Executes:")
         print("  " + str(node.step))
         print("\n")
-
-
-# called by typing "chef read /file/path/.."
-# def readfile(type, filename):
-#     """
-#     Wrapper function that calls either `readrecipe` or `readflavour`
-#     depending on the parameter `type`.
-#
-#     Parameters
-#     ----------
-#     type (str):
-#         Type of YAML file that should be converted into a \
-#         dictionary: {"recipe", "flavour"}
-#
-#     Returns
-#     -------
-#     Recipe or Flavour object depending on the `type` parameter.
-#
-#     Raises
-#     ------
-#     TypeError:
-#         If type is none of the above.
-#
-#     """
-#     if type == "recipe":
-#         return readrecipe(filename)
-#     if type == "flavour":
-#         return readflavour(filename)
-#     else:
-#         raise TypeError(
-#             "The function readyaml only takes
-#             'recipe' or" + "'flavour' as type."
-#         )
-#
-
-# def readyaml(type, filename):
-#     """
-#     Wrapper function that calls either `readrecipe` or `readflavour`
-#     depending on the parameter `type`.
-#
-#     Parameters
-#     ----------
-#     type (str):
-#         Type of YAML-file that should be converted into a \
-#         dictionary: {"recipe", "flavour"}
-#
-#     Returns
-#     -------
-#     Recipe or Flavour object depending on the `type` parameter.
-#
-#     Raises
-#     ------
-#     TypeError:
-#         If type is none of the above.
-#
-#     """
-#     if type == "recipe":
-#         return readrecipe(filename)
-#     if type == "flavour":
-#         return readflavour(filename)
-#     else:
-#         raise TypeError(
-#             "The function parameter type hase to be 'recipe' or"
-#             + "'flavour'."
-#         )

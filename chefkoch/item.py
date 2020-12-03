@@ -3,7 +3,8 @@ The items are the Objects stored in the Fridge
 """
 
 from chefkoch.container import JSONContainer
-import chefkoch.core
+
+# import chefkoch.core
 import chefkoch.tarball
 import os
 import warnings
@@ -152,7 +153,7 @@ class Resource(Item):
         # print(self.path)
         BLOCK_SIZE = 65536  # 64 kb
         file_hash = hashlib.sha256()
-        if self.type is "numpy":
+        if self.type == "numpy":
             content = self.getContent()
             file_hash.update(content.data)
             hashname = file_hash.hexdigest()
@@ -172,7 +173,7 @@ class Resource(Item):
         this function returns the correct data type, if the ressource
         isn't of type python-file
         """
-        if self.type is "numpy":
+        if self.type == "numpy":
             data = np.load(self.path)
             copy = np.copy(data)
             np.save(self.path, data)
