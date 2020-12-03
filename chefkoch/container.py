@@ -28,7 +28,7 @@ class JSONContainer:
                 self.data = json.load(f)
                 f.close()
             self.read_only = True
-        elif dict is not None:
+        elif data is not None:
             self.data = data
             # read_only eigentlich irrelevant
             self.read_only = False
