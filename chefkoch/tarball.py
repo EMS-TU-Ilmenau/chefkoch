@@ -5,7 +5,7 @@ import os
 from math import ceil
 
 
-def pack(filename, *files):
+def pack(filename, files):
     """
     Pack various files into a single tar archive
     :param filename: Name of the file to create

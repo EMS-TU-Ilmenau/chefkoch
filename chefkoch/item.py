@@ -12,6 +12,7 @@ import hashlib
 from abc import ABC, abstractmethod
 import numpy as np
 import pickle
+import chefkoch.tarball
 
 # TODO: das Ganze mal vernünftig aufdröseln
 
@@ -119,14 +120,24 @@ class Resource(Item):
         self.shelf = shelf
         self.path = path
 
-        name, file_ext = os.path.splitext(os.path.split(self.path)[-1])
-        if file_ext == ".npy":
-            self.type = "numpy"
-            # print(self.type)
-        elif file_ext == ".py":
-            self.type = "python"
+        if os.path.isdir(self.path):
+            # keine Ahnung, wie wir das vernünftig verarbeiten wollen
+            print("This is a directory")
+            self.type = "dir"
+            files = []
+            with os.scandir(basepath) as entries:
+                for entry in entries:
+                    files.append(entry)
+            tarball.pack(self.path, files)
         else:
-            print("so weit bin ich noch nicht")
+            name, file_ext = os.path.splitext(os.path.split(self.path)[-1])
+            if file_ext == ".npy":
+                self.type = "numpy"
+                # print(self.type)
+            elif file_ext == ".py":
+                self.type = "python"
+            else:
+                print("so weit bin ich noch nicht")
 
         # Hashing; not good programming style
         self.resourceHash = self.createResourceHash()
@@ -157,6 +168,8 @@ class Resource(Item):
             content = self.getContent()
             file_hash.update(content.data)
             hashname = file_hash.hexdigest()
+        elif self.type is "dir":
+            pass
         else:
             with open(self.path, "rb") as f:
                 fblock = f.read(BLOCK_SIZE)
@@ -179,6 +192,8 @@ class Resource(Item):
             np.save(self.path, data)
             # print("es ist wieder da: " + str(os.path.islink(self.path)))
             return copy
+        elif self.type in "dir":
+            pass
         else:
             print("I've no idea")
 

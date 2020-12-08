@@ -9,6 +9,7 @@ import chefkoch.item
 import os
 
 # warnings should be deleted
+import logging  # for testing
 import warnings
 import zlib
 import numpy

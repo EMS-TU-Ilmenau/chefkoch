@@ -588,7 +588,7 @@ config_dict = {
         "test": True,
         "directory": False,
         "configOut": True,
-        "logLevel": "WARNING",
+        "logLevel": "INFO",
     },
     "resource": {"beampatternLog": "resources/beampatternLog.npy"},
     "flavour": {
