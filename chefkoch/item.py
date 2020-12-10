@@ -12,7 +12,8 @@ import hashlib
 from abc import ABC, abstractmethod
 import numpy as np
 import pickle
-import chefkoch.tarball
+import chefkoch.tarball as tarball
+from checksumdir import dirhash
 
 # TODO: das Ganze mal vernünftig aufdröseln
 
@@ -124,11 +125,6 @@ class Resource(Item):
             # keine Ahnung, wie wir das vernünftig verarbeiten wollen
             print("This is a directory")
             self.type = "dir"
-            files = []
-            with os.scandir(basepath) as entries:
-                for entry in entries:
-                    files.append(entry)
-            tarball.pack(self.path, files)
         else:
             name, file_ext = os.path.splitext(os.path.split(self.path)[-1])
             if file_ext == ".npy":
@@ -144,10 +140,25 @@ class Resource(Item):
         data = {"hash": self.resourceHash}
         super().__init__(shelf, data, None)
 
+        # I'm not sure where to put the tarball in this workflow
+        if (
+            self.type == "dir"
+            and self.shelf.fridge.config["options"]["directory"]
+        ):
+            listing = []
+            with os.scandir(self.path) as entries:
+                for entry in entries:
+                    listing.append(entry)
+                    print(entry)
+            tarball.create(self.shelf.path + "/" + self.resourceHash, listing)
+
         if shelf.fridge.config["options"]["directory"]:
-            if os.path.isfile(self.shelf.path + "/" + self.hash):
+            if os.path.isfile(
+                self.shelf.path + "/" + self.hash
+            ) or os.path.isdir(self.shelf.path + "/" + self.hash):
                 print("This path exists")
-                # os.replace(self.path, self.shelf.path + "/test.txt")
+                # das ist der falsche Code duh
+                # os.replace(self.path, self.shelf.path + self.hash)
             else:
                 os.symlink(self.path, self.shelf.path + "/" + self.hash)
                 # pass
@@ -169,7 +180,11 @@ class Resource(Item):
             file_hash.update(content.data)
             hashname = file_hash.hexdigest()
         elif self.type is "dir":
-            pass
+            # maybe needs more excludes
+            hashname = dirhash(
+                self.path, "sha256", excluded_extensions=["pyc"]
+            )
+            return hashname
         else:
             with open(self.path, "rb") as f:
                 fblock = f.read(BLOCK_SIZE)
@@ -192,7 +207,7 @@ class Resource(Item):
             np.save(self.path, data)
             # print("es ist wieder da: " + str(os.path.islink(self.path)))
             return copy
-        elif self.type in "dir":
+        elif self.type is "dir":
             pass
         else:
             print("I've no idea")

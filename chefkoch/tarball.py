@@ -1,8 +1,25 @@
 import tarfile as tf
 from sys import getsizeof
-import os.path
 import os
 from math import ceil
+
+
+def create(filename, listing):
+    """
+    creates a tar-file and packs all given files from d
+    into it
+    """
+
+    with tf.open(filename + ".tar", "w") as tar:
+        print(listing)
+        for entry in listing:
+            # may need to change it up, if there is a more
+            # complex folder structure
+            tar.addfile(
+                tf.TarInfo(os.path.basename(entry)),
+                open(os.path.abspath(entry)),
+            )
+    tar.close()
 
 
 def pack(filename, files):
@@ -11,9 +28,12 @@ def pack(filename, files):
     :param filename: Name of the file to create
     :param files: Files to pack into archive
     """
-    with tf.open(filename, "a") as tar:
+    with tf.open(filename, "w") as tar:
         for file in files:
-            tar.add(os.path.basename(file))
+            print(file)
+            path = os.path.basename(file)
+            print(path)
+            tar.add(path)
         tar.close()
 
 

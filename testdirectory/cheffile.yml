@@ -2,6 +2,7 @@ options: "/options.yml"
 
 resource:
   beampatternLog: resources/beampatternLog.npy
+  example_dir: resources/example_dir
 
 # recipe: !include "recipe.yml"
 

@@ -590,7 +590,10 @@ config_dict = {
         "configOut": True,
         "logLevel": "INFO",
     },
-    "resource": {"beampatternLog": "resources/beampatternLog.npy"},
+    "resource": {
+        "beampatternLog": "resources/beampatternLog.npy",
+        "example_dir": "resources/example_dir",
+    },
     "flavour": {
         "num_lambda": [
             {

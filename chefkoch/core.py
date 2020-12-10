@@ -61,7 +61,9 @@ class Logger:
                 os.remove(filepath)
 
             handlerFile = logging.FileHandler(filename=filepath, mode="a")
-            handlerFile.addFilter(Whitelist("chefkoch.core", "chefkoch.fridge"))
+            handlerFile.addFilter(
+                Whitelist("chefkoch.core", "chefkoch.fridge")
+            )
         else:
             handlerFile = logging.FileHandler(filename=filepath, mode="w")
         console = logging.StreamHandler()
