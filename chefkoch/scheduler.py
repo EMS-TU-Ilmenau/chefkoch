@@ -2,6 +2,10 @@ import chefkoch
 
 
 class Worker:
+    """
+    worker-Class
+    """
+
     def __init__(self, scheduler):
         self.scheduler = scheduler
 

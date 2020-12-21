@@ -24,6 +24,18 @@ class Item(ABC):
     """
 
     def __init__(self, shelf, dicti: dict = None, container=None):
+        """
+        initialises the Item-class
+
+        Parameters
+        ----------
+            shelf(Shelf):
+                the shelf the item belongs to
+            dicti(dict):
+                the dependencies stored into a dictionary
+            container(JSONcontainer):
+                information already stored into a JSON-Container
+        """
         # zugeordneter Shelf
         self.shelf = shelf
         if container is not None:
@@ -52,7 +64,7 @@ class Item(ABC):
         Returns:
         --------
         bool:
-            true,....
+            true, when self.hash still equals the dependency-hash
 
         """
         if self.hash == self.dependencies.hash():
@@ -83,11 +95,22 @@ class Item(ABC):
 class Result(Item):
     """
     contains the result from a specific step
-    may need the step?
-    printing of the result
     """
 
+    # may need a step?
     def __init__(self, shelf, result, dependencies):
+        """
+        Initializes the Result
+
+        Parameters
+        ----------
+            shelf(Shelf):
+                the result belongs to this shelf
+            result(dict):
+                the result-values
+            dependencies(dict):
+                the dependencies from this result
+        """
         super().__init__(shelf, dicti=dependencies)
         self.result = result
         path = self.shelf.path + "/" + self.hash
@@ -123,7 +146,7 @@ class Resource(Item):
 
         if os.path.isdir(self.path):
             # keine Ahnung, wie wir das vernünftig verarbeiten wollen
-            print("This is a directory")
+            # print("This is a directory")
             self.type = "dir"
         else:
             name, file_ext = os.path.splitext(os.path.split(self.path)[-1])
@@ -149,14 +172,16 @@ class Resource(Item):
             with os.scandir(self.path) as entries:
                 for entry in entries:
                     listing.append(entry)
-                    print(entry)
-            tarball.create(self.shelf.path + "/" + self.resourceHash, listing)
+                    # print(entry)
+            self.tarball = tarball.Tarball(
+                self.shelf.path + "/" + self.resourceHash, listing
+            )
 
         if shelf.fridge.config["options"]["directory"]:
             if os.path.isfile(
                 self.shelf.path + "/" + self.hash
             ) or os.path.isdir(self.shelf.path + "/" + self.hash):
-                print("This path exists")
+                print("This path should be replaced later")
                 # das ist der falsche Code duh
                 # os.replace(self.path, self.shelf.path + self.hash)
             else:

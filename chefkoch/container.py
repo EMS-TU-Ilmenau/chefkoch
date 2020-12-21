@@ -1,5 +1,5 @@
 """
-Definition of the different simulation steps available.
+Container to store and manage information from JSON and YAML-Files
 """
 import yaml
 import json
@@ -39,6 +39,10 @@ class JSONContainer:
     def __getitem__(self, item):
         """
         Returns value of specific key
+
+        Parameters
+        ----------
+            item(str): name of wanted item
         """
         return self.data[item]
 
@@ -62,7 +66,11 @@ class JSONContainer:
 
     def hash(self):
         """
-        compute hashname over data
+        compute hash (sha256) over data
+
+        Returns
+        -------
+            hashname(str)
         """
         json_object = json.dumps(self.data, indent=4)
         # geänderter Hash zu sha256
@@ -72,6 +80,10 @@ class JSONContainer:
         return str(hashName)
 
     def __eq__(self, container):
+        """
+        Prototype-Function to determine if a given container has the
+        sama data stored
+        """
         # hier den Operator für die Klasse überschreiben
         # falls das eine gute Idee ist
         return self.data == container.data

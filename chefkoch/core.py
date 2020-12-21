@@ -1,6 +1,7 @@
 """
 Starts and controls the main functionality of Chefkoch.
-It is also responsible for logging everything.
+It is also responsible for logging everything and administrate
+the Configuration
 """
 
 import chefkoch.fridge as fridge
@@ -23,16 +24,30 @@ import warnings
 
 
 class Whitelist(logging.Filter):
+    """
+    Helper-Class to filter for specific logging-entries
+    """
+
     def __init__(self, *whitelist):
+        """
+        Initializes the Whitelist for the Logger
+
+        Parameters
+        ----------
+            *whitelist(str*): contains all names from permitted loggers
+        """
         self.whitelist = [logging.Filter(name) for name in whitelist]
 
     def filter(self, record):
+        """
+        filters the entries
+        """
         return any(f.filter(record) for f in self.whitelist)
 
 
 class Logger:
     """
-    creates a logfile
+    Represents the mein logger
     """
 
     formatter = "%(asctime)s - %(levelname)s - %(message)s"
@@ -47,6 +62,9 @@ class Logger:
         ----------
         options(dic):
             options specified in configuration
+
+        path(str):
+            main path of the work-directory
         """
         # too look up the options later
         self.options = options
@@ -57,6 +75,7 @@ class Logger:
         filepath = self.path + "/chef.log"
 
         if self.options["directory"]:
+            # if there's already a log-file remove it
             if os.path.isfile(filepath):
                 os.remove(filepath)
 
@@ -67,6 +86,7 @@ class Logger:
         else:
             handlerFile = logging.FileHandler(filename=filepath, mode="w")
         console = logging.StreamHandler()
+        console.setLevel(Logger.loglevel(self, self.options["logLevel"]))
         logging.basicConfig(
             format=Logger.formatter,
             level=Logger.loglevel(self, self.options["logLevel"]),
@@ -96,7 +116,7 @@ class Logger:
                 form = logging.Formatter(Logger.formatter)
                 handler.setFormatter(form)
                 # this will be later changed according to the options
-                # Logger.loglevel(self, handler, self.options["logLevel"])
+                handler.setLevel(self.loglevel(self.options["logLevel"]))
 
                 # we will need a correct working filter
                 filter_test = logging.Filter(name=str(name))
@@ -109,9 +129,11 @@ class Logger:
 
     def loglevel(self, level):
         """
-        Hilfsfunktion um ein bestimmtes loglevel zu setzen
-        vllt geht das schöner
-        könnte man später noch nach main Logger und file-loggers differenzieren
+        helper-funciton to set the loglevel
+
+        Parameters
+        ----------
+            level(str): specified level
         """
         if level == "INFO":
             return logging.INFO
@@ -146,6 +168,9 @@ class Configuration:
         return self.items[keyname]
 
     def output(self, filename):
+        """
+        allows to save the configuration to a json-File
+        """
         if self.items["options"]["configOut"]:
             container = JSONContainer()
             container.data = self.items
