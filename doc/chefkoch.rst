@@ -1,14 +1,9 @@
 chefkoch package
 ================
 
-Module contents
----------------
+The chefkoch package includes multiple modules, which encapsulate certain functionalities.
+This section contains the documentation of the single modules, their classes and functions.
 
-.. automodule:: chefkoch
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :noindex:
 
 
 chefkoch.core module

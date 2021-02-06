@@ -15,8 +15,9 @@
 
 .. _architecture:
 
-Architecture
-============
+Architecture OLD
+================
+
 
 The architecture is described from two points of view.
 The first explanation is given with regards to the functionality of the system.
@@ -169,3 +170,4 @@ After an assistant is done, the prepared food goes into the fridge for another a
 To make sure, no meals are mixed up and nothing in the fridge gets confused, Chefkoch has got a unique namespace.
 There is more than one meal ordered.
 So the chef works parallel on all of them.
+

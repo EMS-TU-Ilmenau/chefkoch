@@ -97,7 +97,8 @@ class Result(Item):
     contains the result from a specific step
     """
 
-    # may need a step?
+    # may need a step, that it can execute
+    # name vom JSON-Container
     def __init__(self, shelf, result, dependencies):
         """
         Initializes the Result
