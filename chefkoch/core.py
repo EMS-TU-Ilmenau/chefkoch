@@ -116,6 +116,14 @@ class Configuration:
                     self.items[element] = help.data
                 else:
                     self.items[element] = self.file.data[element]
+<<<<<<< Updated upstream
+=======
+        # adding target if existing
+        # if arguments["targets"] is None:
+        #     self.items["targets"] = "all"
+        # else:
+        #     self.items["targets"] = arguments["targets"]
+>>>>>>> Stashed changes
         # vllt nochmal an andere Stelle speichern, aber über eine Zusatsoption
         self.output(path + "/" + "Configtest.json")
 
@@ -164,14 +172,38 @@ class Chefkoch:
         # dealing with configuration.recipe
         # print(self.configuration.items["recipe"])
         self.fridge.makeResources(self.configuration.items["recipe"], True)
+<<<<<<< Updated upstream
         # print("ddddd2",  type(self.configuration.items["recipe"]))
+=======
+
+        # print(type(self.configuration.items["recipe"]))
+>>>>>>> Stashed changes
         self.recipe = recipe.readrecipe(self.configuration.items["recipe"])
         # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf
+<<<<<<< Updated upstream
         # festgelegte Stelle für Fridge, durch Config mglweiser änderbar
         self.logger = None
         self.scheduler = None
+=======
+
+        # testing from the steps
+        teststep = step.StepPython(
+            self.fridge.shelves["compute_a"],
+            {},
+            self.logger,
+        )
+        teststep.executeStep()
+
+        # teststep = step.StepPython(
+        #     self.fridge.shelves["anotherStep"],
+        #     {},
+        #     self.logger,
+        # )
+        teststep.executeStep()
+
+>>>>>>> Stashed changes
         print("This is your evil overlord")
         print("(͠≖ ͜ʖ͠≖)👌")
 

@@ -3,6 +3,7 @@ compute_a:
     resource: steps/dosomething.py
     inputs:
         some_parameters: num_K
+        another: num_N
     
     outputs:
         result: z
@@ -12,6 +13,20 @@ doItTwice_z:
     resource: steps/step2.py
     inputs:
         data: z
+        test: num_K
+        test2: num_N
     
     outputs:
         result: seconds
+<<<<<<< Updated upstream
+=======
+
+anotherStep:
+    type: python
+    resource: steps/LogToLin.py
+    inputs:
+        data: seconds
+
+    outputs:
+        result: beampatternLin
+>>>>>>> Stashed changes

@@ -36,11 +36,21 @@ class JSONContainer:
             self.data = dict()
             self.read_only = False
 
+    def __len__(self):
+        """
+        Get amount of keys
+        """
+        return len(self.data)
+
     def __getitem__(self, item):
         """
         Returns value of specific key
         """
-        return self.data[item]
+        try:
+            return self.data[item]
+        except KeyError:
+            print("error")
+            return None
 
     def __setitem__(self, key, value):
         """
@@ -48,6 +58,15 @@ class JSONContainer:
         """
         if not self.read_only:
             self.data[key] = value
+
+    def __contains__(self, item):
+        """
+        Checks if item is defined in Container
+        """
+        if item in self.data:
+            return True
+        else:
+            return False
 
     def save(self, filename):
         """
