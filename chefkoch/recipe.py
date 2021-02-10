@@ -33,7 +33,6 @@ import itertools
 import hashlib
 import copy
 from graph import Graph
-from collections import ChainMap
 
 import chefkoch.fridge
 
@@ -54,8 +53,8 @@ class Plan:
     nodes = []
     items = []
     # constructiontree = {}
-    # required = []
-    # remaining = []
+    required = []
+    remaining = []
     # targets = []
 
     def __init__(self, recipe, *targets, fridge=None):
@@ -102,8 +101,6 @@ class Plan:
             self.getFlavours()
         self.makeNormalGraph()
 
-        self.startingItems = list(x[5:] for x in self.subGraph.nodes(in_degree=0))
-
         # test = self.crossLists(([1,2,3,4], [5, 6, 7, 8]
         # , ["a", "b", "c", "d"]))
         # test2 = list(itertools.product(*[[1,2,3,4]
@@ -117,19 +114,12 @@ class Plan:
         print(None)
 
     def isItemNode(self, node):
-        """
-        Checks if a node has the prefix "item."
-        """
         if node[0:5] == "item.":
             return True
         else:
             return False
 
     def makeNormalGraph(self):
-        """
-        Removes Itemnodes from self.subgraph and directly connects the
-        surrounding nodes producing the self.graph object
-        """
         self.graph = copy.deepcopy(self.subGraph)
         for node in self.graph.nodes():
             if self.isItemNode(node):
@@ -140,119 +130,39 @@ class Plan:
                         self.graph.add_edge(x, y)
                 self.graph.del_node(node)
 
+    # def getInput(self, node):
+    #     if node in self.variants:
+    #
+    #
+    # def sameInput(self, a, b):
+
     def buildVariants(self, node):
+        # if self.isItemNode(nodeName):
+        #     node = nodeName[5:]
+        # else:
+        #     node = nodeName
         children = self.graph.nodes(to_node=node)
 
-        if len(children) > 0:# and len(self.variants) > 0:
+        if len(children) > 0:
             if node not in self.variants:
-                childs = {}             #inputs in form of child nodes
-                inputs = {}             #direct inputs from resources/flavours
-                ret = {}
+                h = []
                 for child in children:
                     self.buildVariants(child)
                     # if child in self.variants:
-                    # inputs[child] = self.variants[child]
-                    childs[child] = list(child + "/" + str(x) for x in self.variants[child])
-                for input in self.graph.node(node).inputs.values():
-                    if input in self.flavours.keys():
-                        inputs[input] = {x: None for x in self.flavours[input].items}
-                    elif input in self.startingItems:
-                        inputs[input] = ["self"]
-                # g = inputs + childs
-                # h = list(inputs.values())
-                # h. append(*list(childs.values()))
-                accordance = self.checkAccordance(childs, list(inputs))
-                accorded = {}
-                for accordanceKey in accordance.keys():
-                    accorded[accordanceKey] = self.matchInputs(accordanceKey, self.variants, accordance[accordanceKey])
-                # inputs.update(childs)
-
-                for input in accorded:
-                    for inputValue in accorded[input]:
-                        inputs[input][inputValue] = {}
-                crossed = list(itertools.product(*list(inputs.values())))
-                # crossed.append()
-                for c in crossed:
-                    k = tuple(inputs.keys())
-                    ret[hash((k, c))] = [{k[i]: c[i]} for i in range(len(k))]
-                for item in ret.items():
-                    # for
-                    # for i in range(len(item)):
-                        # print()
-                    # for input in item.items():
-                        # if inputKey
-                    for child in children:
-                        for variant in self.variants[child].items():
-                            if variant[1] == item[1]:
-                                ret[item[0]].append({child: child + "/" + str(variant[0])})
-                                break
-                self.variants[node] = ret
-
-                print(inputs)
-        elif len(children) == 0:
+                    #     h.append({child: self.variants[child]})
+        else:
             # self.variants[node] = self.flavours[node].items
             inputs = {}
             ret = {}
-            # a = self.graph.node(node)
+            a = self.graph.node(node)
             for input in self.graph.node(node).inputs.values():
-                if input in self.flavours:
-                    inputs[input] = self.flavours[input].items
-                else:
-                    inputs[input] = ["self"]
+                inputs[input] = self.flavours[input].items
             crossed = list(itertools.product(*list(inputs.values())))
             for c in crossed:
                 k = tuple(inputs.keys())
                 ret[hash((k, c))] = [{k[i]: c[i]} for i in range(len(k))]
             self.variants[node] = ret
             pass
-
-    def reHash(self, dict):
-        pass
-
-    def matchInputs(self, input, data, map):
-        """
-        Matches the variants of the same inputs from child nodes and direct
-        inputs with help of a given map
-        """
-        ret = {}
-        if len(map) > 0:
-            for key in map.keys():
-                if map[key] == input:
-                    for hashkey in data[key]:
-                        n = dict(ChainMap(*data[key][hashkey]))
-                        if n[input] in ret:
-                            ret[n[input]].append(key + "/" + str(hashkey))
-                        else:
-                            ret[n[input]] = [key + "/" + str(hashkey)]
-                        print(hashkey)
-                else:
-                    ret = self.matchInputs(input, data[map[key]], map[key])
-        return ret
-
-    def checkAccordance(self, childdict, inputlist):
-        """
-        Checks and maps if the inputs of the children of a
-        node and the nodes inputs are matching
-
-        """
-        accordance = {}
-        for child in list(childdict):
-            for input in inputlist:
-                if child == input:
-                    accordance[child] = child
-            x = self.variants[child]
-            # z = next(iter(x))
-            # y = x[z]
-            # if
-            if x is not None:
-                y = x[next(iter(x))]
-                y2 = dict(ChainMap(*y))
-                e = self.checkAccordance(y2, inputlist)
-                if e != {}:
-                    for input in inputlist:
-                        if input in e:
-                            accordance[input] = {child:e[input]}
-        return accordance
 
     # def crossLists(self, list):
     #     ret = []
@@ -269,29 +179,16 @@ class Plan:
 
     def getFlavours(self):
         for node in self.nodelist:
-            if node[5:] in self.fridge.shelves:
-                # print(type(self.fridge.shelves[node[5:]]))
-                # x = type(self.fridge.shelves[node[5:]])
+            if node[5:] in self.fridge.shelfs:
+                print(type(self.fridge.shelfs[node[5:]]))
+                x = type(self.fridge.shelfs[node[5:]])
                 if (
-                    type(self.fridge.shelves[node[5:]])
+                    type(self.fridge.shelfs[node[5:]])
                     == chefkoch.fridge.FlavourShelf
                 ):
                     # self.flavours.append(fridge.shelfs[node[5:]])
-                    self.flavours[node[5:]] = self.fridge.shelves[node[5:]]
-                    self.subGraph.add_node(node, self.fridge.shelves[node[5:]])
-
-    # def getItems(self):
-    #     for node in self.nodelist:
-    #         if node[5:] in self.fridge.shelves:
-    #             # print(type(self.fridge.shelves[node[5:]]))
-    #             # x = type(self.fridge.shelves[node[5:]])
-    #             if (
-    #                 type(self.fridge.shelves[node[5:]])
-    #                 == chefkoch.fridge.FlavourShelf
-    #             ):
-    #                 # self.flavours.append(fridge.shelfs[node[5:]])
-    #                 self.flavours[node[5:]] = self.fridge.shelves[node[5:]]
-    #                 self.subGraph.add_node(node, self.fridge.shelves[node[5:]])
+                    self.flavours[node[5:]] = self.fridge.shelfs[node[5:]]
+                    self.subGraph.add_node(node, self.fridge.shelfs[node[5:]])
 
     # def planIt(self):
     #     for self.subGraph

@@ -9,4 +9,3 @@ pycodestyle
 black
 pdflatex
 graph-theory
-numpy

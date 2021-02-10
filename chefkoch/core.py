@@ -196,10 +196,10 @@ class Configuration:
                 else:
                     self.items[element] = self.file.data[element]
         # adding target if existing
-        # if arguments["targets"] is None:
-        #     self.items["targets"] = "all"
-        # else:
-        #     self.items["targets"] = arguments["targets"]
+        if arguments["targets"] is None:
+            self.items["targets"] = "all"
+        else:
+            self.items["targets"] = arguments["targets"]
         # vllt nochmal an andere Stelle speichern, aber über eine Zusatsoption
         self.output(path + "/" + "Configtest.json")
 
@@ -256,7 +256,7 @@ class Chefkoch:
         self.fridge.makeResources(self.configuration.items["recipe"], True)
 
         # print(type(self.configuration.items["recipe"]))
-        self.recipe = recipe.readrecipe(self.configuration.items["recipe"])
+        # self.recipe = recipe.readrecipe(self.configuration.items["recipe"])
         # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf
@@ -269,11 +269,11 @@ class Chefkoch:
         )
         teststep.executeStep()
 
-        # teststep = step.StepPython(
-        #     self.fridge.shelves["anotherStep"],
-        #     {},
-        #     self.logger,
-        # )
+        teststep = step.StepPython(
+            self.fridge.shelves["anotherStep"],
+            {},
+            self.logger,
+        )
         teststep.executeStep()
 
         print("This is your evil overlord")
