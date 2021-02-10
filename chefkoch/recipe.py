@@ -47,14 +47,15 @@ from chefkoch.container import YAMLContainer, JSONContainer
 # built-in functions that can be called as a simulation step inside a node
 BUILT_INS = ["collect"]
 
-class ResultItem:
 
+class ResultItem:
     def __init__(self, step, JsonContainer):
         self.step = step
         self.JsonContainer = JsonContainer
 
     def execute(self):
         pass
+
 
 class Plan:
     """"""
