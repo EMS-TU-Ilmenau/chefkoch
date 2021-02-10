@@ -46,9 +46,6 @@ class StepResource(Step, ABC):
         dependencies(dict):
             contains all dependencies, which were needed to create the step
 
-        logger(Logger):
-            logger-class to get a module-specific logger
-
         """
         super().__init__(shelf, dependencies)
 
@@ -91,9 +88,6 @@ class StepPython(StepResource):
 
         dependencies(dict):
             inputs and ouptuts of this step
-
-        logger(Logger):
-            main Logger-class
         """
         # prototype implementation
         super().__init__(shelf, dependencies, logger)
@@ -107,7 +101,7 @@ class StepPython(StepResource):
         try:
             self.module = importlib.__import__(mod_name)
         except ImportError as err:
-            self.logger.error("STEP_(" + shelf.name + "): ", err)
+            self.logger.error("Error:", err)
 
         # get all function-names
         functionlist = inspect.getmembers(
@@ -122,15 +116,10 @@ class StepPython(StepResource):
 
         # else raise exception
         if self.found is False:
-            self.logger.critical(
-                "STEP_(" + shelf.name + "): There is no execute"
-            )
+            self.logger.critical("There is no execute in " + str(mod_name))
             # raise Exception("There is no execute in " + str(mod_name))
 
     def executeStep(self):
-        """
-        executes this python-step
-        """
         super().executeStep()
         if self.found:
             print("going to execute the step")
@@ -172,17 +161,11 @@ class StepShell(StepResource):
     """
 
     def __init__(self, shelf, dependencies, logger):
-        """
-        initializes the Shell-Step
-        """
         super().__inti__(shelf, dependencies, logger)
         # get the correct path from the resource
         self.script = self.resource.path
 
     def executeStep(self):
-        """
-        executes this shell-step
-        """
         super().executeStep()
         # vielleicht
         self.ins = ""

@@ -1,4 +1,4 @@
 test: True
 directory: false 
 configOut: true
-logLevel: INFO
+logLevel: WARNING

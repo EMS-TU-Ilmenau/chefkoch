@@ -1,10 +1,17 @@
 chefkoch package
 ================
 
-The chefkoch package includes multiple modules, which encapsulate certain functionalities.
-This section contains the documentation of the single modules, their classes and functions.
+Module contents
+---------------
 
+.. automodule:: chefkoch
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :noindex:
 
+Submodules
+----------
 
 chefkoch.core module
 --------------------
@@ -23,7 +30,7 @@ chefkoch.recipe module
    :show-inheritance:
 
 chefkoch.scheduler module
---------------------------
+----------------------
 
 .. automodule:: chefkoch.scheduler
    :members:
@@ -31,7 +38,7 @@ chefkoch.scheduler module
    :show-inheritance:
 
 chefkoch.tarball module
-------------------------
+----------------------
 
 .. automodule:: chefkoch.tarball
    :members:
@@ -39,7 +46,7 @@ chefkoch.tarball module
    :show-inheritance:
 
 chefkoch.fridge module
------------------------
+----------------------
 
 .. automodule:: chefkoch.fridge
    :members:
@@ -62,9 +69,24 @@ chefkoch.step module
    :undoc-members:
    :show-inheritance:
 
+chefkoch.logs module
+--------------------
+
+.. automodule:: chefkoch.logs
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+chefkoch.namespace module
+-------------------------
+
+.. automodule:: chefkoch.namespace
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 chefkoch.version module
-------------------------
+-----------------------
 
 .. automodule:: chefkoch.version
    :members:

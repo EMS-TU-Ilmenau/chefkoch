@@ -588,12 +588,9 @@ config_dict = {
         "test": True,
         "directory": False,
         "configOut": True,
-        "logLevel": "INFO",
+        "logLevel": "WARNING",
     },
-    "resource": {
-        "beampatternLog": "resources/beampatternLog.npy",
-        "example_dir": "resources/example_dir",
-    },
+    "resource": {"beampatternLog": "resources/beampatternLog.npy"},
     "flavour": {
         "num_lambda": [
             {

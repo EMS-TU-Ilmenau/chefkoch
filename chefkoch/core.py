@@ -1,7 +1,6 @@
 """
 Starts and controls the main functionality of Chefkoch.
-It is also responsible for logging everything and administrate
-the Configuration
+It is also responsible for logging everything.
 """
 
 import chefkoch.fridge as fridge
@@ -23,31 +22,9 @@ import logging
 import warnings
 
 
-class Whitelist(logging.Filter):
-    """
-    Helper-Class to filter for specific logging-entries
-    """
-
-    def __init__(self, *whitelist):
-        """
-        Initializes the Whitelist for the Logger
-
-        Parameters
-        ----------
-            *whitelist(str*): contains all names from permitted loggers
-        """
-        self.whitelist = [logging.Filter(name) for name in whitelist]
-
-    def filter(self, record):
-        """
-        filters the entries
-        """
-        return any(f.filter(record) for f in self.whitelist)
-
-
 class Logger:
     """
-    Represents the mein logger
+    creates a logfile
     """
 
     formatter = "%(asctime)s - %(levelname)s - %(message)s"
@@ -62,36 +39,26 @@ class Logger:
         ----------
         options(dic):
             options specified in configuration
-
-        path(str):
-            main path of the work-directory
         """
         # too look up the options later
         self.options = options
         # main path
         self.path = path
-
         # standard initialzing
-        filepath = self.path + "/chef.log"
+        # filename = self.path + "/chef.log"
+        # logging.basicConfig(format=Logger.formatter,
+        # level=logging.DEBUG, filename=filename)
+        logging.basicConfig(format=Logger.formatter)
 
-        if self.options["directory"]:
-            # if there's already a log-file remove it
-            if os.path.isfile(filepath):
-                os.remove(filepath)
-
-            handlerFile = logging.FileHandler(filename=filepath, mode="a")
-            handlerFile.addFilter(
-                Whitelist("chefkoch.core", "chefkoch.fridge")
-            )
-        else:
-            handlerFile = logging.FileHandler(filename=filepath, mode="w")
-        console = logging.StreamHandler()
-        console.setLevel(Logger.loglevel(self, self.options["logLevel"]))
-        logging.basicConfig(
-            format=Logger.formatter,
-            level=Logger.loglevel(self, self.options["logLevel"]),
-            handlers=[handlerFile, console],
-        )
+        if not self.options["directory"]:
+            filename = self.path + "/chef.log"
+            handler = logging.FileHandler(filename, mode="w")
+            form = logging.Formatter(Logger.formatter)
+            handler.setFormatter(form)
+            Logger.loglevel(self, handler, self.options["logLevel"])
+            # probably won't need a filter
+            self.mainlogger = logging.getLogger("main")
+            self.mainlogger.addHandler(handler)
 
     def logspec(self, name, filename):
         """
@@ -105,46 +72,59 @@ class Logger:
         filename(str):
             filepath to this particular log-file
         """
-        print(name)
+        logger = logging.getLogger(name)
+        logger.propagate = False
+
+        form = logging.Formatter(Logger.formatter)
+        console = logging.StreamHandler()
+        console.setFormatter(form)
+        Logger.loglevel(self, console, self.options["logLevel"])
+        logger.addHandler(console)
         if self.options["directory"]:
+            handler = logging.FileHandler(filename, mode="w")
+            # form = logging.Formatter(Logger.formatter)
+            handler.setFormatter(form)
+            # this will be later changed according to the options
+            Logger.loglevel(self, handler, self.options["logLevel"])
+
+            # next we will need a correct working filter
+            filter_test = logging.Filter(name=str(name))
+
             logger = logging.getLogger(name)
-
-            if name in ["chefkoch.core", "chefkoch.fridge"]:
-                return logger
-            else:
-                handler = logging.FileHandler(filename, mode="w")
-                form = logging.Formatter(Logger.formatter)
-                handler.setFormatter(form)
-                # this will be later changed according to the options
-                handler.setLevel(self.loglevel(self.options["logLevel"]))
-
-                # we will need a correct working filter
-                filter_test = logging.Filter(name=str(name))
-                handler.addFilter(filter_test)
-                logger.addHandler(handler)
-                return logger
+            logger.addFilter(filter_test)
+            logger.addHandler(handler)
+            return logger
         else:
-            newLogger = logging.getLogger("main")
-            return newLogger
+            """
+            filename = self.path + "/chef.log"
+            handler = logging.FileHandler(filename, mode="a")
+            form = logging.Formatter(Logger.formatter)
+            handler.setFormatter(form)
+            Logger.loglevel(self, handler, self.options["logLevel"])
+            # probably won't need a filter
+            mainlogger = logging.getLogger("main")
+            mainlogger.addHandler(handler)
+            mainlogger.propagate = True
+            return mainlogger
+            """
+            return logging.getLogger("main")
 
-    def loglevel(self, level):
+    def loglevel(self, handler, level):
         """
-        helper-funciton to set the loglevel
-
-        Parameters
-        ----------
-            level(str): specified level
+        Hilfsfunktion um ein bestimmtes loglevel zu setzen
+        vllt geht das schöner
+        könnte man später noch nach main Logger und file-loggers differenzieren
         """
         if level == "INFO":
-            return logging.INFO
+            handler.setLevel(10)
         elif level == "DEBUG":
-            return logging.DEBUG
+            handler.setLevel(20)
         elif level == "WARNING":
-            return logging.WARNING
+            handler.setLevel(30)
         elif level == "ERROR":
-            return logging.ERROR
+            handler.setLevel(40)
         elif level == "CRITICAL":
-            return logging.CRITICAL
+            handler.setLevel(50)
         else:
             # raise an error here
             print("Something is rotten in the state of denmark")
@@ -168,9 +148,6 @@ class Configuration:
         return self.items[keyname]
 
     def output(self, filename):
-        """
-        allows to save the configuration to a json-File
-        """
         if self.items["options"]["configOut"]:
             container = JSONContainer()
             container.data = self.items
