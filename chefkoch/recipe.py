@@ -29,13 +29,18 @@ import platform
 import json
 import sys
 import warnings
+import itertools
+import hashlib
+import copy
 from graph import Graph
 from collections import ChainMap
+
+import chefkoch.fridge
 
 from chefkoch.container import YAMLContainer, JSONContainer
 
 # logs need to be imported this way to not write logs.logger all the time
-from .logs import *
+# from .logs import *
 
 
 # constants
@@ -52,9 +57,7 @@ class ResultItem:
         pass
 
 class Plan:
-    """
-
-    """
+    """"""
 
     nodes = []
     items = []
@@ -63,7 +66,7 @@ class Plan:
     # remaining = []
     # targets = []
 
-    def __init__(self, recipe, *targets):
+    def __init__(self, recipe, *targets, fridge=None):
         """
         Initialize Plan Object over a given recipe and calculation targets
         :param recipe: recipe object
@@ -74,7 +77,12 @@ class Plan:
         # targets = []
         # self.recipe = recipe
         # self.subGraph = Graph()
-        nodelist = []
+        self.nodelist = []
+        self.flavours = {}
+        self.variants = JSONContainer()
+        # self.variants["test"] = "12345"
+        if fridge is not None:
+            self.fridge = fridge
 
         if len(targets) == 0:
             targets = self.fillTargets(recipe)
@@ -82,12 +90,14 @@ class Plan:
         for target in targets:
             if target[:4] != "item":
                 for targetitem in recipe.graph.nodes(from_node=target):
-                    nodelist.extend(self.getSubGraphNodes(recipe, targetitem))
+                    self.nodelist.extend(
+                        self.getSubGraphNodes(recipe, targetitem)
+                    )
             else:
-                nodelist.extend(self.getSubGraphNodes(recipe, target))
+                self.nodelist.extend(self.getSubGraphNodes(recipe, target))
         # print(nodelist)
-        self.subGraph = recipe.graph.subgraph_from_nodes(nodelist)
-        for node in nodelist:
+        self.subGraph = recipe.graph.subgraph_from_nodes(self.nodelist)
+        for node in self.nodelist:
             if node[:4] == "item":
                 # print(type(node))
                 self.items.append(node[5:])
@@ -95,8 +105,6 @@ class Plan:
                 # print(type(node))
                 self.nodes.append(node)
 
-<<<<<<< Updated upstream
-=======
         if fridge is not None:
             # self.planIt()
             self.getFlavours()
@@ -306,7 +314,6 @@ class Plan:
     # def planIt(self):
     #     for self.subGraph
 
->>>>>>> Stashed changes
     def fillTargets(self, recipe):
         targets = []
         for endnode in recipe.graph.nodes(out_degree=0):
@@ -442,13 +449,13 @@ class Recipe:
                 outputs_of_all_nodes.update(node_outputs)
         if len(self.graph.components()) > 1:
             raise ImportError(
-                "One or more Nodes are not "
-                "reachable from the others"
+                "One or more Nodes are not " "reachable from the others"
             )
 
         # 4. Loop until all nodes are reachable
         return None, None
-########################
+
+    ########################
 
     def makeGraph(self):
         """
@@ -506,11 +513,11 @@ class Node:
         """
         # for empty name enter "" into recipe
         # unicode and string needed
-        try:
-            name_obj = Name(name)
-            self.name = name_obj.name  # Willi, ist das wirklich so gemeint?
-        except TypeError as err:
-            pass
+        # try:
+        #     name_obj = Name(name)
+        #     self.name = name_obj.name  # Willi, ist das wirklich so gemeint?
+        # except TypeError as err:
+        #     pass
         # testing the input to be delivered in a dict
         if not (isinstance(inputdict, dict)):
             raise TypeError(
@@ -520,6 +527,7 @@ class Node:
                 + ' step": value, ...}'
             )
             return
+        self.name = name
         self.inputs = inputdict
         # later replace strings by values in flavour?
         # testing the output to be delivered in a dict
@@ -564,15 +572,16 @@ class Name:
             is_unicode = isinstance(name, unicode)
         except NameError as mimimi:
             logger.debug(mimimi)
-            logger.debug("You are using python 3, "
-                         "but don't worry, we make it work.")
+            logger.debug(
+                "You are using python 3, " "but don't worry, we make it work."
+            )
             """
             pass
         if not (isinstance(name, str) or is_unicode):
             raise TypeError("The name of a node must be a string.")
         if not self.is_ascii(name):
             raise ValueError("The name of a node must be ascii.")
-        self.name = name
+        self.name = name"""
 
     def is_ascii(self, name):
         """
@@ -638,9 +647,11 @@ def dictToRecipe(data):
     Exception:
         Error while parsing YAML data into recipe object.
     """
-    if not isinstance(data, dict) and \
-            not isinstance(data, YAMLContainer) and \
-            not isinstance(data, JSONContainer):
+    if (
+        not isinstance(data, dict)
+        and not isinstance(data, YAMLContainer)
+        and not isinstance(data, JSONContainer)
+    ):
         raise TypeError("Function dictToRecipe expects dictionary as input.")
     recipe = Recipe([])
     for node in data.items():
@@ -648,9 +659,11 @@ def dictToRecipe(data):
         # #, node.inputs, node.outputs)
         try:
             newNode = Node(
-                node[0], node[1]["inputs"],
-                node[1]["outputs"], node[1]["resource"],
-                node[1]["type"]
+                node[0],
+                node[1]["inputs"],
+                node[1]["outputs"],
+                node[1]["resource"],
+                node[1]["type"],
             )
             recipe.nodes.append(newNode)
         except KeyError as err:

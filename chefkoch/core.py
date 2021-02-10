@@ -15,40 +15,120 @@ from chefkoch.container import JSONContainer
 import ast
 import chefkoch.step as step
 
+# das ist eine bezaubernde Idee
+import os
+import sys
+import logging
+import warnings
+
 
 class Logger:
     """
     creates a logfile
     """
 
-    def __init__(self, filename):
+    formatter = "%(asctime)s - %(levelname)s - %(message)s"
+
+    def __init__(self, options, path):
         """
-        Create a logfile and use this container for logging.
+        creates the basic logger which can be called from all instances
+        If the directory-options is set to false, there will be only
+        one log-file which collects all logging-information
 
         Parameters
         ----------
-        filename(string):
-            name of logfile
-
+        options(dic):
+            options specified in configuration
         """
-        pass
+        # too look up the options later
+        self.options = options
+        # main path
+        self.path = path
+        # standard initialzing
+        # filename = self.path + "/chef.log"
+        # logging.basicConfig(format=Logger.formatter,
+        # level=logging.DEBUG, filename=filename)
+        logging.basicConfig(format=Logger.formatter)
 
-    def log(self, level, message, *objects):
+        if not self.options["directory"]:
+            filename = self.path + "/chef.log"
+            handler = logging.FileHandler(filename, mode="w")
+            form = logging.Formatter(Logger.formatter)
+            handler.setFormatter(form)
+            Logger.loglevel(self, handler, self.options["logLevel"])
+            # probably won't need a filter
+            self.mainlogger = logging.getLogger("main")
+            self.mainlogger.addHandler(handler)
+
+    def logspec(self, name, filename):
         """
-        Creates a log entry
+        specifies the logs for the different steps
+        wird später nochmal etwas überarbeitet
 
         Parameters
         ----------
-        level(int):
-            type and importance of log-message
-
-        message(string):
-            log-message
-
-        objects():
-            describes the used objects
+        name(str):
+            the name of this logger
+        filename(str):
+            filepath to this particular log-file
         """
-        pass
+        logger = logging.getLogger(name)
+        logger.propagate = False
+
+        form = logging.Formatter(Logger.formatter)
+        console = logging.StreamHandler()
+        console.setFormatter(form)
+        Logger.loglevel(self, console, self.options["logLevel"])
+        logger.addHandler(console)
+        if self.options["directory"]:
+            handler = logging.FileHandler(filename, mode="w")
+            # form = logging.Formatter(Logger.formatter)
+            handler.setFormatter(form)
+            # this will be later changed according to the options
+            Logger.loglevel(self, handler, self.options["logLevel"])
+
+            # next we will need a correct working filter
+            filter_test = logging.Filter(name=str(name))
+
+            logger = logging.getLogger(name)
+            logger.addFilter(filter_test)
+            logger.addHandler(handler)
+            return logger
+        else:
+            """
+            filename = self.path + "/chef.log"
+            handler = logging.FileHandler(filename, mode="a")
+            form = logging.Formatter(Logger.formatter)
+            handler.setFormatter(form)
+            Logger.loglevel(self, handler, self.options["logLevel"])
+            # probably won't need a filter
+            mainlogger = logging.getLogger("main")
+            mainlogger.addHandler(handler)
+            mainlogger.propagate = True
+            return mainlogger
+            """
+            return logging.getLogger("main")
+
+    def loglevel(self, handler, level):
+        """
+        Hilfsfunktion um ein bestimmtes loglevel zu setzen
+        vllt geht das schöner
+        könnte man später noch nach main Logger und file-loggers differenzieren
+        """
+        if level == "INFO":
+            handler.setLevel(10)
+        elif level == "DEBUG":
+            handler.setLevel(20)
+        elif level == "WARNING":
+            handler.setLevel(30)
+        elif level == "ERROR":
+            handler.setLevel(40)
+        elif level == "CRITICAL":
+            handler.setLevel(50)
+        else:
+            # raise an error here
+            print("Something is rotten in the state of denmark")
+        # return handler
 
 
 class Configuration:
@@ -82,7 +162,6 @@ class Configuration:
         filename(string):
             file, that specifies configuration
         """
-
         self.file = container
 
         self.items = dict()
@@ -116,14 +195,11 @@ class Configuration:
                     self.items[element] = help.data
                 else:
                     self.items[element] = self.file.data[element]
-<<<<<<< Updated upstream
-=======
         # adding target if existing
         # if arguments["targets"] is None:
         #     self.items["targets"] = "all"
         # else:
         #     self.items["targets"] = arguments["targets"]
->>>>>>> Stashed changes
         # vllt nochmal an andere Stelle speichern, aber über eine Zusatsoption
         self.output(path + "/" + "Configtest.json")
 
@@ -133,7 +209,7 @@ class Chefkoch:
     main instance
     """
 
-    def __init__(self, path, arguments):
+    def __init__(self, firstpath, arguments):
         """
         Initializes everything according to he Cheffile and the needed
         components
@@ -147,19 +223,25 @@ class Chefkoch:
             extra configuration settings, specified in commandline
 
         """
+        # loading the correct path
+        path = os.path.abspath(firstpath)
+        sys.path.append(str(path) + "/steps/")
         # loading the cheffile
-        # print(type(arguments["cheffile"]))
         if arguments["cheffile"] is not None:
             self.cheffile = YAMLContainer(arguments["cheffile"])
         else:
             self.cheffile = YAMLContainer(path + "/cheffile.yml")
-
         # generate the configuration-item
         # using the path to main directory
         self.configuration = Configuration(self.cheffile, path, arguments)
+
+        # cheffile legt noch Änderungen an logger fest
+        self.logger = Logger(self.configuration["options"], path)
+        corelogger = self.logger.logspec(__name__, path + "/chef.log")
+        corelogger.warn("CHEF: " + "This is maybe a bad idea!")
+
         # generate the fridge
-        # self.fridge = fridge.Fridge(self, path)
-        self.fridge = fridge.Fridge(self.configuration, path)
+        self.fridge = fridge.Fridge(self.configuration, path, self.logger)
 
         # generate Resource-Shelfs from configuration
         # print(self.configuration.items["resource"])
@@ -172,21 +254,12 @@ class Chefkoch:
         # dealing with configuration.recipe
         # print(self.configuration.items["recipe"])
         self.fridge.makeResources(self.configuration.items["recipe"], True)
-<<<<<<< Updated upstream
-        # print("ddddd2",  type(self.configuration.items["recipe"]))
-=======
 
         # print(type(self.configuration.items["recipe"]))
->>>>>>> Stashed changes
         self.recipe = recipe.readrecipe(self.configuration.items["recipe"])
         # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf
-<<<<<<< Updated upstream
-        # festgelegte Stelle für Fridge, durch Config mglweiser änderbar
-        self.logger = None
-        self.scheduler = None
-=======
 
         # testing from the steps
         teststep = step.StepPython(
@@ -203,7 +276,6 @@ class Chefkoch:
         # )
         teststep.executeStep()
 
->>>>>>> Stashed changes
         print("This is your evil overlord")
         print("(͠≖ ͜ʖ͠≖)👌")
 
@@ -217,4 +289,7 @@ class Chefkoch:
             things/steps that should be cooked
 
         """
+        self.Plan = None
+        # output-shelfs
+        self.scheduler = None
         pass

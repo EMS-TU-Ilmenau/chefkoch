@@ -2,10 +2,13 @@
 The fridge is responsible for storing the data and steps and checking if
 they are still up-to-date.
 """
+# from chefkoch.core import Logger
 from chefkoch.container import JSONContainer
-import chefkoch.core
 import chefkoch.item
+
 import os
+
+# warnings should be deleted
 import warnings
 import zlib
 import numpy
@@ -21,7 +24,7 @@ class Fridge:
     """
 
     # def __init__(self, chef, basePath):
-    def __init__(self, config, basePath):
+    def __init__(self, config, basePath, logger):
         """
         Instantiate Directory as Fridge
 
@@ -36,71 +39,25 @@ class Fridge:
         """
         # self.chef = chef
         self.config = config
-        self.shelfs = dict()
+        self.shelves = dict()
         self.basePath = basePath
         self.makeDirectory(self.basePath + "/fridge")
+        self.logger = logger.logspec(__name__, self.basePath + "/chef.log")
+        self.logger.info("FRIDGE: we hardcode our problems")
 
     def update(self):
         """
         Updates the internal item map
         """
+        # not sure if this is somehting we need
         pass
 
     def checkItem(self, item):
         """
-        WIP, sollte man auseinandernehmen und wieder vernünftig zusammenbauen
-        Ist diese Funktion überhaupt sinnvoll?
-        man bekommt ein Item und entweder wird der entsprechende Itemshelf
-        anegelegt und das Item darin angelegt oder oder es existiert bereits
-        -> prüft erstmal nicht auf Konsistenz, da mache ich eine Extra-Funktion
-        -> also nur, gibt es Shelf mit dem Item schon: False
-        -> gibt es den nicht, wird er angelegt und das Item eingeordnet: True
-        Problem: brauche dem entsprechend Namen
+        checks if the item exists and maybe if the hash is still valid
         """
-        """
-        if (item.shelf.name in self.shelfs):
-            # wenn es unter den Namen einen Ordner gibt
-            # erstmal grob
-            item = self.shelfs[name].items[name]  # dann holen wir uns das Item
-            # speichern den Pfad zu der existierenden Json
-            itempath = self.shelfs[name].path + "/" + str(name) + ".json"
-            # überprüfen Dateigröße
-            if JSONContainer(itempath) == container:
-                # das ist schon das passende Item
-                return (item, None)
-            else:
-                # Hashkollision
-                # create new Item mit anderem Namen und neuem shelf
-                # erstmal mit Indizes dann
-                i = 1  # zähler
-            begin = self.shelfs[name].path + "/" + str(name) + "_"
-            end = false
-            # gehe die shelfs mit den Indizes durch
-            while (str(name) + "_" + str(i)) in self.shelfs:
-                if JSONContainer(begin + i + ".json") == container:
-                    # wenn passende Item gefunden
-                    end = true
-                    break
-                else:
-                    i += 1
-
-            name = name + "_" + i
-            if end:
-                # wir können passendes Item zurückgeben
-                return (self.shelfs[name].items[name], None)
-            else:
-                # wir müssen einen neuen Shelf für das Item zurückgeben
-                shelf = FridgeShelf(self, name)
-                self.shelfs[name] = shelf
-                return (None, self.shelfs[name])
-
-        else:
-            # wenn es das noch gar nicht gibt,
-            # wird neuer Shelf angelegt und der Namen des Shelfs zurückgegeben
-            shelf = FridgeShelf(self, name)
-            self.shelfs[name] = shelf
-            return (None, self.shelfs[name])
-    """
+        # do we need this -> Item has this function
+        pass
 
     def makeDirectory(self, path):
         """
@@ -111,7 +68,6 @@ class Fridge:
         path(str):
             describes path to the directory
         """
-        # if self.chef.configuration["options"]["directory"]:
         if self.config["options"]["directory"]:
             if not os.path.exists(path):
                 os.makedirs(path)
@@ -134,21 +90,24 @@ class Fridge:
         for element in Resources:
             # FlavourShelf wird angelegt
             shelf = ItemShelf(self, element)
-            self.shelfs[element] = shelf
+            self.shelves[element] = shelf
             if recipe:
                 resource = chefkoch.item.Resource(
-                    self.shelfs[element], Resources[element]["resource"]
+                    self.shelves[element],
+                    self.basePath + "/" + Resources[element]["resource"],
                 )
-                name = zlib.adler32(
-                    Resources[element]["resource"].encode("utf-8")
-                )
+                # print(self.basePath + "/" + Resources[element]["resource"])
+                name = resource.createHash()
             else:
+                # print(Resources[element])
                 resource = chefkoch.item.Resource(
-                    self.shelfs[element], Resources[element]
+                    self.shelves[element],
+                    self.basePath + "/" + Resources[element],
                 )
-                name = zlib.adler32(Resources[element].encode("utf-8"))
+                name = resource.createHash()
+                # print(name)
 
-            self.shelfs[element].items[name] = resource
+            self.shelves[element].items[name] = resource
 
     def makeFlavours(self, Flavours):
         """
@@ -160,18 +119,16 @@ class Fridge:
             dictionary with the different flavours
 
         """
-        # shelf = FlavourShelf(self, "flavours")
-        # vllt will man es ja doch irgendwann mal schön machen
         for x in Flavours:
             shelf = FlavourShelf(self, x)
-            self.shelfs[x] = shelf
-            self.shelfs[x].makeFullList(Flavours[x])
+            self.shelves[x] = shelf
+            self.shelves[x].makeFullList(Flavours[x])
             # optional printing of the different Flavours in a json
-            self.shelfs[x].printFlavour(x)
+            self.shelves[x].printFlavour()
 
     def makeItemShelves(self, outputs):
         """
-        creates the necessary itemshelfs
+        creates the necessary itemshelfs for outputs
 
         Parameters
         ----------
@@ -180,10 +137,59 @@ class Fridge:
 
         """
         for x in outputs:
-            if x in self.shelfs:
+            if x in self.shelves:
                 raise Exception(x + " already exists in this fridge!")
             shelf = ItemShelf(self, x)
-            self.shelfs[x] = shelf
+            self.shelves[x] = shelf
+
+    def getItem(self, name, logger):
+        """
+        prototpye function for getting the correct item
+        maybe needs some checks later, like is it still valid
+
+        neue Überarbeitung
+
+        Parameters
+        ----------
+        name(str):
+            name of the wanted item
+        """
+        # needs some checks if item is up-to-date
+        if name not in self.shelves:
+            logger.critical(name + "doesn't exist in this fridge")
+            raise Exception(name + " doesn't exist in this fridge")
+        else:
+            if isinstance(self.shelves[name], FlavourShelf):
+                return self.shelves[name].items
+            elif isinstance(self.shelves[name], ItemShelf):
+                print("this is a wip")
+                # prototypmäßig, erstmal die unpraktischere Variante
+                if "result" in self.shelves[name].items:
+                    return self.shelves[name].items["result"]
+                else:
+                    # logger.critical(f"item {name} doesn't exist")
+                    # raise Exception(f"item {name} doesn't exist")
+                    # return a resource -> checking, might be necessary
+                    for x in self.shelves[name].items:
+                        if isinstance(
+                            self.shelves[name].items[x], chefkoch.item.Resource
+                        ):
+                            print("I return a resource")
+                            return self.shelves[name].items[x]
+                    # print(self.shelves[name].items)
+            else:
+                logger.error("This shelf doesn't exist")
+
+    def getShelf(self, name):
+        """
+        returns the correct shelf
+        Maybe an other shelf
+        """
+        if name in self.shelves:
+            # check if still empty?
+            return self.shelves[str(name)]
+        else:
+            return None
 
 
 class Shelf(ABC):
@@ -196,6 +202,7 @@ class Shelf(ABC):
         self.fridge = fridge
         self.path = fridge.basePath + "/fridge/" + str(name)
         self.fridge.makeDirectory(self.path)
+        self.name = name
 
     def __len__(self):
         return len(self.items)
@@ -220,6 +227,17 @@ class ItemShelf(Shelf):
         else:
             return None
 
+    def addItem(self, item):
+        # erstmal zum Hinzufügen von results, vllt später noch
+        # für etwas anderes geeignet
+        # something like checking, if it isn't there
+        # packen wir es mal unter result
+        if "result" in self.items:
+            print("Woowie, you alreade have a result")
+        else:
+            print("added item")
+            self.items["result"] = item
+
 
 class FlavourShelf(Shelf):
     """
@@ -228,7 +246,7 @@ class FlavourShelf(Shelf):
 
     def ranges(self, f):
         """
-        translates the log-range-entries to valuelists
+        translates the logarithmic-range-entries to valuelists
 
         Parameters:
         -----------
@@ -262,6 +280,7 @@ class FlavourShelf(Shelf):
             flavour dictionary from flavour-file
 
         """
+        # probably needs some checks for correct input
         if isinstance(Flavours, list):
             if isinstance(Flavours[0], dict):
                 vals = []
@@ -272,16 +291,18 @@ class FlavourShelf(Shelf):
                 self.items = Flavours
 
         elif isinstance(Flavours, dict):
-            print("difficult")
             f = Flavours
             self.items = self.ranges(f)
         # print(self.items)
 
-    def printFlavour(self, name):
+    # def printFlavour(self, name):
+    def printFlavour(self):
+        # wieso habe ich hier einen Namen??
         if self.fridge.config["options"]["directory"]:
             if os.path.exists(self.path):
                 container = JSONContainer(None, self.items)
-                container.save(self.path + "/" + name + ".json")
+                hashName = container.hash()
+                container.save(self.path + "/" + hashName + ".json")
             else:
                 warnings.warn(
                     "unable to print these flavours, there is no directory"

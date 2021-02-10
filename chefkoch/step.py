@@ -1,11 +1,17 @@
 """
 Definition of the different simulation steps available.
 """
-import chefkoch.core
-from chefkoch.item import Item
+from chefkoch.item import Item, Resource, Result
 from chefkoch.container import JSONContainer
+from chefkoch.fridge import *
 from abc import ABC, abstractmethod
+
+import importlib
 import inspect
+import subprocess
+import shlex
+
+# finding imported modules -> dependencies
 
 
 class Step(Item, ABC):
@@ -13,43 +19,54 @@ class Step(Item, ABC):
     A single simulation step
     """
 
-    @abstractmethod
-    def __init__(self, shelf):
+    def __init__(self, shelf, dependencies):
         """
         Initializes the logfile for this step and the
         name-mapping
         """
-        self.logfile = None
-        self.mapping = None
+        self.mapping = dependencies
+        # this will change
         super().__init__(shelf, None, JSONContainer())
 
 
 class StepResource(Step, ABC):
     """
-    Specifies the function to be executed inside a node in the recipe.
+    Abstract class for steps depending on resources
     """
 
-    @abstractmethod
-    def __init__(self, stepsource):
+    def __init__(self, shelf, dependencies, logger):
         """
-        Tests the step source if it is a recipe, a python executable or
-        a built-in function and initialises it if so.
+        Initliazes the step
 
         Parameters
         ----------
-        stepsource (str):
-            file path to a sub-recipe, a python executable or the name \
-            of a built-in function
+        shelf (Shelf):
+            contains the shelf, which the step belongs to
 
-        Raises
-        ------
-        TypeError:
-            If the string does not match any of the above.
+        dependencies(dict):
+            contains all dependencies, which were needed to create the step
+
         """
-        super().__init__()
+        super().__init__(shelf, dependencies)
 
-    @abstractmethod
+        # check if it is an Itemshelf
+        if isinstance(shelf, FlavourShelf):
+            raise Exception("can't get Ressources from a flavourshelf!")
+
+        # ich bin mir nicht sicher, ob das von Nöten ist
+        # get the correct item from the shelf
+        for x in shelf.items:
+            if isinstance(shelf.items[x], Resource):
+                self.resource = shelf.items[x]
+                break
+
+        # logging
+        self.logger = logger.logspec(
+            shelf.name, shelf.path + "/" + shelf.name + ".log"
+        )
+
     def executeStep(self):
+        # maybe check resource
         pass
 
 
@@ -58,50 +75,84 @@ class StepPython(StepResource):
     A simulation step specified in a Python-file
     """
 
-    def __init__(self, path):
+    def __init__(self, shelf, dependencies, logger):
         """
         initializes a Python-Step
 
         Parameters
         ----------
-        path(str):
-            path to the python-module
+        shelf(str):
+            shelf of the specific step
+            will probably changed, that the step gets its
+            resource directly from the fridge
+
+        dependencies(dict):
+            inputs and ouptuts of this step
         """
         # prototype implementation
-        super().__init__(self, shelf)
-        mod_name, file_ext = os.path.splitext(os.path.split(path)[-1])
+        super().__init__(shelf, dependencies, logger)
+        self.logger.info("STEP_(" + shelf.name + "): This might work")
+        # read the module-name
+        mod_name, file_ext = os.path.splitext(
+            os.path.split(self.resource.path)[-1]
+        )
         # importing correct module
-        self.module = importlib.__import__(mod_name)
         print(mod_name)
+        try:
+            self.module = importlib.__import__(mod_name)
+        except ImportError as err:
+            self.logger.error("Error:", err)
+
+        # get all function-names
         functionlist = inspect.getmembers(
             self.module, predicate=inspect.isfunction
         )
 
-        # aktuell nur für Korrektur
+        # check if the "execute"-Function exists
         self.found = False
         for p in functionlist:
             if p[0] == "execute":
                 self.found = True
 
+        # else raise exception
         if self.found is False:
-            raise Exception("There is no execute in " + str(mod_name))
+            self.logger.critical("There is no execute in " + str(mod_name))
+            # raise Exception("There is no execute in " + str(mod_name))
 
-    def executeStep():
+    def executeStep(self):
+        super().executeStep()
         if self.found:
             print("going to execute the step")
-            # getting the signature
-            # how to get the correct parameters?
-            # example dic
-            dic = {"a": 10, "b": 20}
-            calldic = {}
-            # filling the dictionary with the specific values
-            for x in sig.parameteres.values():
-                # let's call it dic for now
-                calldic[str(x)] = dic[str(x)]
+            # getting the signature of execute
+            sig = inspect.signature(self.module.execute)
+            # print(sig)
 
-            # not sure if executing should be a different option
-            # if it is done later
-            self.module.execute(**calldic)
+            calldic = {}  # initialise calldictionary
+            # filling the dictionary with the specific values
+            # should test if it's a flavour shelf (than everything is allright)
+            # or if it's an Itemshelf -> then we need the result-Item
+            for x in sig._parameters.values():
+                item = self.shelf.fridge.getItem(str(x), self.logger)
+                if isinstance(item, list):
+                    calldic[str(x)] = item
+                # elif isinstance(item, Resource):
+                else:
+                    calldic[str(x)] = item.getContent()
+
+            # execute the function
+            r = self.module.execute(**calldic)
+            # das result muss in den ouput-Shelf!
+            result = Result(self.shelf, r, {})
+            # correct behaivour, bit still missing the outputs
+            # shelf = self.shelf.fridge.getShelf(self.dependencies["outputs"])
+            # shelf.addItem(result)
+            self.shelf.addItem(result)
+        else:
+            raise Exception(
+                "Can't execute "
+                + str(self.shelf.name)
+                + " there is no execute"
+            )
 
 
 class StepShell(StepResource):
@@ -109,8 +160,30 @@ class StepShell(StepResource):
     A simulation step specified in a shell-skript
     """
 
-    def __init__(self, path):
-        pass
+    def __init__(self, shelf, dependencies, logger):
+        super().__inti__(shelf, dependencies, logger)
+        # get the correct path from the resource
+        self.script = self.resource.path
+
+    def executeStep(self):
+        super().executeStep()
+        # vielleicht
+        self.ins = ""
+        for x in dependencies["inputs"]:
+            self.ins = ins + " "
+            self.ins = ins + str(self.shelf.fridge.getItem(str(x)))
+
+        script = self.resource.path
+        subprocess.call(shlex.split(self.script + self.ins))
+        # TODO: Result im Output-Ordner suchen
+        # von dependencies den output bekommen
+        output = self.dependencies["output"]
+        # und dann über fridge-getItem das korrekte Item holen
+        # wenn es denn in dem shelf gelanden ist
+        # das braucht nochmal extra Spezifikation
+        # so funktioniert das noch nicht
+        result = Result(self.path, self.shelf.fridge.getItem(str(output)))
+        self.shelf.addItem(result)
 
 
 class StepSubRecipe(StepResource):
@@ -118,7 +191,9 @@ class StepSubRecipe(StepResource):
     A simulation step where a SubRecipe is cooked
     """
 
-    def __init__(self):
+    def __init__(self, shelf, dependencies, logger):
+        super().__init__(shelf, dependencies, logger)
+        # inputs-> just check if they are there
         pass
 
 

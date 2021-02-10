@@ -1,14 +1,19 @@
 """
 The items are the Objects stored in the Fridge
-
 """
+
 from chefkoch.container import JSONContainer
-import chefkoch.core
+
+# import chefkoch.core
 import chefkoch.tarball
 import os
 import warnings
-import zlib
+import hashlib
 from abc import ABC, abstractmethod
+import numpy as np
+import pickle
+
+# TODO: das Ganze mal vernünftig aufdröseln
 
 
 class Item(ABC):
@@ -16,19 +21,27 @@ class Item(ABC):
     An item represent a piece of data, either an input or an output of a step
     """
 
-    def __init__(self, shelf, dict=None, container=None):
-        # erstmal vorläufiges dict
+    def __init__(self, shelf, dicti: dict = None, container=None):
         # zugeordneter Shelf
         self.shelf = shelf
         if container is not None:
+            # self.shelf = shelf
             self.dependencies = container
+        elif dicti is not None:
+            # für Result
+            self.dependencies = JSONContainer(data=dicti)
+            self.hash = self.createHash()
+            if self.shelf.fridge.config["options"]["directory"]:
+                self.dependencies.save(
+                    self.shelf.path + "/" + self.hash + ".json"
+                )
 
     def createHash(self):
         """
         create a hashfile for the dataset
         """
-
-        pass
+        # over dependencies, so it would be
+        return self.dependencies.hash()
 
     def checkHash(self):
         """
@@ -36,20 +49,15 @@ class Item(ABC):
 
         Returns:
         --------
-        returns:
+        bool:
             true,....
 
         """
-        pass
-
-    def jsonHash(self, input):
-        # wird vermutlich erstmal nicht weiter betrachtet
-        """
-        makes a hash over the jsonfile, to check if it already exists
-        """
-        hashName = zlib.adler32(json_object.encode("utf-8"))
-        # return str(hashName)
-        return None
+        if self.hash == self.dependencies.hash():
+            return True
+        else:
+            print(f"this hash isn't accurate anymore")
+            return False
 
     def check(self):
         """
@@ -58,10 +66,12 @@ class Item(ABC):
 
         Returns:
         --------
-        returns:
+        bool:
             true,....
 
         """
+        # only check if directory=True and probably also check if log exists
+        # in incorporate a checkHash
         if os.path.isfile(self.shelf.path + "/" + self.hashName + ".json"):
             return True
         else:
@@ -69,12 +79,28 @@ class Item(ABC):
 
 
 class Result(Item):
-    pass
+    """
+    contains the result from a specific step
+    may need the step?
+    printing of the result
+    """
+
+    def __init__(self, shelf, result, dependencies):
+        super().__init__(shelf, dicti=dependencies)
+        self.result = result
+        path = self.shelf.path + "/" + self.hash
+        # besser ändern, dass nur result-shelfs ausgegeben werden
+        if self.shelf.fridge.config["options"]["directory"]:
+            with open(path, "wb") as handle:
+                pickle.dump(
+                    self.result, handle, protocol=pickle.HIGHEST_PROTOCOL
+                )
+        # print("this is a result!")
 
 
 class Resource(Item):
     """
-    Resources used to create a specific item
+    A resource needed for a specific step
     """
 
     def __init__(self, shelf, path):
@@ -90,7 +116,72 @@ class Resource(Item):
             Path to the Ressource
         """
         # später mit item abstrahiert
-        # super().__init__(self, shelf, path)
         self.shelf = shelf
         self.path = path
-        pass
+
+        name, file_ext = os.path.splitext(os.path.split(self.path)[-1])
+        if file_ext == ".npy":
+            self.type = "numpy"
+            # print(self.type)
+        elif file_ext == ".py":
+            self.type = "python"
+        else:
+            print("so weit bin ich noch nicht")
+
+        # Hashing; not good programming style
+        self.resourceHash = self.createResourceHash()
+        data = {"hash": self.resourceHash}
+        super().__init__(shelf, data, None)
+
+        if shelf.fridge.config["options"]["directory"]:
+            if os.path.isfile(self.shelf.path + "/" + self.hash):
+                print("This path exists")
+                # os.replace(self.path, self.shelf.path + "/test.txt")
+            else:
+                os.symlink(self.path, self.shelf.path + "/" + self.hash)
+                # pass
+
+    def createResourceHash(self):
+        """
+        creates a hash over the resource
+
+        Returns
+        .......
+        hashname(str):
+            sha256 hash over the content of the resource-file
+        """
+        # print(self.path)
+        BLOCK_SIZE = 65536  # 64 kb
+        file_hash = hashlib.sha256()
+        if self.type == "numpy":
+            content = self.getContent()
+            file_hash.update(content.data)
+            hashname = file_hash.hexdigest()
+        else:
+            with open(self.path, "rb") as f:
+                fblock = f.read(BLOCK_SIZE)
+                while len(fblock) > 0:
+                    file_hash.update(fblock)
+                    fblock = f.read(BLOCK_SIZE)
+
+            hashname = file_hash.hexdigest()
+        # print("hashname of ressource: " + hashname)
+        return hashname
+
+    def getContent(self):
+        """
+        this function returns the correct data type, if the ressource
+        isn't of type python-file
+        """
+        if self.type == "numpy":
+            data = np.load(self.path)
+            copy = np.copy(data)
+            np.save(self.path, data)
+            # print("es ist wieder da: " + str(os.path.islink(self.path)))
+            return copy
+        else:
+            print("I've no idea")
+
+    def __str__(self):
+        # just for debugging purposes
+        return f"this item is a ressource with path {self.path}"
