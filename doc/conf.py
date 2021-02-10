@@ -45,6 +45,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinxcontrib.tikz",
     "numpydoc",
+    "sphinxcontrib.mermaid"
 ]
 
 # Add any paths that contain templates here, relative to this directory.

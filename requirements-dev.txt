@@ -9,4 +9,5 @@ pycodestyle
 black
 pdflatex
 graph-theory
-numpy
+checksumdir
+sphinxcontrib-mermaid
