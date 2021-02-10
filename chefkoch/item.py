@@ -99,10 +99,9 @@ class Result(Item):
 
     # may need a step, that it can execute
     # name vom JSON-Container
-    def __init__(self, shelf, step=None, result=None, dependencies):
+    def __init__(self, shelf, result, dependencies):
         """
         Initializes the Result
-
         Parameters
         ----------
             shelf(Shelf):
@@ -113,22 +112,15 @@ class Result(Item):
                 the dependencies from this result
         """
         super().__init__(shelf, dicti=dependencies)
-        # self.result = result
-        self.step = step
-        # print("this is a result!")
-    
-    def invoke(self):
-        """
-        """
-        self.result = self.step.execute()
+        self.result = result
+        path = self.shelf.path + "/" + self.hash
+        # besser ändern, dass nur result-shelfs ausgegeben werden
         if self.shelf.fridge.config["options"]["directory"]:
             with open(path, "wb") as handle:
                 pickle.dump(
                     self.result, handle, protocol=pickle.HIGHEST_PROTOCOL
                 )
-        path = self.shelf.path + "/" + self.hash
-        # besser ändern, dass nur result-shelfs ausgegeben werden
-
+        # print("this is a result!")
 
 
 class Resource(Item):
