@@ -6,5 +6,4 @@ chefkoch
 
    chefkoch
    start
-   test_chefkoch
    setup
