@@ -40,6 +40,7 @@ import chefkoch.core as core
 import chefkoch.recipe as backbone
 import chefkoch.fridge as fridge
 import chefkoch.container as container
+import chefkoch.step as step
 import numpy
 
 # todo: Konsultiere Fabian
@@ -583,11 +584,13 @@ class TestFlavour(unittest.TestCase):
 """
 # Results for comparing and using
 config_dict = {
-    "options": {"test": True, "directory": False, "configOut": True},
-    "resource": {
-        "raw_data": "resource/raw_data.npy",
-        "tex_paper": "resource/paper",
+    "options": {
+        "test": True,
+        "directory": False,
+        "configOut": True,
+        "logLevel": "WARNING",
     },
+    "resource": {"beampatternLog": "resources/beampatternLog.npy"},
     "flavour": {
         "num_lambda": [
             {
@@ -618,11 +621,18 @@ config_dict = {
             "inputs": {"data": "z"},
             "outputs": {"result": "seconds"},
         },
+        "anotherStep": {
+            "type": "python",
+            "resource": "steps/LogToLin.py",
+            "inputs": {"data": "beampatternLog"},
+            "outputs": {"result": "beampatternLin"},
+        },
     },
     "link": {
         "figure_z": "results/figures/figure_z.pdf",
         "paper": "results/paper.pdf",
     },
+    "targets": "all",
 }
 
 path = "./testdirectory"
@@ -633,6 +643,7 @@ class TestConfiguration(unittest.TestCase):
     def test_init(self):
         self.cheffile = container.YAMLContainer(path + "/cheffile.yml")
         arg = {
+            "targets": None,
             "options": None,
             "cheffile": None,
             "resource": None,
@@ -647,6 +658,10 @@ class TestConfiguration(unittest.TestCase):
 
 
 class TestFridge(unittest.TestCase):
+    """
+    Testcases for the functionality of the fridge
+    """
+
     # das ist vermutlich unnötig
     resource = {
         "num_lambda": [
@@ -666,7 +681,9 @@ class TestFridge(unittest.TestCase):
     }
 
     def setUp(self):
-        self.fridge = fridge.Fridge(config_dict, path)
+        logger = core.Logger(config_dict["options"], path)
+        self.logger = logger.logspec(__name__, path + "/test.log")
+        self.fridge = fridge.Fridge(config_dict, path, logger)
 
     def test_fridge_makeFlavours(self):
         # test
@@ -698,35 +715,35 @@ class TestFridge(unittest.TestCase):
             "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
         }
         for x in flavour_result:
-            if isinstance(self.fridge.shelfs[x].items[0], str):
+            if isinstance(self.fridge.shelves[x].items[0], str):
                 self.assertEqual(
-                    self.fridge.shelfs[x].items, flavour_result[x]
+                    self.fridge.shelves[x].items, flavour_result[x]
                 )
             else:
                 i = 0
                 for element in flavour_result[x]:
                     self.assertAlmostEqual(
-                        element, self.fridge.shelfs[x].items[i], places=7
+                        element, self.fridge.shelves[x].items[i], places=7
                     )
                     i = i + 1
 
     def test_fridge_makeResources(self):
         # Ressources in cheffile defined
         self.fridge.makeResources(config_dict["resource"], False)
-        resources = ["raw_data", "tex_paper"]
+        resources = ["beampatternLog"]
         for x in resources:
-            assert x in self.fridge.shelfs
+            assert x in self.fridge.shelves
         # Ressources in recipe defined
         self.fridge.makeResources(config_dict["recipe"], True)
-        resources_recipe = ["compute_a", "doItTwice_z"]
+        resources_recipe = ["compute_a", "doItTwice_z", "anotherStep"]
         for x in resources_recipe:
-            assert x in self.fridge.shelfs
+            assert x in self.fridge.shelves
 
     def test_fridge_makeItemShelves(self):
         self.fridge.makeItemShelves(["z", "seconds"])
         items = ["z", "seconds"]
         for x in items:
-            assert x in self.fridge.shelfs
+            assert x in self.fridge.shelves
 
         with self.assertRaises(Exception) as context:
             self.fridge.makeItemShelves(["z"])
@@ -734,3 +751,63 @@ class TestFridge(unittest.TestCase):
         self.assertTrue(
             "z already exists in this fridge!" in str(context.exception)
         )
+
+    def test_getItem(self):
+        # test for failing
+        testFalse = "nope"
+        with self.assertRaises(Exception) as context:
+            self.fridge.getItem(testFalse)
+
+        self.assertTrue(str(testFalse) + " doesn't exist in this fridge")
+
+        # test for correct behaviour falvour
+        self.fridge.makeFlavours(config_dict["flavour"])
+        testTrue = "num_K"
+        result = self.fridge.getItem(testTrue, self.logger)
+        self.assertEqual(result, [1, 2, 3, 7, 8])
+
+        # TODO: Test for correct behaviour with items
+
+
+class TestStepPython(unittest.TestCase):
+    """
+    Tests for checking the correct behaviour of a python-step
+    """
+
+    def setUp(self):
+        # appending correct module-path
+        sys.path.append(str(path) + "/steps/")
+        self.logger = core.Logger(config_dict["options"], path)
+        self.fridge = fridge.Fridge(config_dict, path, self.logger)
+        # self.fridge.makeResources(config_dict["resource"], False)
+        self.fridge.makeResources(config_dict["recipe"], True)
+        self.fridge.makeFlavours(config_dict["flavour"])
+        self.step = step.StepPython(
+            self.fridge.shelves["compute_a"], {}, self.logger
+        )
+        # missing the dependencies
+
+    def test_executeStep(self):
+        self.step.executeStep()
+        r = self.fridge.shelves["compute_a"].items["result"].result
+        expected = {"result": [2, 3, 4, 8, 9]}
+        self.assertEqual(r, expected)
+
+
+class TestStepShell(unittest.TestCase):
+    """
+    Tests for checking the correct behaviour of a python-step
+    """
+
+    def setUp(self):
+        # appending correct module-path
+        sys.path.append(str(path) + "/steps/")
+        self.logger = core.Logger(config_dict["options"], path)
+        self.fridge = fridge.Fridge(config_dict, path, self.logger)
+        # self.fridge.makeResources(config_dict["resource"], False)
+        self.fridge.makeResources(config_dict["recipe"], True)
+        self.fridge.makeFlavours(config_dict["flavour"])
+        # self.step = step.StepPython(self.fridge.shelves["compute_a"], {})
+
+    def test_executeStep(self):
+        pass
