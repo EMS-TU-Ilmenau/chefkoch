@@ -85,7 +85,7 @@ class Plan:
         if fridge is not None:
             self.fridge = fridge
 
-        if len(targets) == 0:
+        if len(targets) == 0 or targets[0] is None:
             targets = self.fillTargets(recipe)
 
         for target in targets:
@@ -124,8 +124,57 @@ class Plan:
         # pass
         for node in self.graph.nodes(out_degree=0):
             self.buildVariants(node)
+
+        self.prioritys = {}
+        self.assertPriority()
+        self.initSteps()
+        self.makeJoblist()
         # self.variants = [JSONContainer()]
         print(None)
+
+    def initSteps(self):
+        for node in self.graph.nodes():
+            pass
+        pass
+
+    def makeJoblist(self):
+        joblist = []
+        for nodeName, variantlist in self.variants.data.items():
+            for variant in variantlist.items():
+                joblist.append(self.makeJob(variant, nodeName))
+        return joblist
+
+    def makeJob(self, nodeVariant, nodeName):
+        return ResultItem(
+            nodeName,
+            JSONContainer(
+                data={
+                    "hash": nodeVariant[0],
+                    "inputs": nodeVariant[1],
+                    "priority": self.prioritys[nodeName],
+                }
+            ),
+        )
+
+    def assertPriority(self, node=None, priority=0):
+        """
+        Calculates priority for every node in graph
+        """
+        #
+        # endNodes = self.graph.nodes(out_degree=0)
+        # startNodes = self.graph.nodes(in_degree=0)
+        if node is None:
+            for endNode in self.graph.nodes(out_degree=0):
+                self.assertPriority(endNode, priority + 1)
+        else:
+            if node in self.prioritys.keys():
+                if self.prioritys[node] < priority:
+                    self.prioritys[node] = priority
+            elif node not in self.prioritys.keys():
+                self.prioritys[node] = priority
+            # else:
+            for child in self.graph.nodes(to_node=node):
+                self.assertPriority(child, priority + 1)
 
     def isItemNode(self, node):
         """
@@ -212,8 +261,8 @@ class Plan:
                                     {child: child + "/" + str(variant[0])}
                                 )
                                 break
-                self.reHash(ret)
-                self.variants[node] = ret
+
+                self.variants[node] = self.reHash(ret)
 
                 # print(inputs)
         elif len(children) == 0:
@@ -236,8 +285,10 @@ class Plan:
     def reHash(self, dict):
         ret = {}
         for value in dict.values():
-            c = tuple([x.values() for x in value])
-            k = tuple(value.keys())
+            for x in value:
+                c = (list(x.values()))[0]
+            c = tuple(list(x.values())[0] for x in value)
+            k = tuple(list(x.keys())[0] for x in value)
             ret[hash((k, c))] = value
         return ret
 

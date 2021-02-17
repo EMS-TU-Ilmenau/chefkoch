@@ -256,10 +256,12 @@ class Chefkoch:
         self.fridge.makeResources(self.configuration.items["recipe"], True)
 
         # print(type(self.configuration.items["recipe"]))
-        # self.recipe = recipe.readrecipe(self.configuration.items["recipe"])
+        self.recipe = recipe.readrecipe(self.configuration.items["recipe"])
         # beinhaltet den kompletten Namen
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf
+
+        self.plan = recipe.Plan(self.recipe, fridge=self.fridge)
 
         # testing from the steps
         teststep = step.StepPython(

@@ -1,0 +1,4 @@
+test: True
+directory: false 
+configOut: true
+logLevel: WARNING
