@@ -1,5 +1,8 @@
 """
-Container to store and manage information from JSON and YAML-Files
+Container to store and manage information from JSON and YAML-Files.
+The configuration is stored into a YAML-File, which can be managed
+by the YAML-Container.
+The JSON-Container manages other information like dependencies.
 """
 import yaml
 import json
@@ -9,13 +12,17 @@ import os.path
 
 class JSONContainer:
     """
-    A Container for JSON Files
+    A Container for JSON Files.
+    It allows to initialize and manage a container.
+    Furthermore it's possilbe to hash the content of the Container
+    and merge it with other containers.
     """
 
     def __init__(self, filename: str = None, data: dict = None):
         """
         Initializes the container from file if path is given or
-        a given dictionary else it creates an empty container
+        a given dictionary else it creates an empty container.
+        If given a file, the container is read only.
 
         Parameters
         ----------
@@ -48,14 +55,24 @@ class JSONContainer:
 
     def __setitem__(self, key, value):
         """
-        Set value of specific key
+        Set value of specific key, if the container is not
+        set to "read-only"
+
+        Parameters
+        ----------
+            key(str): key of new entry
+            value(): value of new entry
         """
         if not self.read_only:
             self.data[key] = value
 
     def save(self, filename):
         """
-        Save container to file
+        Save container to a given filename
+
+        Parameters
+        ----------
+            filename(str): name of file
         """
         json_object = json.dumps(self.data, indent=4)
 
@@ -104,12 +121,16 @@ class JSONContainer:
 
 class YAMLContainer:
     """
-    A Container for YAML Files
+    A Container for YAML Files. It's used to organize the configuration.
     """
 
     def __init__(self, filename):
         """
         Initializes the container from file
+
+        Parameters
+        ----------
+            filename(str): name of the file
         """
         # with open(filename) as f:
         #     self.data = yaml.load(f, Loader=yaml.SafeLoader)
@@ -122,6 +143,10 @@ class YAMLContainer:
     def __hasattr__(self, name):
         """
         Check if container contains specific item
+
+        Parameters
+        ----------
+            name(str): name of item
         """
         if hasattr(self.data, name):
             return True
@@ -131,6 +156,10 @@ class YAMLContainer:
     def __getitem__(self, item):
         """
         Returns the value of specific item
+
+        Parameters
+        ----------
+            name(str): name of wanted item
         """
         return self.data[item]
 

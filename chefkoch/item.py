@@ -1,5 +1,7 @@
 """
-The items are the Objects stored in the Fridge
+The items are the Objects stored in the Fridge.
+Items is an abstract class, representing resources, results and
+the different steps
 """
 
 from chefkoch.container import JSONContainer
@@ -20,7 +22,8 @@ from checksumdir import dirhash
 
 class Item(ABC):
     """
-    An item represent a piece of data, either an input or an output of a step
+    An item is an abstract class, that represent a piece of data,
+    either an input or an output of a step.
     """
 
     def __init__(self, shelf, dicti: dict = None, container=None):
@@ -52,14 +55,15 @@ class Item(ABC):
 
     def createHash(self):
         """
-        create a hashfile for the dataset
+        create a hashfile for the dataset using the depedencies
         """
         # over dependencies, so it would be
         return self.dependencies.hash()
 
     def checkHash(self):
         """
-        Check if the hashfile is still valid
+        Check if the hashfile is still valid, by checking the
+        if the hash is unchanged
 
         Returns:
         --------
@@ -94,7 +98,7 @@ class Item(ABC):
 
 class Result(Item):
     """
-    contains the result from a specific step
+    Contains the result from a specific step
     """
 
     # may need a step, that it can execute

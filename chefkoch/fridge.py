@@ -17,8 +17,9 @@ from abc import ABC, abstractmethod
 
 class Fridge:
     """
-    The fridge stores all items or steps in chefkoch with metadata
-
+    The fridge stores all items or steps in chefkoch with metadata.
+    It's also responsible to initializes the resources and flavours
+    and create the folder structure if needed.
     """
 
     def __init__(self, config, basePath, logger):
@@ -58,7 +59,8 @@ class Fridge:
 
     def makeDirectory(self, path):
         """
-        creates the directories, if the option is enabled
+        creates the directory in the specified path, if the option
+        is enabled
 
         Parameters
         ----------
@@ -76,7 +78,7 @@ class Fridge:
 
     def makeResources(self, Resources, recipe):
         """
-        initialises the Resources
+        initialises the Resources specified in recipe and the cheffile
 
         Parameters
         ----------
@@ -128,7 +130,8 @@ class Fridge:
 
     def makeItemShelves(self, outputs):
         """
-        creates the necessary itemshelfs for outputs
+        creates the necessary itemshelfs for the given outputs. It logs an
+        error, if the output already exists in fridge.
 
         Parameters
         ----------
@@ -181,7 +184,7 @@ class Fridge:
 
     def getShelf(self, name):
         """
-        returns the correct shelf
+        returns the wanted shelf
         """
         if name in self.shelves:
             # check if still empty?
@@ -192,12 +195,13 @@ class Fridge:
 
 class Shelf(ABC):
     """
-    abstract base-class for the different shelves
+    Abstract base-class for the different shelves. They store the different
+    variations of the items.
     """
 
     def __init__(self, fridge, name):
         """
-        initalizes a shelf
+        initalizes a shelf, with a given name and a specified path.
 
         Parameters
         ----------
@@ -231,12 +235,20 @@ class Shelf(ABC):
 class ItemShelf(Shelf):
     """
     A container for items of a similar kind
-    Resultate von Berechnungen
+    Represents results from computations.
     """
 
     def find(self, name):
         """
         find a certain item in the fridgeshelf
+
+        Parameters
+        ----------
+            name(str): name of wanted item
+
+        Returns
+        --------
+            wanted item(item); if it's exists
         """
         # might be extended with admin-dic
         if name in self.items:
@@ -246,7 +258,11 @@ class ItemShelf(Shelf):
 
     def addItem(self, item):
         """
-        adds an item to the shelf
+        Adds an item to the shelf, if they didn't exist prior
+
+        Parameters
+        ----------
+            item(Item): item to be added to this shelf
         """
         # erstmal zum Hinzufügen von results, vllt später noch
         # für etwas anderes geeignet
@@ -261,17 +277,22 @@ class ItemShelf(Shelf):
 
 class FlavourShelf(Shelf):
     """
-    A container for different Flavours
+    A shelf-variant that contains different Flavours in dictionary-form.
     """
 
     def ranges(self, f):
         """
-        translates the logarithmic-range-entries to valuelists
+        translates the linear- and logarithmic-range-entries to valuelists.
 
         Parameters:
         -----------
         f(dict):
             dictionary that specifies a range
+
+        Returns
+        --------
+        vals(list):
+            contains the translated numeric values
         """
         if f["type"] == "lin":
             # dealing with linear ranges
@@ -317,7 +338,8 @@ class FlavourShelf(Shelf):
 
     def printFlavour(self):
         """
-        allows to print flavours to a JSON-File in the correct directory
+        allows to print flavours to a JSON-File in the correct directory,
+        if the directory option is enabled
         """
         if self.fridge.config["options"]["directory"]:
             if os.path.exists(self.path):

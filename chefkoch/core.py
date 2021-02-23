@@ -1,7 +1,7 @@
 """
 Starts and controls the main functionality of Chefkoch.
 It is also responsible for logging everything and administrate
-the Configuration
+the Configuration.
 """
 
 import chefkoch.fridge as fridge
@@ -40,14 +40,18 @@ class Whitelist(logging.Filter):
 
     def filter(self, record):
         """
-        filters the entries
+        filters the entries and returns only the records contained in whitelist
+
+        Parameters
+        ----------
+            record(item): record which
         """
         return any(f.filter(record) for f in self.whitelist)
 
 
 class Logger:
     """
-    Represents the mein logger
+    Represents the main logger, which is the base of all derivated loggers.
     """
 
     formatter = "%(asctime)s - %(levelname)s - %(message)s"
@@ -79,12 +83,16 @@ class Logger:
             if os.path.isfile(filepath):
                 os.remove(filepath)
 
+            # only append new entries to existing files
             handlerFile = logging.FileHandler(filename=filepath, mode="a")
+            # log core and fridge to chef.log
             handlerFile.addFilter(
                 Whitelist("chefkoch.core", "chefkoch.fridge")
             )
         else:
             handlerFile = logging.FileHandler(filename=filepath, mode="w")
+
+        # inititialize console-logger
         console = logging.StreamHandler()
         console.setLevel(Logger.loglevel(self, self.options["logLevel"]))
         logging.basicConfig(
@@ -153,12 +161,17 @@ class Logger:
 
 class Configuration:
     """
-    Manages the configurations specified in the configuration file
+    Manages the configurations specified in the configuration file. It uses
+    a YAML-Container.
     """
 
     def __getitem__(self, keyname):
         """
         Retrieve a configuration item
+
+        Parameters
+        ----------
+            keyname(str): name of wanted item
 
         Returns
         -------
@@ -169,7 +182,12 @@ class Configuration:
 
     def output(self, filename):
         """
-        allows to save the configuration to a json-File
+        allows to save the configuration to a json-File, if the options
+        allow it.
+
+        Parameters
+        ----------
+            filename(str): name of the file
         """
         if self.items["options"]["configOut"]:
             container = JSONContainer()
@@ -178,12 +196,15 @@ class Configuration:
 
     def __init__(self, container, path, arguments):
         """
-        Load of configuration of specified in cheffile
+        Load of configuration specified in cheffile. It parses the cheffile
+        to load all needed information (also from other specified files) and
+        checks the configuration specified in the command-line arguments.
 
         Parameters
         ----------
-        filename(string):
-            file, that specifies configuration
+            container(YAMLContainer): cheffile loaded in YAMLContainer
+            path(str): path of work-directory
+            arguments(dict): contains the command-line arguments
         """
         self.file = container
 
@@ -229,7 +250,8 @@ class Configuration:
 
 class Chefkoch:
     """
-    main instance
+    main instance of Chefkoch.
+    Initiates everything and controls all processes in Chefkoch.
     """
 
     def __init__(self, firstpath, arguments):

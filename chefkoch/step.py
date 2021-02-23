@@ -1,5 +1,6 @@
 """
 Definition of the different simulation steps available.
+They are derived from items.
 """
 from chefkoch.item import Item, Resource, Result
 from chefkoch.container import JSONContainer
@@ -16,13 +17,19 @@ import shlex
 
 class Step(Item, ABC):
     """
-    A single simulation step
+    The abstract base class of the different simulation steps.
+    It is also derived from Item.
     """
 
     def __init__(self, shelf, dependencies):
         """
         Initializes the logfile for this step and the
-        name-mapping
+        name-mapping.
+
+        Parameters
+        ----------
+            shelf(Shelf): the shelf the item belongs to
+            dependencies(dict): dependencies of the different steps
         """
         self.mapping = dependencies
         # this will change
