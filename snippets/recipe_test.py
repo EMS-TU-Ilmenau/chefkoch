@@ -23,7 +23,7 @@ import chefkoch as ck
 # dir = os.getcwd()[:-5]
 dir = os.getcwd()[:-9]
 # cheffile = dir + "/testdirectory"
-cheffile = dir + "\\testdirectory"
+cheffile = dir + "\\testdirectory_maria"
 args = {
     "options": None,
     "cheffile": None,
@@ -32,8 +32,9 @@ args = {
     "kitchen": None,
     "recipe": None,
     "link": None,
+    "targets": None,
 }
 chef = ck.Chefkoch(cheffile, args)
-y = rcp.Plan(chef.recipe, fridge=chef.fridge)
+# y = rcp.Plan(chef.recipe, fridge=chef.fridge)
 print(chef)
 # os.system('chef test')

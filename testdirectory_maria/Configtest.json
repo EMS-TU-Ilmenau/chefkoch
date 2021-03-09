@@ -1,0 +1,97 @@
+{
+    "options": {
+        "test": true,
+        "directory": false,
+        "configOut": true,
+        "logLevel": "WARNING"
+    },
+    "resource": {
+        "beampatternLog": "resources/beampatternLog.npy"
+    },
+    "flavour": {
+        "num_lambda": [
+            {
+                "type": "log",
+                "start": "1e-3",
+                "stop": "1e3",
+                "count": 7,
+                "base": 10
+            },
+            {
+                "type": "log",
+                "start": "1e7",
+                "stop": "1e19",
+                "count": 5
+            },
+            {
+                "type": "lin",
+                "start": 8,
+                "stop": 12,
+                "step": 1
+            }
+        ],
+        "num_N": {
+            "type": "lin",
+            "start": 10,
+            "stop": 20,
+            "step": 2
+        },
+        "num_K": [
+            1,
+            2,
+            3,
+            7,
+            8
+        ],
+        "algorithm": [
+            "BP",
+            "OMP",
+            "ISTA",
+            "FISTA",
+            "TWISTA"
+        ]
+    },
+    "kitchen": {
+        "stove": "local"
+    },
+    "recipe": {
+        "compute_a": {
+            "type": "python",
+            "resource": "steps/dosomething.py",
+            "inputs": {
+                "some_parameters": "num_K",
+                "another": "num_N"
+            },
+            "outputs": {
+                "result": "z"
+            }
+        },
+        "doItTwice_z": {
+            "type": "python",
+            "resource": "steps/step2.py",
+            "inputs": {
+                "data": "z",
+                "test": "num_K",
+                "test2": "num_N"
+            },
+            "outputs": {
+                "result": "seconds"
+            }
+        },
+        "anotherStep": {
+            "type": "python",
+            "resource": "steps/LogToLin.py",
+            "inputs": {
+                "data": "seconds"
+            },
+            "outputs": {
+                "result": "beampatternLin"
+            }
+        }
+    },
+    "link": {
+        "figure_z": "results/figures/figure_z.pdf",
+        "paper": "results/paper.pdf"
+    },
+    "targets": "all"
+}

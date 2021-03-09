@@ -1,0 +1,29 @@
+compute_a:
+    type: python
+    resource: steps/dosomething.py
+    inputs:
+        some_parameters: num_K
+        another: num_N
+    
+    outputs:
+        result: z
+
+doItTwice_z:
+    type: python
+    resource: steps/step2.py
+    inputs:
+        data: z
+        test: num_K
+        test2: num_N
+    
+    outputs:
+        result: seconds
+
+anotherStep:
+    type: python
+    resource: steps/LogToLin.py
+    inputs:
+        data: seconds
+
+    outputs:
+        result: beampatternLin
