@@ -128,7 +128,7 @@ class Plan:
         self.prioritys = {}
         self.assertPriority()
         self.initSteps()
-        self.makeJoblist()
+        self.joblist = self.makeJoblist()
         # self.variants = [JSONContainer()]
         print(None)
 
@@ -138,10 +138,12 @@ class Plan:
         pass
 
     def makeJoblist(self):
-        joblist = []
+        joblist = [[] for i in range(len(self.prioritys))]
         for nodeName, variantlist in self.variants.data.items():
             for variant in variantlist.items():
-                joblist.append(self.makeJob(variant, nodeName))
+                # e = self.prioritys[nodeName]
+                # ee = joblist[e]
+                joblist[self.prioritys[nodeName]].append(self.makeJob(variant, nodeName))
         return joblist
 
     def makeJob(self, nodeVariant, nodeName):
@@ -156,7 +158,7 @@ class Plan:
             ),
         )
 
-    def assertPriority(self, node=None, priority=0):
+    def assertPriority(self, node=None, priority=-1):
         """
         Calculates priority for every node in graph
         """
