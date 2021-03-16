@@ -3,7 +3,7 @@ compute_a:
     resource: steps/dosomething.py
     inputs:
         some_parameters: num_K
-        another: num_N
+  #      another: num_N
     
     outputs:
         result: z

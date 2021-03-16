@@ -128,7 +128,7 @@ class Plan:
         self.prioritys = {}
         self.assertPriority()
         self.initSteps()
-        self.makeJoblist()
+        self.joblist = self.makeJoblist()
         # self.variants = [JSONContainer()]
         print(None)
 
@@ -138,10 +138,14 @@ class Plan:
         pass
 
     def makeJoblist(self):
-        joblist = []
+        joblist = [[] for i in range(len(self.prioritys))]
         for nodeName, variantlist in self.variants.data.items():
             for variant in variantlist.items():
-                joblist.append(self.makeJob(variant, nodeName))
+                # e = self.prioritys[nodeName]
+                # ee = joblist[e]
+                joblist[self.prioritys[nodeName]].append(
+                    self.makeJob(variant, nodeName)
+                )
         return joblist
 
     def makeJob(self, nodeVariant, nodeName):
@@ -156,7 +160,7 @@ class Plan:
             ),
         )
 
-    def assertPriority(self, node=None, priority=0):
+    def assertPriority(self, node=None, priority=-1):
         """
         Calculates priority for every node in graph
         """
@@ -249,17 +253,30 @@ class Plan:
                     k = tuple(inputs.keys())
                     ret[hash((k, c))] = [{k[i]: c[i]} for i in range(len(k))]
                 for item in ret.items():
-                    # for
-                    # for i in range(len(item)):
-                    # print()
-                    # for input in item.items():
-                    # if inputKey
                     for child in children:
                         for variant in self.variants[child].items():
-                            if variant[1] == item[1]:
+                            x = variant[1]
+                            # x1 = set(x)
+                            y = item[1]
+                            if variant[1] in item[1]:
+                                pass
+                            if (
+                                variant[1] == item[1]
+                            ):  # or variant[1] in item[1]:
                                 ret[item[0]].append(
                                     {child: child + "/" + str(variant[0])}
                                 )
+                                break
+                            else:
+                                notFalse = False
+                                for v in variant[1]:
+                                    if v in item[1]:
+                                        notFalse = True
+                                        break
+                                if notFalse:
+                                    ret[item[0]].append(
+                                        {child: child + "/" + str(variant[0])}
+                                    )
                                 break
 
                 self.variants[node] = self.reHash(ret)
