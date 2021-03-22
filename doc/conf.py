@@ -43,6 +43,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.githubpages",
     "sphinx.ext.autosummary",
+    "sphinx.ext.viewcode",
     "sphinxcontrib.tikz",
     "numpydoc",
     "sphinxcontrib.mermaid"

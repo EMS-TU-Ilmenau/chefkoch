@@ -147,7 +147,7 @@ class Fridge:
             shelf = ItemShelf(self, x)
             self.shelves[x] = shelf
 
-    def getItem(self, name, logger):
+    def getItem(self, name):
         """
         prototpye function for getting the correct item
         maybe needs some checks later, like is it still valid

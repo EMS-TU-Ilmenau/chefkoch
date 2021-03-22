@@ -261,7 +261,7 @@ class Chefkoch:
 
         Parameters
         ----------
-        path(string):
+        firstpath(string):
             specifies path of project directory
 
         arguments(args*):
@@ -282,8 +282,8 @@ class Chefkoch:
 
         # cheffile legt noch Änderungen an logger fest
         self.logger = Logger(self.configuration["options"], path)
-        corelogger = self.logger.logspec(__name__, path + "/chef.log")
-        corelogger.warn("CHEF: " + "This is maybe a bad idea!")
+        self.corelogger = self.logger.logspec(__name__, path + "/chef.log")
+        self.corelogger.warn("CHEF: " + "This is maybe a bad idea!")
 
         # generate the fridge
         self.fridge = fridge.Fridge(self.configuration, path, self.logger)
