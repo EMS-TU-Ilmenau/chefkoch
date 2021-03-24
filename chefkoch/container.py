@@ -5,6 +5,19 @@ import yaml
 import json
 import hashlib
 import os.path
+from typing import Dict, Any
+
+
+def dict_hash(dictionary: Dict[str, Any]) -> str:
+    """MD5 hash of a dictionary"""
+    # dhash = hashlib.md5()
+    dhash = hashlib.sha256()
+    # dhash = hashlib.blake2b()
+    # We need to sort arguments so {'a': 1, 'b': 2} is
+    # the same as {'b': 2, 'a': 1}
+    encoded = json.dumps(dictionary, sort_keys=True, indent=4).encode("utf-8")
+    dhash.update(encoded)
+    return dhash.hexdigest()
 
 
 class JSONContainer:
@@ -83,12 +96,13 @@ class JSONContainer:
         """
         compute hashname over data
         """
-        json_object = json.dumps(self.data, indent=4)
-        # geänderter Hash zu sha256
-        h = hashlib.sha256()
-        h.update(json_object.encode("utf-8"))
-        hashName = h.hexdigest()
-        return str(hashName)
+        # json_object = json.dumps(self.data, sort_keys=True, indent=4).encode("utf-8")
+        # # geänderter Hash zu sha256
+        # h = hashlib.sha256()
+        # h.update(json_object)
+        # hashName = h.hexdigest()
+        # return str(hashName)
+        return dict_hash(self.data)
 
     def __eq__(self, container):
         # hier den Operator für die Klasse überschreiben

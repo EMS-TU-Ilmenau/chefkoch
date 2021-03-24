@@ -34,10 +34,11 @@ import hashlib
 import copy
 from graph import Graph
 from collections import ChainMap
+from typing import Dict, Any
 
 import chefkoch.fridge
 
-from chefkoch.container import YAMLContainer, JSONContainer
+from chefkoch.container import YAMLContainer, JSONContainer, dict_hash
 
 # logs need to be imported this way to not write logs.logger all the time
 # from .logs import *
@@ -46,6 +47,17 @@ from chefkoch.container import YAMLContainer, JSONContainer
 # constants
 # built-in functions that can be called as a simulation step inside a node
 BUILT_INS = ["collect"]
+
+# def dict_hash(dictionary: Dict[str, Any]) -> str:
+#     """MD5 hash of a dictionary"""
+#     dhash = hashlib.md5()
+#     # dhash = hashlib.sha1()
+#     # dhash = hashlib.blake2b()
+#     # We need to sort arguments so {'a': 1, 'b': 2} is
+#     # the same as {'b': 2, 'a': 1}
+#     encoded = json.dumps(dictionary, sort_keys=True).encode()
+#     dhash.update(encoded)
+#     return dhash.hexdigest()
 
 
 class ResultItem:
@@ -58,7 +70,6 @@ class ResultItem:
 
 
 class Plan:
-    """"""
 
     nodes = []
     items = []
@@ -70,10 +81,13 @@ class Plan:
     def __init__(self, recipe, *targets, fridge=None):
         """
         Initialize Plan Object over a given recipe and calculation targets
-        :param recipe: recipe object
-        :param targets: calculation targets given as string (name of the node),
-                        int (list index of the node in recipe object)
-                        or node object
+
+        Parameters
+        ----------
+        recipe:  recipe object
+        targets: calculation targets given as string (name of the node),
+                 int (list index of the node in recipe object)
+                 or node object
         """
         # targets = []
         # self.recipe = recipe
@@ -133,20 +147,47 @@ class Plan:
         print(None)
 
     def initSteps(self):
+        """
+        Initialize Steps
+        """
         for node in self.graph.nodes():
             pass
         pass
 
     def makeJoblist(self):
+        """
+        Creates priority based joblist by iterating every
+        node and its variants.
+
+        Returns
+        -------
+        joblist(list of list of ResultItem)
+        """
         joblist = [[] for i in range(len(self.prioritys))]
         for nodeName, variantlist in self.variants.data.items():
             for variant in variantlist.items():
                 # e = self.prioritys[nodeName]
                 # ee = joblist[e]
-                joblist[self.prioritys[nodeName]].append(self.makeJob(variant, nodeName))
+                joblist[self.prioritys[nodeName]].append(
+                    self.makeJob(variant, nodeName)
+                )
         return joblist
 
     def makeJob(self, nodeVariant, nodeName):
+        """
+        Creates ResultItem for given variant of a node
+
+        Parameters
+        ----------
+        nodeVariant(Tuple(Hash(int), inputs(dict)))
+            Necessary information about variant
+        nodeName(str)
+            Name of the associated Node
+
+        Returns
+        -------
+        ResultItem
+        """
         return ResultItem(
             nodeName,
             JSONContainer(
@@ -160,7 +201,14 @@ class Plan:
 
     def assertPriority(self, node=None, priority=-1):
         """
-        Calculates priority for every node in graph
+        Calculates priority for every node in graph "below" given node.
+
+        Parameters
+        ----------
+        node(str), default: 'None':
+            Name of the node. Can be 'None' for calculating all prioritys
+        priority(int): default: -1:
+            Starting priority - 1
         """
         #
         # endNodes = self.graph.nodes(out_degree=0)
@@ -181,7 +229,13 @@ class Plan:
     def isItemNode(self, node):
         """
         Checks if a node has the prefix "item."
+
+        Parameters
+        ----------
+        node(str):
+            Name of the node
         """
+
         if node[0:5] == "item.":
             return True
         else:
@@ -191,6 +245,9 @@ class Plan:
         """
         Removes Itemnodes from self.subgraph and directly connects the
         surrounding nodes producing the self.graph object
+
+        Parameters
+        ----------
         """
         self.graph = copy.deepcopy(self.subGraph)
         for node in self.graph.nodes():
@@ -203,6 +260,16 @@ class Plan:
                 self.graph.del_node(node)
 
     def buildVariants(self, node):
+        """
+        Create variants in 'self.variants' for specific node.
+        Variants for all nodes "before" the wanted one will
+        be calculated also.
+
+        Parameters
+        ----------
+        node(str):
+            name of the node whose variants should be calculated
+        """
         children = self.graph.nodes(to_node=node)
 
         if len(children) > 0:  # and len(self.variants) > 0:
@@ -240,8 +307,8 @@ class Plan:
                     inputs.update(childs)
                 # inputs.update(childs)
 
-                if str(node) == "anotherStep":
-                    print("anotherStep")
+                # if str(node) == "anotherStep":
+                #     print("anotherStep")
                 for input in accorded:
                     for inputValue in accorded[input]:
                         inputs[input][inputValue] = {}
@@ -249,19 +316,33 @@ class Plan:
                 # crossed.append()
                 for c in crossed:
                     k = tuple(inputs.keys())
-                    ret[hash((k, c))] = [{k[i]: c[i]} for i in range(len(k))]
+                    value = [{k[i]: c[i]} for i in range(len(k))]
+                    ret[dict_hash(value)] = value
                 for item in ret.items():
-                    # for
-                    # for i in range(len(item)):
-                    # print()
-                    # for input in item.items():
-                    # if inputKey
                     for child in children:
                         for variant in self.variants[child].items():
-                            if variant[1] == item[1]:
+                            x = variant[1]
+                            # x1 = set(x)
+                            y = item[1]
+                            if variant[1] in item[1]:
+                                pass
+                            if (
+                                variant[1] == item[1]
+                            ):  # or variant[1] in item[1]:
                                 ret[item[0]].append(
                                     {child: child + "/" + str(variant[0])}
                                 )
+                                break
+                            else:
+                                notFalse = False
+                                for v in variant[1]:
+                                    if v in item[1]:
+                                        notFalse = True
+                                        break
+                                if notFalse:
+                                    ret[item[0]].append(
+                                        {child: child + "/" + str(variant[0])}
+                                    )
                                 break
 
                 self.variants[node] = self.reHash(ret)
@@ -280,19 +361,35 @@ class Plan:
             crossed = list(itertools.product(*list(inputs.values())))
             for c in crossed:
                 k = tuple(inputs.keys())
-                ret[hash((k, c))] = [{k[i]: c[i]} for i in range(len(k))]
+                value = [{k[i]: c[i]} for i in range(len(k))]
+                ret[dict_hash(value)] = value
             self.variants[node] = ret
             pass
 
     def reHash(self, dict):
-        ret = {}
+        """
+        Recalculate and reassign hashes as keys to values of a dict
+
+        Parameters
+        ----------
+        dict(dict):
+            dictionary whose keys should be replaced by hashes
+            or which hashes should be recalculated
+
+        """
+        # ret = {}
+        ret2 = {}
+        # for value in dict.values():
+        #     for x in value:
+        #         c = (list(x.values()))[0]
+        #     c = tuple(list(x.values())[0] for x in value)
+        #     k = tuple(list(x.keys())[0] for x in value)
+        #     ret[hash((k, c))] = value
+
         for value in dict.values():
-            for x in value:
-                c = (list(x.values()))[0]
-            c = tuple(list(x.values())[0] for x in value)
-            k = tuple(list(x.keys())[0] for x in value)
-            ret[hash((k, c))] = value
-        return ret
+            ret2[dict_hash(value)] = value
+
+        return ret2
 
     def matchInputs(self, input, data, map):
         """
@@ -514,6 +611,7 @@ class Recipe:
     def makeGraph(self):
         """
         Builds a Graph according to the recipe nodes saved in self.nodes
+        with inputs/outputs presented as node with "item.[input/output name]"
         """
         for node in self.nodes:
             print("adding node: " + node.name)

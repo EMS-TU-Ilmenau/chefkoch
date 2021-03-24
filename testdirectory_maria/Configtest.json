@@ -59,8 +59,7 @@
             "type": "python",
             "resource": "steps/dosomething.py",
             "inputs": {
-                "some_parameters": "num_K",
-                "another": "num_N"
+                "some_parameters": "num_K"
             },
             "outputs": {
                 "result": "z"
@@ -71,8 +70,18 @@
             "resource": "steps/step2.py",
             "inputs": {
                 "data": "z",
-                "test": "num_K",
-                "test2": "num_N"
+                "test": "num_K"
+            },
+            "outputs": {
+                "result": "second"
+            }
+        },
+        "doItTwice_y": {
+            "type": "python",
+            "resource": "steps/step2.py",
+            "inputs": {
+                "data": "second",
+                "test": "num_N"
             },
             "outputs": {
                 "result": "seconds"
