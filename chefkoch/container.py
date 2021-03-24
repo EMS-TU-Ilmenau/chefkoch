@@ -96,7 +96,8 @@ class JSONContainer:
         """
         compute hashname over data
         """
-        # json_object = json.dumps(self.data, sort_keys=True, indent=4).encode("utf-8")
+        # json_object = json.dumps(self.data, sort_keys=True,
+        # indent=4).encode("utf-8")
         # # geänderter Hash zu sha256
         # h = hashlib.sha256()
         # h.update(json_object)
