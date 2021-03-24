@@ -114,3 +114,5 @@ venv.bak/
 
 # PyCharm
 .idea
+.idea/chefkoch.iml
+.idea/misc.xml
