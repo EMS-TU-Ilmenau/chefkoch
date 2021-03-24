@@ -60,23 +60,16 @@ BUILT_INS = ["collect"]
 #     return dhash.hexdigest()
 
 
-class ResultItem:
-    def __init__(self, step, JsonContainer):
-        self.step = step
-        self.JsonContainer = JsonContainer
-
-    def execute(self):
-        pass
+# class ResultItem:
+#     def __init__(self, step, JsonContainer):
+#         self.step = step
+#         self.JsonContainer = JsonContainer
+#
+#     def execute(self):
+#         pass
 
 
 class Plan:
-
-    nodes = []
-    items = []
-    # constructiontree = {}
-    # required = []
-    # remaining = []
-    # targets = []
 
     def __init__(self, recipe, *targets, fridge=None):
         """
@@ -92,16 +85,22 @@ class Plan:
         # targets = []
         # self.recipe = recipe
         # self.subGraph = Graph()
+        self.nodes = []
+        self.items = []
         self.nodelist = []
         self.flavours = {}
         self.variants = JSONContainer()
-        # self.variants["test"] = "12345"
+
+        # append fridge
         if fridge is not None:
             self.fridge = fridge
 
+        # if no targets are given fill with default
         if len(targets) == 0 or targets[0] is None:
             targets = self.fillTargets(recipe)
 
+        # normalize targets
+        #   if target is itemnode --> get
         for target in targets:
             if target[:4] != "item":
                 for targetitem in recipe.graph.nodes(from_node=target):
@@ -188,7 +187,7 @@ class Plan:
         -------
         ResultItem
         """
-        return ResultItem(
+        return (
             nodeName,
             JSONContainer(
                 data={
@@ -198,6 +197,9 @@ class Plan:
                 }
             ),
         )
+
+    def getJoblist(self):
+        return self.joblist
 
     def assertPriority(self, node=None, priority=-1):
         """
@@ -436,19 +438,6 @@ class Plan:
                             accordance[input] = {child: e[input]}
         return accordance
 
-    # def crossLists(self, list):
-    #     ret = []
-    #     if len(list) == 1:
-    #         ret.extend(list[0][:])
-    #         return ret
-    #     # elif len(list) == 2:
-    #     #     return [(x, y) for x in list[0] for y in list[1]]
-    #     elif len(list) >= 2:
-    #         d = list[1:]
-    #         z = self.crossLists(d)
-    #         ret.extend([(x, y) for x in list[0] for y in z])
-    #         return ret
-
     def getFlavours(self):
         for node in self.nodelist:
             if node[5:] in self.fridge.shelves:
@@ -503,8 +492,6 @@ class Recipe:
     about the data flow and dependencies in the workflow, so there is not
     explicit representation of edges or dependencies needed.
     """
-
-    nodes = []
 
     def __init__(self, nodelist):
         """
@@ -751,7 +738,7 @@ class Name:
         return all(ord(c) < 128 for c in name)
 
 
-def readrecipe(dict):
+def readRecipe(dict):
     """
     Opens a YAML file and parses it into a recipe object. Then outputs
     the data inside the recipe.

@@ -16,7 +16,7 @@ class Scheduler:
         self.chef = chef
         self.plan = plan
 
-    def update():
+    def update(self):
         """
         update current status of scheduler
         """
