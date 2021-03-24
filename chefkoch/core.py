@@ -104,12 +104,16 @@ class Logger:
     def logspec(self, name, filename):
         """
         specifies the logs for the different steps
+
         wird später nochmal etwas überarbeitet
+        - nochmal prüfen ob das mit "main"-Filter und den einzelnen Filtern
+          bei der directory-Option so passt
 
         Parameters
         ----------
         name(str):
             the name of this logger
+
         filename(str):
             filepath to this particular log-file
         """
@@ -202,9 +206,14 @@ class Configuration:
 
         Parameters
         ----------
-            container(YAMLContainer): cheffile loaded in YAMLContainer
-            path(str): path of work-directory
-            arguments(dict): contains the command-line arguments
+        container(YAMLContainer):
+            cheffile loaded in YAMLContainer
+
+        path(str):
+            path of work-directory
+
+        arguments(dict):
+            contains the command-line arguments
         """
         self.file = container
 
@@ -306,25 +315,13 @@ class Chefkoch:
         # alle Namen im Namespace -> konsistent
         # baut erst Flavour-Resource und step auf
 
-        # testing from the steps
-        teststep = step.StepPython(
-            self.fridge.shelves["compute_a"],
-            {},
-            self.logger,
-        )
-        teststep.executeStep()
-
-        teststep = step.StepPython(
-            self.fridge.shelves["anotherStep"],
-            {},
-            self.logger,
-        )
-        teststep.executeStep()
+        # bekommt output-Liste von Plan
+        # fridge legt Liste von Result-Items an
 
         print("This is your evil overlord")
         print("(͠≖ ͜ʖ͠≖)👌")
 
-    def cook(self, *targets):
+    def cook(self):
         """
         starts the cooking process
 
@@ -334,7 +331,7 @@ class Chefkoch:
             things/steps that should be cooked
 
         """
-        self.Plan = None
         # output-shelfs
         self.scheduler = None
+        print("I'm cooking")
         pass

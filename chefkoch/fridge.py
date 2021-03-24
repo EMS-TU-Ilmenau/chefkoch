@@ -5,6 +5,7 @@ they are still up-to-date.
 # from chefkoch.core import Logger
 from chefkoch.container import JSONContainer
 import chefkoch.item
+import chefkoch.step
 
 import os
 
@@ -28,17 +29,21 @@ class Fridge:
 
         Parameters
         ----------
-        chef(Chefkoch):
-            gets an instance of chef
+        config(Configuration):
+            the configuration of this project
 
         basePath(str):
             filepath to main directory of this experiment
+
+        logger(Logger):
+            main-logger instance, own logger is derived from that
 
         """
         # self.chef = chef
         self.config = config
         self.shelves = dict()
         self.basePath = basePath
+        self.mainlogger = logger
         self.logger = logger.logspec(__name__, self.basePath + "/chef.log")
         self.logger.info("FRIDGE: we hardcode our problems")
         self.makeDirectory(self.basePath + "/fridge")
@@ -100,6 +105,7 @@ class Fridge:
                 )
                 # print(self.basePath + "/" + Resources[element]["resource"])
                 name = resource.createHash()
+
             else:
                 # print(Resources[element])
                 resource = chefkoch.item.Resource(
@@ -110,6 +116,18 @@ class Fridge:
                 # print(name)
 
             self.shelves[element].items[name] = resource
+
+            if recipe:
+                # step initialisieren, gib hier mainlogger
+                if Resources[element]["type"] == "python":
+                    step = chefkoch.step.StepPython(shelf, self.mainlogger)
+                elif Resources[element]["type"] == "shell":
+                    step = chefkoch.step.StepShell(shelf, self.mainlogger)
+                else:
+                    print("This step isn't defined yet or you did smth wrong")
+
+                self.shelves[element].items["step"] = step
+            print(self.shelves[element].items)
 
     def makeFlavours(self, Flavours):
         """
@@ -161,7 +179,7 @@ class Fridge:
         """
         # needs some checks if item is up-to-date
         if name not in self.shelves:
-            self.logger.critical(name + "doesn't exist in this fridge")
+            self.logger.critical(name + " doesn't exist in this fridge")
             raise Exception(name + " doesn't exist in this fridge")
         else:
             if isinstance(self.shelves[name], FlavourShelf):
@@ -192,6 +210,11 @@ class Fridge:
         else:
             return None
 
+    def makeResults(resultlist):
+        # shelves resultate anlegen
+        # resultate -> mit steps zuordnen
+        pass
+
 
 class Shelf(ABC):
     """
@@ -205,10 +228,10 @@ class Shelf(ABC):
 
         Parameters
         ----------
-            fridge(Fridge):
-                the fridge-class
-            name(str):
-                name of a certain shelf
+        fridge(Fridge):
+            the fridge-class
+        name(str):
+            name of a certain shelf
         """
         self.items = dict()
         self.fridge = fridge
@@ -244,11 +267,12 @@ class ItemShelf(Shelf):
 
         Parameters
         ----------
-            name(str): name of wanted item
+        name(str):
+            name of wanted item
 
         Returns
         --------
-            wanted item(item); if it's exists
+        item(Item);if it's exists
         """
         # might be extended with admin-dic
         if name in self.items:

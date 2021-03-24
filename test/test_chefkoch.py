@@ -692,6 +692,8 @@ class TestFridge(unittest.TestCase):
         logger = core.Logger(config_dict["options"], path)
         self.logger = logger.logspec(__name__, path + "/test.log")
         self.fridge = fridge.Fridge(config_dict, path, logger)
+        newpath = os.path.abspath(path)
+        sys.path.append(str(newpath) + "/steps/")
 
     def test_fridge_makeFlavours(self):
         # test
@@ -776,13 +778,12 @@ class TestFridge(unittest.TestCase):
 
         # TODO: Test for correct behaviour with items
 
-
-class TestStepPython(unittest.TestCase):
+    # class TestStepPython(unittest.TestCase):
     """
     Tests for checking the correct behaviour of a python-step
     This will have to be modified
     """
-
+    """
     def setUp(self):
         # appending correct module-path
         sys.path.append(str(path) + "/steps/")
@@ -801,13 +802,13 @@ class TestStepPython(unittest.TestCase):
         r = self.fridge.shelves["compute_a"].items["result"].result
         expected = {"result": [2, 3, 4, 8, 9]}
         self.assertEqual(r, expected)
+    """
 
-
-class TestStepShell(unittest.TestCase):
+    # class TestStepShell(unittest.TestCase):
     """
     Tests for checking the correct behaviour of a python-step
     """
-
+    """
     def setUp(self):
         # appending correct module-path
         sys.path.append(str(path) + "/steps/")
@@ -820,3 +821,4 @@ class TestStepShell(unittest.TestCase):
 
     def test_executeStep(self):
         pass
+    """

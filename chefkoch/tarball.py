@@ -7,12 +7,23 @@ from math import ceil
 class Tarball:
     """
     represents a tarball
+
+    WIP
+    Momentan wird nur die init-Funktion verwendet
     """
 
     def __init__(self, filename, listing):
         """
-        creates a tar-file and packs all given files from d
+        creates a tar-file and packs all given files from directory
         into it
+
+        Parameters
+        ----------
+        filename(str):
+            name of future tar-archive
+
+        listing(list):
+            lists all files from directory
         """
 
         with tf.open(filename + ".tar", "w") as tar:
@@ -29,8 +40,14 @@ class Tarball:
     def pack(self, filename, files):
         """
         Pack various files into a single tar archive
-        :param filename: Name of the file to create
-        :param files: Files to pack into archive
+        now use init...
+
+        Parameters
+        ----------
+        filename(str):
+            Name of the file to create
+        files(filename):
+            Files to pack into archive
         """
         with tf.open(filename, "w") as tar:
             for file in files:
@@ -43,8 +60,13 @@ class Tarball:
     def unpack(self, filename, destination):
         """
         Extract files of archive to a specific location
-        :param filename: Name of the file to unpack
-        :param destination: Target destination
+
+        Parameters
+        ----------
+        filename(str):
+            Name of the file to unpack
+        destination(str):
+            Target destination
         """
         with tf.open(filename, "r") as tar:
             tar.extractall(destination)
@@ -53,8 +75,15 @@ class Tarball:
     def test(self, filename):
         """
         Test archive for consistency of containing files
-        :param filename: Name of the archive to be tested
-        :return: True if everything is ok
+
+        Parameters
+        ----------
+        filename(str):
+            Name of the archive to be tested
+
+        Returns
+        -------
+        True, if everything is ok
         """
         t = tf.open(filename, "r:")
         members = t.getmembers()
@@ -73,9 +102,17 @@ class Tarball:
     def test2(self, filename, BLOCK_SIZE=1024):
         """
         Another way to test archive for errors (Not well tested)
-        :param filename: File to be tested
-        :param BLOCK_SIZE: Size of testing blocks
-        :return: True if everything is OK
+
+        Parameters
+        ----------
+        filename(str):
+            File to be tested
+        BLOCK_SIZE(int):
+            Size of testing blocks
+
+        Returns
+        -------
+        True, if everything is OK
         """
         ok = True
 

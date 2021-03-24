@@ -108,12 +108,14 @@ class Result(Item):
         Initializes the Result
         Parameters
         ----------
-            shelf(Shelf):
-                the result belongs to this shelf
-            result(dict):
-                the result-values
-            dependencies(dict):
-                the dependencies from this result
+        shelf(Shelf):
+            the result belongs to this shelf
+
+        result(dict):
+            the result-values
+
+        dependencies(dict):
+            the dependencies from this result
         """
         super().__init__(shelf, dicti=dependencies)
         self.result = result
@@ -125,6 +127,11 @@ class Result(Item):
                     self.result, handle, protocol=pickle.HIGHEST_PROTOCOL
                 )
         # print("this is a result!")
+
+    def execute():
+        # sucht richtige Parameter
+        # führt step aus
+        pass
 
 
 class Resource(Item):
@@ -197,7 +204,7 @@ class Resource(Item):
         creates a hash over the resource
 
         Returns
-        .......
+        -------
         hashname(str):
             sha256 hash over the content of the resource-file
         """
