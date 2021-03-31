@@ -211,8 +211,14 @@ class Fridge:
             return None
 
     def makeResults(resultlist):
-        # shelves resultate anlegen
-        # resultate -> mit steps zuordnen
+        # bekommt Liste von results die angelegt werden sollen (vom Plan)
+        # legt entsprechende Result-items an mit übergeben dependencies
+        # und Namen das hashs über dependencies
+        # legt sie im entsprechenden Item-Shelf (von output) an und sortiert
+        # den richtigen Step dazu, der sich unter [stepname]["step"] finden
+        # lassen sollte
+        # gibt eine Liste aller Result-Items zurück, die dann an den Scheduler
+        # gegeben werden soll
         pass
 
 

@@ -6,4 +6,5 @@ chefkoch
 
    chefkoch
    start
+   testing
    setup
