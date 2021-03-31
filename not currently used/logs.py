@@ -29,6 +29,7 @@ settings.
 import logging
 import warnings
 
+"""
 logging.captureWarnings(True)
 warnings.filterwarnings("always", category=UserWarning)
 # Set up logging for everything inside this module
@@ -63,3 +64,4 @@ logger.addHandler(stream_handler)
 
 # Integrating warning.warn to automatically log raised warnings
 logging.captureWarnings(True)
+"""

@@ -46,3 +46,5 @@ from .recipe import *
 
 # define package version (gets overwritten by setup script)
 from .version import __version__ as version
+
+from .core import Chefkoch

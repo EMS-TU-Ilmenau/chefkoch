@@ -30,31 +30,41 @@ call a check function. They encapsulate the asserts of test results.
 
 The test functions are using subtests to print the exact test case that
 threw an error. Subtests are only available from python 3.4 on.
+
+These tests use the files from the testdirectory to function properly.
+If the testdirectory is modified, the test should be adapted accordingly.
 """
 
 
 import os
 import unittest
 import sys
+import chefkoch.core as core
 import chefkoch.recipe as backbone
-import chefkoch
+import chefkoch.fridge as fridge
+import chefkoch.container as container
+import chefkoch.step as step
+import numpy
 
 # todo: Konsultiere Fabian
-
-
+# These are old test, but the could be modified for the new recipe, so I left
+# them in this file
+"""
 class TestChefkoch(unittest.TestCase):
-    """
+"""
+"""
     This class includes functions that test both recipe and flavour class
     functions or are called by recipe or flavour tests.
     """
+"""
 
     def test_readjson(self):
-        result = chefkoch.readjson("recipe", "test/recipe.json")
+        result = chefkoch.readfile("recipe", "test/recipe.json")
 
     def check_openjson(self, file, assertionFunc):
         # not executed by the test runner but by the test_openjson functions
         # inside the TestRecipe class and the TestFlavour class
-        if (sys.version_info.micro > 8 or sys.version_info.minor > 6):
+        if sys.version_info.micro > 8 or sys.version_info.minor > 6:
             # test 1: valid JSON recipe file.
             with self.subTest("test 1: Valid JSON file.", file=file):
                 result = backbone.openjson(file)
@@ -66,8 +76,9 @@ class TestChefkoch(unittest.TestCase):
                 with self.assertRaises(ValueError) as err:
                     result = backbone.openjson("test/broken_for_testcase.json")
                     self.assertEqual(
-                        err, "This is no valid JSON file. "
-                        + "Try deleting comments."
+                        err,
+                        "This is no valid JSON file. "
+                        + "Try deleting comments.",
                     )
 
             # test 3: file path wrong/ file does not exist
@@ -128,7 +139,7 @@ class TestRecipe(unittest.TestCase):
             "test 1: Not giving a dict as input to jsonToRecipe"
         ):
             with self.assertRaises(TypeError):
-                result = backbone.jsonToRecipe(None)
+                result = backbone.dictToRecipe(None)
                 self.assertEqual(
                     err, "Function jsonToRecipe expects dictionary as input."
                 )
@@ -137,7 +148,7 @@ class TestRecipe(unittest.TestCase):
         with self.subTest(
             "test 2: correct format with additional information still works"
         ):
-            result = backbone.jsonToRecipe(correct_data)
+            result = backbone.dictToRecipe(correct_data)
             self.assertIsInstance(result, backbone.Recipe)
             self.assertEqual(result.nodes[0].inputs["b"], "flavour.b")
 
@@ -146,7 +157,7 @@ class TestRecipe(unittest.TestCase):
             data = correct_data
             data["nodes"][0].pop("inputs")
             with self.assertRaises(KeyError) as err:
-                result = backbone.jsonToRecipe(data)
+                result = backbone.dictToRecipe(data)
                 self.assertEqual(
                     err, "Error while parsing json data into recipe object."
                 )
@@ -158,7 +169,7 @@ class TestRecipe(unittest.TestCase):
         ):
             data = correct_data
             data["nodes"][0]["inputs"] = {"a": ["first", "second"]}
-            result = backbone.jsonToRecipe(data)
+            result = backbone.dictToRecipe(data)
             self.assertIsNotNone(result)
 
         # test 4: Annoying the StepSource class
@@ -166,7 +177,7 @@ class TestRecipe(unittest.TestCase):
             data = correct_data
             data["nodes"][0]["stepsource"] = "no_built-in_function"
             with self.assertRaises(TypeError):
-                result = backbone.jsonToRecipe(data)
+                result = backbone.dictToRecipe(data)
 
     def test_inputIntegrity(self):
         # recipe with two outputs with same name
@@ -187,7 +198,7 @@ class TestRecipe(unittest.TestCase):
                     },
                 ]
             }
-            recipe = backbone.jsonToRecipe(data)
+            recipe = backbone.dictToRecipe(data)
             with self.assertRaises(NameError) as err:
                 recipe.inputIntegrity()
                 self.assertTrue(str(err).startswith("The output"))
@@ -225,7 +236,7 @@ class TestRecipe(unittest.TestCase):
                     },
                 ]
             }
-            recipe = backbone.jsonToRecipe(data)
+            recipe = backbone.dictToRecipe(data)
             recipe.inputIntegrity()
             self.assertEqual(len(recipe.nodes), 4)
 
@@ -264,7 +275,7 @@ class TestRecipe(unittest.TestCase):
                     },
                 ]
             }
-            recipe = backbone.jsonToRecipe(data)
+            recipe = backbone.dictToRecipe(data)
             recipe.inputIntegrity()
             self.assertEqual(len(recipe.nodes), 2)
 
@@ -280,7 +291,7 @@ class TestRecipe(unittest.TestCase):
                     }
                 ]
             }
-            recipe = backbone.jsonToRecipe(data)
+            recipe = backbone.dictToRecipe(data)
             recipe.inputIntegrity()
             self.assertEqual(len(recipe.nodes), 1)
 
@@ -319,7 +330,7 @@ class TestRecipe(unittest.TestCase):
                     },
                 ]
             }
-            recipe = backbone.jsonToRecipe(data)
+            recipe = backbone.dictToRecipe(data)
             result = recipe.findCircles()
             print(result)
 
@@ -540,7 +551,7 @@ class TestFlavour(unittest.TestCase):
             "test 1: Not giving a dict as input to jsonToRecipe"
         ):
             with self.assertRaises(TypeError) as err:
-                result = backbone.jsonToFlavour(None)
+                result = backbone.dictToFlavour(None)
                 self.assertEqual(
                     err,
                     "Function jsonToFlavour expects a dictionary as input.",
@@ -550,7 +561,7 @@ class TestFlavour(unittest.TestCase):
         with self.subTest(
             "test 2: correct format with additional information still works"
         ):
-            result = backbone.jsonToFlavour(data)
+            result = backbone.dictToFlavour(data)
             self.assertIsInstance(result, backbone.Flavour)
             self.assertEqual(result["singleVal"].values[0], 10.33e3)
             self.assertEqual(result["fileVal"].values[0].file, "test.log")
@@ -559,7 +570,7 @@ class TestFlavour(unittest.TestCase):
         # test 3: File does not exist
         with self.subTest("test 3: File does not exist"):
             data["fileVal"]["file"] = "no_existing_file.txt"
-            result = backbone.jsonToFlavour(data)
+            result = backbone.dictToFlavour(data)
             # todo how can I check if there was a warning?
             # todo delete empty parameters until following:
             with self.assertRaises(KeyError):
@@ -568,9 +579,246 @@ class TestFlavour(unittest.TestCase):
         # test 4: Annoying the Input integrity tests
         with self.subTest("test 4: Giving no known name as type"):
             data["fileVal"]["type"] = "no actual type"
-            result = backbone.jsonToFlavour(data)
+            result = backbone.dictToFlavour(data)
 
         # test 5: incorrect format
         with self.subTest("test 5: Having no type field"):
             data["fileVal"].pop("type")
-            result = backbone.jsonToFlavour(data)
+            result = backbone.dictToFlavour(data)
+"""
+# Results for comparing and using
+config_dict = {
+    "options": {
+        "test": True,
+        "directory": False,
+        "configOut": True,
+        "logLevel": "INFO",
+    },
+    "resource": {
+        "beampatternLog": "resources/beampatternLog.npy",
+        "example_dir": "resources/example_dir",
+    },
+    "flavour": {
+        "num_lambda": [
+            {
+                "type": "log",
+                "start": "1e-3",
+                "stop": "1e3",
+                "count": 7,
+                "base": 10,
+            },
+            {"type": "log", "start": "1e7", "stop": "1e19", "count": 5},
+            {"type": "lin", "start": 8, "stop": 12, "step": 1},
+        ],
+        "num_N": {"type": "lin", "start": 10, "stop": 20, "step": 2},
+        "num_K": [1, 2, 3, 7, 8],
+        "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
+    },
+    "kitchen": {"stove": "local"},
+    "recipe": {
+        "compute_a": {
+            "type": "python",
+            "resource": "steps/dosomething.py",
+            "inputs": {"some_parameters": "num_K"},
+            "outputs": {"result": "z"},
+        },
+        "doItTwice_z": {
+            "type": "python",
+            "resource": "steps/step2.py",
+            "inputs": {"data": "z"},
+            "outputs": {"result": "seconds"},
+        },
+        "anotherStep": {
+            "type": "python",
+            "resource": "steps/LogToLin.py",
+            "inputs": {"data": "beampatternLog"},
+            "outputs": {"result": "beampatternLin"},
+        },
+    },
+    "link": {
+        "figure_z": "results/figures/figure_z.pdf",
+        "paper": "results/paper.pdf",
+    },
+    "targets": "all",
+}
+
+# path where the test files are
+path = "./testdirectory"
+
+
+class TestConfiguration(unittest.TestCase):
+    # so funktioniert das wahrscheinlich nicht
+    def test_init(self):
+        self.cheffile = container.YAMLContainer(path + "/cheffile.yml")
+        arg = {
+            "targets": None,
+            "options": None,
+            "cheffile": None,
+            "resource": None,
+            "flavour": None,
+            "kitchen": None,
+            "recipe": None,
+            "link": None,
+        }
+        # self.chef = core.Chefkoch(cheffile, arg)
+        self.configuration = core.Configuration(self.cheffile, path, arg)
+        self.assertEqual(config_dict, self.configuration.items)
+
+
+class TestFridge(unittest.TestCase):
+    """
+    Testcases for the functionality of the fridge
+    """
+
+    # das ist vermutlich unnötig
+    resource = {
+        "num_lambda": [
+            {
+                "type": "log",
+                "start": "1e-3",
+                "stop": "1e3",
+                "count": 7,
+                "base": 10,
+            },
+            {"type": "log", "start": "1e7", "stop": "1e19", "count": 5},
+            {"type": "lin", "start": 8, "stop": 12, "step": 1},
+        ],
+        "num_N": {"type": "lin", "start": 10, "stop": 20, "step": 2},
+        "num_K": [1, 2, 3, 7, 8],
+        "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
+    }
+
+    def setUp(self):
+        logger = core.Logger(config_dict["options"], path)
+        self.logger = logger.logspec(__name__, path + "/test.log")
+        self.fridge = fridge.Fridge(config_dict, path, logger)
+        newpath = os.path.abspath(path)
+        sys.path.append(str(newpath) + "/steps/")
+
+    def test_fridge_makeFlavours(self):
+        # test
+        self.fridge.makeFlavours(config_dict["flavour"])
+
+        # items = self.fridge.shelfs["flavours"].items
+        flavour_result = {
+            "num_lambda": [
+                0.001,
+                0.01,
+                0.1,
+                1.0,
+                10.0,
+                100,
+                1000,
+                10000000.0,
+                10000000000.0,
+                10000000000000.0,
+                1e16,
+                1e19,
+                8,
+                9,
+                10,
+                11,
+                12,
+            ],
+            "num_N": [10, 12, 14, 16, 18, 20],
+            "num_K": [1, 2, 3, 7, 8],
+            "algorithm": ["BP", "OMP", "ISTA", "FISTA", "TWISTA"],
+        }
+        for x in flavour_result:
+            if isinstance(self.fridge.shelves[x].items[0], str):
+                self.assertEqual(
+                    self.fridge.shelves[x].items, flavour_result[x]
+                )
+            else:
+                i = 0
+                for element in flavour_result[x]:
+                    self.assertAlmostEqual(
+                        element, self.fridge.shelves[x].items[i], places=7
+                    )
+                    i = i + 1
+
+    def test_fridge_makeResources(self):
+        # Ressources in cheffile defined
+        self.fridge.makeResources(config_dict["resource"], False)
+        resources = ["beampatternLog"]
+        for x in resources:
+            assert x in self.fridge.shelves
+        # Ressources in recipe defined
+        self.fridge.makeResources(config_dict["recipe"], True)
+        resources_recipe = ["compute_a", "doItTwice_z", "anotherStep"]
+        for x in resources_recipe:
+            assert x in self.fridge.shelves
+
+    def test_fridge_makeItemShelves(self):
+        self.fridge.makeItemShelves(["z", "seconds"])
+        items = ["z", "seconds"]
+        for x in items:
+            assert x in self.fridge.shelves
+
+        with self.assertRaises(Exception) as context:
+            self.fridge.makeItemShelves(["z"])
+
+        self.assertTrue(
+            "z already exists in this fridge!" in str(context.exception)
+        )
+
+    def test_getItem(self):
+        # test for failing
+        testFalse = "nope"
+        with self.assertRaises(Exception) as context:
+            self.fridge.getItem(testFalse)
+
+        self.assertTrue(str(testFalse) + " doesn't exist in this fridge")
+
+        # test for correct behaviour flavour
+        self.fridge.makeFlavours(config_dict["flavour"])
+        testTrue = "num_K"
+        result = self.fridge.getItem(testTrue)
+        self.assertEqual(result, [1, 2, 3, 7, 8])
+
+        # TODO: Test for correct behaviour with items
+
+    # class TestStepPython(unittest.TestCase):
+    """
+    Tests for checking the correct behaviour of a python-step
+    This will have to be modified
+    """
+    """
+    def setUp(self):
+        # appending correct module-path
+        sys.path.append(str(path) + "/steps/")
+        self.logger = core.Logger(config_dict["options"], path)
+        self.fridge = fridge.Fridge(config_dict, path, self.logger)
+        # self.fridge.makeResources(config_dict["resource"], False)
+        self.fridge.makeResources(config_dict["recipe"], True)
+        self.fridge.makeFlavours(config_dict["flavour"])
+        self.step = step.StepPython(
+            self.fridge.shelves["compute_a"], {}, self.logger
+        )
+        # missing the dependencies
+
+    def test_executeStep(self):
+        self.step.executeStep()
+        r = self.fridge.shelves["compute_a"].items["result"].result
+        expected = {"result": [2, 3, 4, 8, 9]}
+        self.assertEqual(r, expected)
+    """
+
+    # class TestStepShell(unittest.TestCase):
+    """
+    Tests for checking the correct behaviour of a python-step
+    """
+    """
+    def setUp(self):
+        # appending correct module-path
+        sys.path.append(str(path) + "/steps/")
+        self.logger = core.Logger(config_dict["options"], path)
+        self.fridge = fridge.Fridge(config_dict, path, self.logger)
+        # self.fridge.makeResources(config_dict["resource"], False)
+        self.fridge.makeResources(config_dict["recipe"], True)
+        self.fridge.makeFlavours(config_dict["flavour"])
+        # self.step = step.StepPython(self.fridge.shelves["compute_a"], {})
+
+    def test_executeStep(self):
+        pass
+    """

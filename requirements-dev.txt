@@ -8,3 +8,6 @@ sphinx_rtd_theme
 pycodestyle
 black
 pdflatex
+graph-theory
+checksumdir
+sphinxcontrib-mermaid

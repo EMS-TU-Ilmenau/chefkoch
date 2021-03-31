@@ -1,3 +1,5 @@
 dask
 dask-jobqueue
 xxhash
+PyYAML
+setuptools~=47.1.1

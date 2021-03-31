@@ -1,30 +1,15 @@
 chefkoch package
 ================
 
-Module contents
----------------
+The chefkoch package includes multiple modules, which encapsulate certain functionalities.
+This section contains the documentation of the single modules, their classes and functions.
 
-.. automodule:: chefkoch
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :noindex:
 
-Submodules
-----------
 
-chefkoch.logs module
+chefkoch.core module
 --------------------
 
-.. automodule:: chefkoch.logs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-chefkoch.namespace module
--------------------------
-
-.. automodule:: chefkoch.namespace
+.. automodule:: chefkoch.core
    :members:
    :undoc-members:
    :show-inheritance:
@@ -37,12 +22,51 @@ chefkoch.recipe module
    :undoc-members:
    :show-inheritance:
 
-chefkoch.version module
+chefkoch.scheduler module
+--------------------------
+
+.. automodule:: chefkoch.scheduler
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+chefkoch.tarball module
+------------------------
+
+.. automodule:: chefkoch.tarball
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+chefkoch.fridge module
 -----------------------
 
-.. automodule:: chefkoch.version
+.. automodule:: chefkoch.fridge
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+chefkoch.item module
+----------------------
+
+.. automodule:: chefkoch.item
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+chefkoch.step module
+----------------------
+
+.. automodule:: chefkoch.step
    :members:
    :undoc-members:
    :show-inheritance:
 
 
+chefkoch.version module
+------------------------
+
+.. automodule:: chefkoch.version
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,17 @@
+options: "/options.yml"
+
+resource:
+  beampatternLog: resources/beampatternLog.npy
+  example_dir: resources/example_dir
+
+# recipe: !include "recipe.yml"
+
+flavour: "/flavour.yml"
+
+kitchen: "/kitchen.yml"
+
+recipe: "/recipe.yml"
+
+link:
+  figure_z: results/figures/figure_z.pdf
+  paper: results/paper.pdf
