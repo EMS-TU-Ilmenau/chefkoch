@@ -26,6 +26,7 @@ deploy:
 
 script:
   - make test
+  - pip install -e .
   - chef test
 
 after_success:
