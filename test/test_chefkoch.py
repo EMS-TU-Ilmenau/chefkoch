@@ -624,7 +624,7 @@ config_dict = {
         "anotherStep": {
             "type": "python",
             "resource": "steps/LogToLin.py",
-            "inputs": {"data": "beampatternLog"},
+            "inputs": {"data": "z"},
             "outputs": {"result": "beampatternLin"},
         },
     },
