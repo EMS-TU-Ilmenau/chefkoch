@@ -30,6 +30,9 @@ call a check function. They encapsulate the asserts of test results.
 
 The test functions are using subtests to print the exact test case that
 threw an error. Subtests are only available from python 3.4 on.
+
+These tests use the files from the testdirectory to function properly.
+If the testdirectory is modified, the test should be adapted accordingly.
 """
 
 
@@ -44,7 +47,8 @@ import chefkoch.step as step
 import numpy
 
 # todo: Konsultiere Fabian
-
+# These are old test, but the could be modified for the new recipe, so I left
+# them in this file
 """
 class TestChefkoch(unittest.TestCase):
 """
@@ -635,6 +639,7 @@ config_dict = {
     "targets": "all",
 }
 
+# path where the test files are
 path = "./testdirectory"
 
 
@@ -684,6 +689,8 @@ class TestFridge(unittest.TestCase):
         logger = core.Logger(config_dict["options"], path)
         self.logger = logger.logspec(__name__, path + "/test.log")
         self.fridge = fridge.Fridge(config_dict, path, logger)
+        newpath = os.path.abspath(path)
+        sys.path.append(str(newpath) + "/steps/")
 
     def test_fridge_makeFlavours(self):
         # test
@@ -760,20 +767,20 @@ class TestFridge(unittest.TestCase):
 
         self.assertTrue(str(testFalse) + " doesn't exist in this fridge")
 
-        # test for correct behaviour falvour
+        # test for correct behaviour flavour
         self.fridge.makeFlavours(config_dict["flavour"])
         testTrue = "num_K"
-        result = self.fridge.getItem(testTrue, self.logger)
+        result = self.fridge.getItem(testTrue)
         self.assertEqual(result, [1, 2, 3, 7, 8])
 
         # TODO: Test for correct behaviour with items
 
-
-class TestStepPython(unittest.TestCase):
+    # class TestStepPython(unittest.TestCase):
     """
     Tests for checking the correct behaviour of a python-step
+    This will have to be modified
     """
-
+    """
     def setUp(self):
         # appending correct module-path
         sys.path.append(str(path) + "/steps/")
@@ -792,13 +799,13 @@ class TestStepPython(unittest.TestCase):
         r = self.fridge.shelves["compute_a"].items["result"].result
         expected = {"result": [2, 3, 4, 8, 9]}
         self.assertEqual(r, expected)
+    """
 
-
-class TestStepShell(unittest.TestCase):
+    # class TestStepShell(unittest.TestCase):
     """
     Tests for checking the correct behaviour of a python-step
     """
-
+    """
     def setUp(self):
         # appending correct module-path
         sys.path.append(str(path) + "/steps/")
@@ -811,3 +818,4 @@ class TestStepShell(unittest.TestCase):
 
     def test_executeStep(self):
         pass
+    """

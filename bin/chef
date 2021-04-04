@@ -109,6 +109,7 @@ if __name__ == "__main__":
         parser.add_argument("-l", "--link", action="append")
         arguments = parser.parse_args(arguments)
         chef = chefkoch.Chefkoch(cheffile, vars(arguments))
+        chef.cook()
 
     HELP_HELP = "pointers how to use the current version of chefkoch"
 

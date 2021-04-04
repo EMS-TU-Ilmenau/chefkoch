@@ -5,5 +5,6 @@ chefkoch
    :maxdepth: 4
 
    chefkoch
-   test_chefkoch
+   start
+   testing
    setup

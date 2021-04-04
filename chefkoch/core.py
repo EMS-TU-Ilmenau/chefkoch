@@ -1,6 +1,7 @@
 """
 Starts and controls the main functionality of Chefkoch.
-It is also responsible for logging everything.
+It is also responsible for logging everything and administrate
+the Configuration.
 """
 
 import chefkoch.fridge as fridge
@@ -22,9 +23,35 @@ import logging
 import warnings
 
 
+class Whitelist(logging.Filter):
+    """
+    Helper-Class to filter for specific logging-entries
+    """
+
+    def __init__(self, *whitelist):
+        """
+        Initializes the Whitelist for the Logger
+
+        Parameters
+        ----------
+            *whitelist(str*): contains all names from permitted loggers
+        """
+        self.whitelist = [logging.Filter(name) for name in whitelist]
+
+    def filter(self, record):
+        """
+        filters the entries and returns only the records contained in whitelist
+
+        Parameters
+        ----------
+            record(item): record which
+        """
+        return any(f.filter(record) for f in self.whitelist)
+
+
 class Logger:
     """
-    creates a logfile
+    Represents the main logger, which is the base of all derivated loggers.
     """
 
     formatter = "%(asctime)s - %(levelname)s - %(message)s"
@@ -39,92 +66,97 @@ class Logger:
         ----------
         options(dic):
             options specified in configuration
+
+        path(str):
+            main path of the work-directory
         """
         # too look up the options later
         self.options = options
         # main path
         self.path = path
-        # standard initialzing
-        # filename = self.path + "/chef.log"
-        # logging.basicConfig(format=Logger.formatter,
-        # level=logging.DEBUG, filename=filename)
-        logging.basicConfig(format=Logger.formatter)
 
-        if not self.options["directory"]:
-            filename = self.path + "/chef.log"
-            handler = logging.FileHandler(filename, mode="w")
-            form = logging.Formatter(Logger.formatter)
-            handler.setFormatter(form)
-            Logger.loglevel(self, handler, self.options["logLevel"])
-            # probably won't need a filter
-            self.mainlogger = logging.getLogger("main")
-            self.mainlogger.addHandler(handler)
+        # standard initialzing
+        filepath = self.path + "/chef.log"
+
+        if self.options["directory"]:
+            # if there's already a log-file remove it
+            if os.path.isfile(filepath):
+                os.remove(filepath)
+
+            # only append new entries to existing files
+            handlerFile = logging.FileHandler(filename=filepath, mode="a")
+            # log core and fridge to chef.log
+            handlerFile.addFilter(
+                Whitelist("chefkoch.core", "chefkoch.fridge")
+            )
+        else:
+            handlerFile = logging.FileHandler(filename=filepath, mode="w")
+
+        # inititialize console-logger
+        console = logging.StreamHandler()
+        console.setLevel(Logger.loglevel(self, self.options["logLevel"]))
+        logging.basicConfig(
+            format=Logger.formatter,
+            level=Logger.loglevel(self, self.options["logLevel"]),
+            handlers=[handlerFile, console],
+        )
 
     def logspec(self, name, filename):
         """
         specifies the logs for the different steps
+
         wird später nochmal etwas überarbeitet
+        - nochmal prüfen ob das mit "main"-Filter und den einzelnen Filtern
+          bei der directory-Option so passt
 
         Parameters
         ----------
         name(str):
             the name of this logger
+
         filename(str):
             filepath to this particular log-file
         """
-        logger = logging.getLogger(name)
-        logger.propagate = False
-
-        form = logging.Formatter(Logger.formatter)
-        console = logging.StreamHandler()
-        console.setFormatter(form)
-        Logger.loglevel(self, console, self.options["logLevel"])
-        logger.addHandler(console)
+        print(name)
         if self.options["directory"]:
-            handler = logging.FileHandler(filename, mode="w")
-            # form = logging.Formatter(Logger.formatter)
-            handler.setFormatter(form)
-            # this will be later changed according to the options
-            Logger.loglevel(self, handler, self.options["logLevel"])
-
-            # next we will need a correct working filter
-            filter_test = logging.Filter(name=str(name))
-
             logger = logging.getLogger(name)
-            logger.addFilter(filter_test)
-            logger.addHandler(handler)
-            return logger
-        else:
-            """
-            filename = self.path + "/chef.log"
-            handler = logging.FileHandler(filename, mode="a")
-            form = logging.Formatter(Logger.formatter)
-            handler.setFormatter(form)
-            Logger.loglevel(self, handler, self.options["logLevel"])
-            # probably won't need a filter
-            mainlogger = logging.getLogger("main")
-            mainlogger.addHandler(handler)
-            mainlogger.propagate = True
-            return mainlogger
-            """
-            return logging.getLogger("main")
 
-    def loglevel(self, handler, level):
+            if name in ["chefkoch.core", "chefkoch.fridge"]:
+                return logger
+            else:
+                handler = logging.FileHandler(filename, mode="w")
+                form = logging.Formatter(Logger.formatter)
+                handler.setFormatter(form)
+                # this will be later changed according to the options
+                handler.setLevel(self.loglevel(self.options["logLevel"]))
+
+                # we will need a correct working filter
+                filter_test = logging.Filter(name=str(name))
+                handler.addFilter(filter_test)
+                logger.addHandler(handler)
+                return logger
+        else:
+            newLogger = logging.getLogger("main")
+            return newLogger
+
+    def loglevel(self, level):
         """
-        Hilfsfunktion um ein bestimmtes loglevel zu setzen
-        vllt geht das schöner
-        könnte man später noch nach main Logger und file-loggers differenzieren
+        helper-funciton to set the loglevel
+
+        Parameters
+        ----------
+            level(str): specified level
         """
         if level == "INFO":
-            handler.setLevel(10)
+            return logging.INFO
         elif level == "DEBUG":
-            handler.setLevel(20)
+            return logging.DEBUG
         elif level == "WARNING":
-            handler.setLevel(30)
+            return logging.WARNING
         elif level == "ERROR":
-            handler.setLevel(40)
+            return logging.ERROR
         elif level == "CRITICAL":
-            handler.setLevel(50)
+            return logging.CRITICAL
         else:
             # raise an error here
             print("Something is rotten in the state of denmark")
@@ -133,12 +165,17 @@ class Logger:
 
 class Configuration:
     """
-    Manages the configurations specified in the configuration file
+    Manages the configurations specified in the configuration file. It uses
+    a YAML-Container.
     """
 
     def __getitem__(self, keyname):
         """
         Retrieve a configuration item
+
+        Parameters
+        ----------
+            keyname(str): name of wanted item
 
         Returns
         -------
@@ -148,6 +185,14 @@ class Configuration:
         return self.items[keyname]
 
     def output(self, filename):
+        """
+        allows to save the configuration to a json-File, if the options
+        allow it.
+
+        Parameters
+        ----------
+            filename(str): name of the file
+        """
         if self.items["options"]["configOut"]:
             container = JSONContainer()
             container.data = self.items
@@ -155,12 +200,20 @@ class Configuration:
 
     def __init__(self, container, path, arguments):
         """
-        Load of configuration of specified in cheffile
+        Load of configuration specified in cheffile. It parses the cheffile
+        to load all needed information (also from other specified files) and
+        checks the configuration specified in the command-line arguments.
 
         Parameters
         ----------
-        filename(string):
-            file, that specifies configuration
+        container(YAMLContainer):
+            cheffile loaded in YAMLContainer
+
+        path(str):
+            path of work-directory
+
+        arguments(dict):
+            contains the command-line arguments
         """
         self.file = container
 
@@ -206,7 +259,8 @@ class Configuration:
 
 class Chefkoch:
     """
-    main instance
+    main instance of Chefkoch.
+    Initiates everything and controls all processes in Chefkoch.
     """
 
     def __init__(self, firstpath, arguments):
@@ -216,7 +270,7 @@ class Chefkoch:
 
         Parameters
         ----------
-        path(string):
+        firstpath(string):
             specifies path of project directory
 
         arguments(args*):
@@ -237,8 +291,8 @@ class Chefkoch:
 
         # cheffile legt noch Änderungen an logger fest
         self.logger = Logger(self.configuration["options"], path)
-        corelogger = self.logger.logspec(__name__, path + "/chef.log")
-        corelogger.warn("CHEF: " + "This is maybe a bad idea!")
+        self.corelogger = self.logger.logspec(__name__, path + "/chef.log")
+        self.corelogger.warn("CHEF: " + "This is maybe a bad idea!")
 
         # generate the fridge
         self.fridge = fridge.Fridge(self.configuration, path, self.logger)
@@ -277,11 +331,13 @@ class Chefkoch:
             self.logger,
         )
         teststep.executeStep()
+        # bekommt output-Liste von Plan
+        # fridge legt Liste von Result-Items an
 
         print("This is your evil overlord")
         print("(͠≖ ͜ʖ͠≖)👌")
 
-    def cook(self, *targets):
+    def cook(self):
         """
         starts the cooking process
 
@@ -291,7 +347,7 @@ class Chefkoch:
             things/steps that should be cooked
 
         """
-        self.Plan = None
         # output-shelfs
         self.scheduler = None
+        print("I'm cooking")
         pass
