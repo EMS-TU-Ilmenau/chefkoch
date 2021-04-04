@@ -625,12 +625,12 @@ config_dict = {
             "inputs": {"data": "z"},
             "outputs": {"result": "seconds"},
         },
-        #"anotherStep": {
+        # "anotherStep": {
         #    "type": "python",
         #    "resource": "steps/LogToLin.py",
         #    "inputs": {"data": "beampatternLog"},
         #    "outputs": {"result": "beampatternLin"},
-        #},
+        # },
     },
     "link": {
         "figure_z": "results/figures/figure_z.pdf",

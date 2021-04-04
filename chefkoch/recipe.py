@@ -70,7 +70,6 @@ BUILT_INS = ["collect"]
 
 
 class Plan:
-
     def __init__(self, recipe, *targets, fridge=None):
         """
         Initialize Plan Object over a given recipe and calculation targets
@@ -251,7 +250,8 @@ class Plan:
         Parameters
         ----------
         """
-        self.graph = copy.deepcopy(self.subGraph)
+        self.graph = self.subGraph.copy()
+        # self.graph = copy.deepcopy(self.subGraph)
         for node in self.graph.nodes():
             if self.isItemNode(node):
                 ends = self.graph.nodes(from_node=node)
