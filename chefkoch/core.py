@@ -317,23 +317,6 @@ class Chefkoch:
 
         self.plan = recipe.Plan(self.recipe, fridge=self.fridge)
 
-        # testing from the steps
-        teststep = step.StepPython(
-            self.fridge.shelves["compute_a"],
-            {},
-            self.logger,
-        )
-        teststep.executeStep()
-
-        teststep = step.StepPython(
-            self.fridge.shelves["anotherStep"],
-            {},
-            self.logger,
-        )
-        teststep.executeStep()
-        # bekommt output-Liste von Plan
-        # fridge legt Liste von Result-Items an
-
         print("This is your evil overlord")
         print("(͠≖ ͜ʖ͠≖)👌")
 

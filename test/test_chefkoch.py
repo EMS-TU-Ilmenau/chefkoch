@@ -642,6 +642,9 @@ config_dict = {
 # path where the test files are
 path = "./testdirectory"
 
+# path for debugging
+# path = os.getcwd()[:-5] + "/testdirectory"
+
 
 class TestConfiguration(unittest.TestCase):
     # so funktioniert das wahrscheinlich nicht
@@ -742,8 +745,11 @@ class TestFridge(unittest.TestCase):
             assert x in self.fridge.shelves
         # Ressources in recipe defined
         self.fridge.makeResources(config_dict["recipe"], True)
-        resources_recipe = ["compute_a", "doItTwice_z", "anotherStep"]
+        resources_recipe = ["compute_a", "doItTwice_z"]
+        # , "anotherStep"]
         for x in resources_recipe:
+            print("x: ", x)
+            print("Type: ", type(x))
             assert x in self.fridge.shelves
 
     def test_fridge_makeItemShelves(self):
