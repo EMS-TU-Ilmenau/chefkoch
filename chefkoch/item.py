@@ -117,7 +117,7 @@ class Result(Item):
         dependencies(dict):
             the dependencies from this result
         """
-        super().__init__(shelf, dicti=dependencies)
+        super().__init__(shelf, dicti=dependencies.data)
         self.result = result
         path = self.shelf.path + "/" + self.hash
         # besser ändern, dass nur result-shelfs ausgegeben werden
@@ -128,7 +128,7 @@ class Result(Item):
                 )
         # print("this is a result!")
 
-    def execute():
+    def execute(self):
         # sucht richtige Parameter
         # führt step aus
         pass

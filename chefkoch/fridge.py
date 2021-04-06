@@ -210,7 +210,15 @@ class Fridge:
         else:
             return None
 
-    def makeResults(resultlist):
+    def makeResults(self, resultlist):
+        self.resultlist = []
+        for priority in resultlist:
+            for result in priority:
+                h = self.shelves[result[0]]
+                g = chefkoch.item.Result(self.shelves[result[0]], None, result[1])
+                h.items[result[1]["hash"]] = g
+
+
         # bekommt Liste von results die angelegt werden sollen (vom Plan)
         # legt entsprechende Result-items an mit übergeben dependencies
         # und Namen das hashs über dependencies

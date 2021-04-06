@@ -317,6 +317,8 @@ class Chefkoch:
 
         self.plan = recipe.Plan(self.recipe, fridge=self.fridge)
 
+        self.fridge.makeResults(self.plan.getJoblist())
+
         print("This is your evil overlord")
         print("(͠≖ ͜ʖ͠≖)👌")
 
