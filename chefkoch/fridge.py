@@ -210,6 +210,12 @@ class Fridge:
         else:
             return None
 
+    def getShelfs(self, type):
+        if type == "item":
+            return [i for i in self.shelves if type(i) == ItemShelf]
+        elif type == "flavour":
+            return [i for i in self.shelves if type(i) == FlavourShelf]
+
     def makeResults(self, resultlist):
         self.resultlist = []
         for priority in resultlist:

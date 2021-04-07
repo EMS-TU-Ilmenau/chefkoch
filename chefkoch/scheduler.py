@@ -12,9 +12,10 @@ class Scheduler:
     th plan.
     """
 
-    def __init__(self, chef, plan):
-        self.chef = chef
+    def __init__(self, plan):
+        # self.chef = chef
         self.plan = plan
+        self.plan.completeJoblist()
 
     def update(self):
         """

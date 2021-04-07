@@ -152,6 +152,13 @@ class Plan:
             pass
         pass
 
+    def completeJoblist(self):
+        for priority in self.joblist:
+            shelf = self.fridge.getShelf(priority[0][0])
+            for job in priority:
+                # job[1] =
+                pass
+
     def makeJoblist(self):
         """
         Creates priority based joblist by iterating every

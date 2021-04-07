@@ -319,6 +319,8 @@ class Chefkoch:
 
         self.fridge.makeResults(self.plan.getJoblist())
 
+        self.scheduler = scheduler.__init__(self.plan)
+
         print("This is your evil overlord")
         print("(͠≖ ͜ʖ͠≖)👌")
 
