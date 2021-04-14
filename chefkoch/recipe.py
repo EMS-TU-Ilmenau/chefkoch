@@ -156,7 +156,7 @@ class Plan:
         for priority in self.joblist:
             shelf = self.fridge.getShelf(priority[0][0])
             for job in priority:
-                # job[1] =
+                job[1] = shelf.items[job[1].data["hash"]]
                 pass
 
     def makeJoblist(self):
@@ -193,7 +193,7 @@ class Plan:
         -------
         ResultItem
         """
-        return (
+        return [
             nodeName,
             JSONContainer(
                 data={
@@ -202,7 +202,7 @@ class Plan:
                     "priority": self.prioritys[nodeName],
                 }
             ),
-        )
+        ]
 
     def getJoblist(self):
         return self.joblist
