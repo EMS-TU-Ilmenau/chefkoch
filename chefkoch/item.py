@@ -133,6 +133,13 @@ class Result(Item):
         # führt step aus
         pass
 
+    def checkPrerequisites(self):
+        for item in self.dependencies.data["inputs"]:
+            i = item.items()
+
+            h = self.shelf.fridge.shelves[item[0]]
+            pass
+
 
 class Resource(Item):
     """

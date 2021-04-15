@@ -6,11 +6,21 @@ class Worker:
     def __init__(self, resultitem):
         # self.scheduler = scheduler
         self.resultitem = resultitem
+        # self.fridge
         # if self.resultitem.dependencies.data
-        # self.status = "ready"
+        self.resultitem.checkPrerequisites()
+        self.status = "ready"
 
     def execute(self):
-        self.resultitem.execute
+        self.resultitem.execute()
+
+    # def checkPrerequisites(self):
+    #     if len(self.resultitem.dependencies.data["inputs"]) > 0:
+    #         for item in self.resultitem.dependencies.data["inputs"][0].items():
+    #             pass
+    #     pass
+
+    # def checkItem(self, item):
 
 
 class Scheduler:

@@ -3,6 +3,8 @@ The fridge is responsible for storing the data and steps and checking if
 they are still up-to-date.
 """
 # from chefkoch.core import Logger
+import warnings
+
 from chefkoch.container import JSONContainer
 import chefkoch.item
 import chefkoch.step

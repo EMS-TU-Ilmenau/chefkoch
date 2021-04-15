@@ -144,13 +144,13 @@ class Plan:
         # self.variants = [JSONContainer()]
         print(None)
 
-    def initSteps(self):
-        """
-        Initialize Steps
-        """
-        for node in self.graph.nodes():
-            pass
-        pass
+    # def initSteps(self):
+    #     """
+    #     Initialize Steps
+    #     """
+    #     for node in self.graph.nodes():
+    #         pass
+    #     pass
 
     def completeJoblist(self):
         for priority in self.joblist:
