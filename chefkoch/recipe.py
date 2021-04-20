@@ -139,7 +139,7 @@ class Plan:
 
         self.prioritys = {}
         self.assertPriority()
-        self.initSteps()
+        # self.initSteps()
         self.joblist = self.makeJoblist()
         # self.variants = [JSONContainer()]
         print(None)
@@ -198,7 +198,7 @@ class Plan:
             JSONContainer(
                 data={
                     "hash": nodeVariant[0],
-                    "inputs": nodeVariant[1],
+                    "inputs": nodeVariant[1], # {i for i in nodeVariant[1]},
                     "priority": self.prioritys[nodeName],
                 }
             ),
@@ -325,7 +325,7 @@ class Plan:
                 # crossed.append()
                 for c in crossed:
                     k = tuple(inputs.keys())
-                    value = [{k[i]: c[i]} for i in range(len(k))]
+                    value = {k[i]: c[i] for i in range(len(k))}
                     ret[dict_hash(value)] = value
                 for item in ret.items():
                     for child in children:
@@ -333,14 +333,16 @@ class Plan:
                             x = variant[1]
                             # x1 = set(x)
                             y = item[1]
-                            if variant[1] in item[1]:
+                            if variant[1].items() <= item[1].items():
+                            # if variant[1] in item[1]:
                                 pass
                             if (
                                 variant[1] == item[1]
                             ):  # or variant[1] in item[1]:
-                                ret[item[0]].append(
-                                    {child: child + "/" + str(variant[0])}
-                                )
+                                ret[item[0]][child] = child + "/" + str(variant[0])
+                                # ret[item[0]].append(
+                                #     {child: child + "/" + str(variant[0])}
+                                # )
                                 break
                             else:
                                 notFalse = False
@@ -349,9 +351,10 @@ class Plan:
                                         notFalse = True
                                         break
                                 if notFalse:
-                                    ret[item[0]].append(
-                                        {child: child + "/" + str(variant[0])}
-                                    )
+                                    ret[item[0]][child] = child + "/" + str(variant[0])
+                                    # ret[item[0]].append(
+                                    #     {child: child + "/" + str(variant[0])}
+                                    # )
                                 break
 
                 self.variants[node] = self.reHash(ret)
@@ -370,7 +373,7 @@ class Plan:
             crossed = list(itertools.product(*list(inputs.values())))
             for c in crossed:
                 k = tuple(inputs.keys())
-                value = [{k[i]: c[i]} for i in range(len(k))]
+                value = {k[i]: c[i] for i in range(len(k))}
                 ret[dict_hash(value)] = value
             self.variants[node] = ret
             pass
@@ -410,7 +413,7 @@ class Plan:
             for key in map.keys():
                 if map[key] == input:
                     for hashkey in data[key]:
-                        n = dict(ChainMap(*data[key][hashkey]))
+                        n = data[key][hashkey] # dict(ChainMap(*data[key][hashkey]))
                         if n[input] in ret:
                             ret[n[input]].append(key + "/" + str(hashkey))
                         else:
@@ -436,8 +439,8 @@ class Plan:
             # y = x[z]
             # if
             if x is not None:
-                y = x[next(iter(x))]
-                y2 = dict(ChainMap(*y))
+                y2 = x[next(iter(x))]
+                # y2 = dict(ChainMap(y))          ########################################################################
                 e = self.checkAccordance(y2, inputlist)
                 if e != {}:
                     for input in inputlist:

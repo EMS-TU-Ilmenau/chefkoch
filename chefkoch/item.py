@@ -134,10 +134,13 @@ class Result(Item):
         pass
 
     def checkPrerequisites(self):
-        for item in self.dependencies.data["inputs"]:
-            i = item.items()
+        for item in self.dependencies.data["inputs"].items():
+            # i = item.items()
 
             h = self.shelf.fridge.shelves[item[0]]
+            x = h.items[item[1].split("/")[1]].result
+            if x == None:
+                pass
             pass
 
 
