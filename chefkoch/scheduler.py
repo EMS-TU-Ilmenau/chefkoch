@@ -1,5 +1,6 @@
 # import chefkoch
 import threading
+import copy
 
 
 class Worker:
@@ -8,8 +9,10 @@ class Worker:
         self.resultitem = resultitem
         # self.fridge
         # if self.resultitem.dependencies.data
-        self.resultitem.checkPrerequisites()
-        self.status = "ready"
+        if self.resultitem.checkPrerequisites():
+            self.status = ("prepared", "ready")
+        else:
+            self.status = ("prepared", "not ready")
 
     def execute(self):
         self.resultitem.execute()
@@ -33,7 +36,7 @@ class Scheduler:
         self.__update("initializing")
         self.plan = plan
         self.plan.completeJoblist()
-        self.joblist = self.plan.joblist   # self.plan.joblist
+        self.joblist = copy.copy(self.plan.joblist)   # self.plan.joblist
         self.prepareWorkers()
         self.status = "ready"
 
@@ -42,11 +45,15 @@ class Scheduler:
 
     def prepareWorkers(self):
         self.__update("preparing Workers")
-        for priority in self.joblist:
+        for priority in range(len(self.joblist)):
             # self.joblist.append()
-            for job in priority:
+            for job in range(len(self.joblist[priority])):
                 # self.joblist.append(threading.Thread(target=Worker(job[1])))
-                job.append(threading.Thread(target=Worker(job[1])))
+                # job.append(threading.Thread(target=Worker(job[1])))
+                self.joblist[priority][job] = \
+                    threading.Thread(
+                        target=Worker(
+                            self.joblist[priority][job][1]))
         # self.__update("ready")
         pass
 

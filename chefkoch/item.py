@@ -126,6 +126,8 @@ class Result(Item):
                 pickle.dump(
                     self.result, handle, protocol=pickle.HIGHEST_PROTOCOL
                 )
+        self.prerequisitesFullfilled = False
+        # self.checkPrerequisites()
         # print("this is a result!")
 
     def execute(self):
@@ -134,14 +136,34 @@ class Result(Item):
         pass
 
     def checkPrerequisites(self):
+        if self.prerequisitesFullfilled:
+            return True
+
         for item in self.dependencies.data["inputs"].items():
             # i = item.items()
 
             h = self.shelf.fridge.shelves[item[0]]
-            x = h.items[item[1].split("/")[1]].result
-            if x == None:
-                pass
-            pass
+            print(type(item[1]))
+            # if type(item[1]) == int:
+            #     print("11")
+            if type(item[1]) == str:
+                if (item[0] + "/") in item[1]:
+                    # z = item[1].split("/")[1]
+                    # x = h.items[z]
+                    # y = x.result
+                    try:
+                        x = h.items[item[1].split("/")[1]].result
+                    except:
+                        print("Resultitem not found! Execute may never finish")
+                        x = None
+                    if x == None:
+                        # allFullfilled = False
+                        return False
+        # if allFullfilled:
+        #     return True
+        # else:
+        #     return False
+        return True
 
 
 class Resource(Item):
