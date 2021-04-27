@@ -5,17 +5,23 @@ import copy
 
 class Worker:
     def __init__(self, resultitem):
+        print("Am born now")
         # self.scheduler = scheduler
         self.resultitem = resultitem
         # self.fridge
         # if self.resultitem.dependencies.data
         if self.resultitem.checkPrerequisites():
             self.status = ("prepared", "ready")
+            print("updated status to ready")
         else:
             self.status = ("prepared", "not ready")
+            print("updated status to not ready")
 
     def execute(self):
         self.resultitem.execute()
+
+    def checkPrerequisites(self):
+        self.resultitem.checkPrerequisites()
 
     # def checkPrerequisites(self):
     #     if len(self.resultitem.dependencies.data["inputs"]) > 0:
@@ -55,7 +61,9 @@ class Scheduler:
                         target=Worker(
                             self.joblist[priority][job][1]))
         # self.__update("ready")
-        pass
+        # for priority in self.joblist:
+        #     for job in priority:
+        #         job.checkPrerequisites()
 
     def doWork(self):
         self.__update("working")
