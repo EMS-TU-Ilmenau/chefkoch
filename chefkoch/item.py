@@ -143,7 +143,7 @@ class Result(Item):
             # i = item.items()
 
             h = self.shelf.fridge.shelves[item[0]]
-            print(type(item[1]))
+            # print(type(item[1]))
             # if type(item[1]) == int:
             #     print("11")
             if type(item[1]) == str:
