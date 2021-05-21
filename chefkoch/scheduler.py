@@ -75,13 +75,20 @@ class Scheduler:
             # self.pool.
             for job in priority:
                 # job.
-                self.pool.apply_async(job.checkPrerequisites(random.randint(0,3)))
+                self.pool.apply_async(job.checkPrerequisites(random.randint(0,0)))
                 # pool.applyjob.checkPrerequisites()
                 # job.checkPrerequisites()
         self.__update("ready")
 
     def doWork(self):
         self.__update("working")
+        for priority in range(len(self.joblist) - 1, -1, -1):
+            # self.joblist.append()
+            for job in range(len(self.joblist[priority])):
+                # self.joblist.append(threading.Thread(target=Worker(job[1])))
+                # job.append(threading.Thread(target=Worker(job[1])))
+                self.joblist[priority][job] = Worker(self.joblist[priority][job][1])
+
 
 
     def __update(self, toAssign):

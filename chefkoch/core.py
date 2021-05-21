@@ -318,6 +318,7 @@ class Chefkoch:
         self.plan = recipe.Plan(self.recipe, fridge=self.fridge)
 
         self.fridge.makeResults(self.plan.getJoblist())
+        self.fridge.distributeMaps(self.plan.makeMaps())
 
         self.scheduler = scheduler.Scheduler(self.plan)
 

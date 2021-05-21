@@ -122,6 +122,7 @@ class StepPython(StepResource):
             self.logger.critical(
                 "STEP_(" + shelf.name + "): There is no execute"
             )
+        self.map = None
             # raise Exception("There is no execute in " + str(mod_name))
 
     def executeStep(self):
@@ -141,6 +142,7 @@ class StepPython(StepResource):
             # should test if it's a flavour shelf (than everything is allright)
             # or if it's an Itemshelf -> then we need the result-Item
             for x in sig._parameters.values():
+                pass
                 """
                 item = self.shelf.fridge.getItem(str(x))
                 if isinstance(item, list):
@@ -164,6 +166,9 @@ class StepPython(StepResource):
                 + str(self.shelf.name)
                 + " there is no execute"
             )
+
+    def addMap(self, map):
+        self.map = map
 
 
 class StepShell(StepResource):
