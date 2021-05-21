@@ -122,9 +122,10 @@ class StepPython(StepResource):
             self.logger.critical(
                 "STEP_(" + shelf.name + "): There is no execute"
             )
+        self.map = None
             # raise Exception("There is no execute in " + str(mod_name))
 
-    def executeStep(self, resultitem):
+    def executeStep(self):
         # Parameter zum Berechnen müssen übergeben
         """
         executes this python-step
@@ -141,17 +142,7 @@ class StepPython(StepResource):
             # should test if it's a flavour shelf (than everything is allright)
             # or if it's an Itemshelf -> then we need the result-Item
             for x in sig._parameters.values():
-                try:
-                    item = resultitem.dependencies.data["inputs"][x.name]
-                except:
-                    pass
-                if isinstance(item, int):
-                    calldic[str(x)] = item
-                # elif isinstance(item, Resource):
-                else:
-                    calldic[str(x)] = item
-                    # calldic[str(x)] = item.getContent()
-
+                pass
                 """
                 item = self.shelf.fridge.getItem(str(x))
                 if isinstance(item, list):
@@ -162,20 +153,22 @@ class StepPython(StepResource):
                 """
 
             # execute the function
-            resultitem.result = self.module.execute(**calldic)
+            r = self.module.execute(**calldic)
             # das result muss in den ouput-Shelf!
-            # result = Result(self.shelf, r, {})
-
+            result = Result(self.shelf, r, {})
             # correct behaivour, bit still missing the outputs
             # shelf = self.shelf.fridge.getShelf(self.dependencies["outputs"])
             # shelf.addItem(result)
-            # self.shelf.addItem(result)
+            self.shelf.addItem(result)
         else:
             raise Exception(
                 "Can't execute "
                 + str(self.shelf.name)
                 + " there is no execute"
             )
+
+    def addMap(self, map):
+        self.map = map
 
 
 class StepShell(StepResource):

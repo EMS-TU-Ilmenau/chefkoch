@@ -160,9 +160,6 @@ class Result(Item):
             #     print("11")
             if type(item[1]) == str:
                 if (item[0] + "/") in item[1]:
-                    # z = item[1].split("/")[1]
-                    # x = h.items[z]
-                    # y = x.result
                     try:
                         x = h.items[item[1].split("/")[1]].result
                     except:
@@ -171,10 +168,6 @@ class Result(Item):
                     if x == None:
                         # allFullfilled = False
                         return False
-        # if allFullfilled:
-        #     return True
-        # else:
-        #     return False
         return True
 
 

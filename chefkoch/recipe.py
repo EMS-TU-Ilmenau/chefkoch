@@ -21,7 +21,6 @@ between the steps. The Recipe module holds all classes and functions
 needed to parse a YAML file into a recipe object and check integrity.
 """
 
-
 from __future__ import unicode_literals
 import os
 import io
@@ -48,6 +47,7 @@ from chefkoch.container import YAMLContainer, JSONContainer, dict_hash
 # built-in functions that can be called as a simulation step inside a node
 BUILT_INS = ["collect"]
 
+
 # def dict_hash(dictionary: Dict[str, Any]) -> str:
 #     """MD5 hash of a dictionary"""
 #     dhash = hashlib.md5()
@@ -73,7 +73,6 @@ class Plan:
     def __init__(self, recipe, *targets, fridge=None):
         """
         Initialize Plan Object over a given recipe and calculation targets
-
         Parameters
         ----------
         recipe:  recipe object
@@ -86,7 +85,7 @@ class Plan:
         # self.magisGraph = Graph()
         self.nodes = []
         self.items = []
-        self.nodelist = []
+        self.magisNodes = []
         self.flavours = {}
         self.variants = JSONContainer()
 
@@ -103,20 +102,20 @@ class Plan:
         for target in targets:
             if target[:4] != "item":
                 for targetitem in recipe.graph.nodes(from_node=target):
-                    self.nodelist.extend(
+                    self.magisNodes.extend(
                         self.getMagisGraphNodes(recipe, targetitem)
                     )
             else:
-                self.nodelist.extend(self.getMagisGraphNodes(recipe, target))
-        # print(nodelist)
-        self.magisGraph = recipe.graph.subgraph_from_nodes(self.nodelist)
-        for node in self.nodelist:
+                self.magisNodes.extend(self.getMagisGraphNodes(recipe, target))
+        # print(magisNodes)
+        self.magisGraph = recipe.graph.subgraph_from_nodes(self.magisNodes)
+        for node in self.magisNodes:
             if node[:4] == "item":
                 # print(type(node))
                 self.items.append(node[5:])
             else:
                 # print(type(node))
-                self.nodes.append(node)
+                self.nodes      .append(node)
 
         if fridge is not None:
             # self.planIt()
@@ -143,6 +142,7 @@ class Plan:
         self.joblist = self.makeJoblist()
         # self.variants = [JSONContainer()]
         print(None)
+        self.makeMaps()
 
     # def initSteps(self):
     #     """
@@ -152,11 +152,20 @@ class Plan:
     #         pass
     #     pass
 
+    def makeMaps(self):
+        """
+        creates and returns a map(dict) containing
+        information where a step finds its inputs
+        """
+        map = {}
+        for node in self.graph.nodes():
+            g = self.graph.node(node)
+            # for input in g.inputs:
+            for inNode in self.graph.nodes(to_node=node):
+                map[node] = {self.graph.node(inNode).outputs["result"]: inNode}
+        return map
+
     def completeJoblist(self):
-        """
-        Updates self.joblist to hold the specific ResultItem
-        from the fridge instead of the dependencies as JSON-Container
-        """
         for priority in self.joblist:
             shelf = self.fridge.getShelf(priority[0][0])
             for job in priority:
@@ -202,7 +211,7 @@ class Plan:
             JSONContainer(
                 data={
                     "hash": nodeVariant[0],
-                    "inputs": nodeVariant[1], # {i for i in nodeVariant[1]},
+                    "inputs": nodeVariant[1],  # {i for i in nodeVariant[1]},
                     "priority": self.prioritys[nodeName],
                 }
             ),
@@ -210,11 +219,11 @@ class Plan:
 
     def getJoblist(self):
         """
-        Returns joblist.
+        Returns a list of jobs splittet in different prioritys
 
         Returns
         -------
-        joblist
+        joblist(list of list of ResultItem)
         """
         return self.joblist
 
@@ -229,9 +238,6 @@ class Plan:
         priority(int): default: -1:
             Starting priority - 1
         """
-        #
-        # endNodes = self.graph.nodes(out_degree=0)
-        # startNodes = self.graph.nodes(in_degree=0)
         if node is None:
             for endNode in self.graph.nodes(out_degree=0):
                 self.assertPriority(endNode, priority + 1)
@@ -248,15 +254,10 @@ class Plan:
     def isItemNode(self, node):
         """
         Checks if a node has the prefix "item."
-
         Parameters
         ----------
         node(str):
             Name of the node
-
-        Returns
-        -------
-        Bool
         """
 
         if node[0:5] == "item.":
@@ -268,6 +269,8 @@ class Plan:
         """
         Removes Itemnodes from self.magisGraph and directly connects the
         surrounding nodes producing the self.graph object
+        Parameters
+        ----------
         """
         self.graph = self.magisGraph.copy()
         # self.graph = copy.deepcopy(self.magisGraph)
@@ -285,7 +288,6 @@ class Plan:
         Create variants in 'self.variants' for specific node.
         Variants for all nodes "before" the wanted one will
         be calculated also.
-
         Parameters
         ----------
         node(str):
@@ -346,10 +348,10 @@ class Plan:
                             # x1 = set(x)
                             y = item[1]
                             if variant[1].items() <= item[1].items():
-                            # if variant[1] in item[1]:
+                                # if variant[1] in item[1]:
                                 pass
                             if (
-                                variant[1] == item[1]
+                                    variant[1] == item[1]
                             ):  # or variant[1] in item[1]:
                                 ret[item[0]][child] = child + "/" + str(variant[0])
                                 # ret[item[0]].append(
@@ -393,39 +395,37 @@ class Plan:
     def reHash(self, dict):
         """
         Recalculate and reassign hashes as keys to values of a dict
-
         Parameters
         ----------
         dict(dict):
             dictionary whose keys should be replaced by hashes
             or which hashes should be recalculated
-
         """
-        ret = {}
-        for value in dict.values():
-            ret[dict_hash(value)] = value
+        # ret = {}
+        ret2 = {}
+        # for value in dict.values():
+        #     for x in value:
+        #         c = (list(x.values()))[0]
+        #     c = tuple(list(x.values())[0] for x in value)
+        #     k = tuple(list(x.keys())[0] for x in value)
+        #     ret[hash((k, c))] = value
 
-        return ret
+        for value in dict.values():
+            ret2[dict_hash(value)] = value
+
+        return ret2
 
     def matchInputs(self, input, data, map):
         """
         Matches the variants of the same inputs from child nodes and direct
         inputs with help of a given map
-
-        Parameters
-        ----------
-        input(string): name of the input
-        data(JSONContainer): JSONContainer containing variants of
-                             the specific inputs to the node
-        map(dict): mapping information
-                   (Example: {node_x: input_y})
         """
         ret = {}
         if len(map) > 0:
             for key in map.keys():
                 if map[key] == input:
                     for hashkey in data[key]:
-                        n = data[key][hashkey] # dict(ChainMap(*data[key][hashkey]))
+                        n = data[key][hashkey]  # dict(ChainMap(*data[key][hashkey]))
                         if n[input] in ret:
                             ret[n[input]].append(key + "/" + str(hashkey))
                         else:
@@ -439,11 +439,6 @@ class Plan:
         """
         Checks and maps if the inputs of the children of a
         node and the nodes inputs are matching
-
-        Parameters
-        ----------
-        childdict(dict):
-        inputlist(list):
         """
         accordance = {}
         for child in list(childdict):
@@ -456,6 +451,7 @@ class Plan:
             # if
             if x is not None:
                 y2 = x[next(iter(x))]
+                # y2 = dict(ChainMap(y))          ########################################################################
                 e = self.checkAccordance(y2, inputlist)
                 if e != {}:
                     for input in inputlist:
@@ -464,17 +460,13 @@ class Plan:
         return accordance
 
     def getFlavours(self):
-        """
-        Iterates through nodes and checks if they are Flavours.
-        If so they will be remembered in self.flavours.
-        """
-        for node in self.nodelist:
+        for node in self.magisNodes:
             if node[5:] in self.fridge.shelves:
                 # print(type(self.fridge.shelves[node[5:]]))
                 # x = type(self.fridge.shelves[node[5:]])
                 if (
-                    type(self.fridge.shelves[node[5:]])
-                    == chefkoch.fridge.FlavourShelf
+                        type(self.fridge.shelves[node[5:]])
+                        == chefkoch.fridge.FlavourShelf
                 ):
                     # self.flavours.append(fridge.shelfs[node[5:]])
                     self.flavours[node[5:]] = self.fridge.shelves[node[5:]]
@@ -484,14 +476,6 @@ class Plan:
     #     for self.magisGraph
 
     def fillTargets(self, recipe):
-        """
-        Should be executed if initially no targets are given.
-        Returns the end nodes of the recipe as targets.
-
-        Returns
-        ----------
-        list
-        """
         targets = []
         for endnode in recipe.graph.nodes(out_degree=0):
             targets.append(endnode)
@@ -500,7 +484,6 @@ class Plan:
     def getItems(self):
         """
         Returns every item which is an input or output of a node
-
         :return: list of String
         """
         return self.items
@@ -508,18 +491,17 @@ class Plan:
     def getMagisGraphNodes(self, recipe, target):
         """
         Creates a list of nodes needed to calculate the target object
-
         :param recipe: recipe object
         :param target: string (name of the target node)
         :return: list of nodes
         """
-        nodelist = []
+        magisNodes = []
         for startingnode in recipe.graph.nodes(in_degree=0):
             print(startingnode, type(startingnode))
             print(recipe.graph.all_paths(startingnode, target))
             for liste in recipe.graph.all_paths(startingnode, target):
-                nodelist.extend(liste)
-        return nodelist
+                magisNodes.extend(liste)
+        return magisNodes
 
 
 class Recipe:
@@ -530,25 +512,23 @@ class Recipe:
     explicit representation of edges or dependencies needed.
     """
 
-    def __init__(self, nodelist):
+    def __init__(self, magisNodes):
         """
-        Initialises a recipe by appending the `nodelist` to `nodes`.
-
+        Initialises a recipe by appending the `magisNodes` to `nodes`.
         Parameters
         ------------
-        nodelist (Node[]):
+        magisNodes (Node[]):
             list of simulation steps as Node[]
         """
-        self.nodes = nodelist
+        self.nodes = magisNodes
         self.graph = Graph()
         self.makeGraph()
-        # TODO: Making sure, that nodelist is a list of type Node
-        # TODO: Therefore initialise each Node in nodelist as an
+        # TODO: Making sure, that magisNodes is a list of type Node
+        # TODO: Therefore initialise each Node in magisNodes as an
         # instance of class Node.
 
     def __getitem__(self, item):
         """
-
         :param item:
         :return:
         """
@@ -577,12 +557,10 @@ class Recipe:
         can be found either in the flavour file or is a file itself.
         It is also valid if it is an output name of another node, but this
         will not be checked.
-
         Parameters
         ----------
         input (str):
             The input that is to be tested
-
         Returns
         -------
         True if the input is valid.
@@ -601,7 +579,6 @@ class Recipe:
         Warns, if there is no incoming edge. Excludes nodes from recipe,
         that have no incoming edge for a node or have uncomputable inputs
         because of missing inputs in parent nodes.
-
         Raises
         -------
         NameError:
@@ -670,7 +647,6 @@ class Node:
         """
         Initializes a node of the recipe. A node represents a simulation
         step.
-
         Parameters
         ----------
         name (str):
@@ -681,7 +657,6 @@ class Node:
             Dictionary of all outputs of the simulation step.
         stepsource (str):
             Information on how to execute this step.
-
         Raises
         ------
         TypeError:
@@ -730,12 +705,10 @@ class Name:
     def __init__(self, name):
         """
         Takes a string or unicode and saves it if it is pure ascii.
-
         Parameters
         ----------
         name (str or unicode):
             Name to be checked and saved
-
         Raises
         ------
         TypeError:
@@ -762,12 +735,10 @@ class Name:
     def is_ascii(self, name):
         """
         Checks if string consists of only ascii characters.
-
         Parameters
         ----------
         name (str or unicode):
             string
-
         Returns
         -------
         `True`, if name only contains ascii characters.
@@ -779,12 +750,10 @@ def readRecipe(dict):
     """
     Opens a YAML file and parses it into a recipe object. Then outputs
     the data inside the recipe.
-
     Parameters
     ----------
     filename (str):
         file path
-
     Returns
     -------
     Object of class Recipe
@@ -805,17 +774,14 @@ def dictToRecipe(data):
     """
     Takes a dictionary or list of interpreted YAML
     and parses it into an object of class Recipe.
-
     Parameters
     ----------
     data (dict or list):
         dict or list depending on the outer structure of YAML file
-
     Returns
     -------
     recipe - object of class Recipe \n
     :rtype: Recipe
-
     Raises
     -------
     TypeError:
@@ -824,9 +790,9 @@ def dictToRecipe(data):
         Error while parsing YAML data into recipe object.
     """
     if (
-        not isinstance(data, dict)
-        and not isinstance(data, YAMLContainer)
-        and not isinstance(data, JSONContainer)
+            not isinstance(data, dict)
+            and not isinstance(data, YAMLContainer)
+            and not isinstance(data, JSONContainer)
     ):
         raise TypeError("Function dictToRecipe expects dictionary as input.")
     recipe = Recipe([])
@@ -851,7 +817,6 @@ def dictToRecipe(data):
 def printRecipe(recipe):
     """
     Prints the information held inside a Recipe object to the console.
-
     Parameters
     ----------
     recipe (Recipe):
