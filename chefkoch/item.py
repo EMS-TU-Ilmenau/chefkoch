@@ -16,6 +16,7 @@ import numpy as np
 import pickle
 import chefkoch.tarball as tarball
 from checksumdir import dirhash
+import importlib
 
 # TODO: das Ganze mal vernünftig aufdröseln
 
@@ -133,6 +134,17 @@ class Result(Item):
     def execute(self):
         # sucht richtige Parameter
         # führt step aus
+        self.shelf.items["step"].executeStep(self)
+
+        # path = self.shelf.items["step"].resource.path # ["path"]
+        # path = path.replace('/', '\\')  # + ".py"
+        # path = path.replace("\\", "/")
+        # p = open(path).read()
+
+        # x = os.getcwd()
+        # eval(open(path).read())
+        # mod = importlib.import_module(open(path).read())
+        # exec("python -m " + path.replace('/', '\\'))
         pass
 
     def checkPrerequisites(self):

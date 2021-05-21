@@ -83,7 +83,7 @@ class Plan:
         """
         # targets = []
         # self.recipe = recipe
-        # self.subGraph = Graph()
+        # self.magisGraph = Graph()
         self.nodes = []
         self.items = []
         self.nodelist = []
@@ -104,12 +104,12 @@ class Plan:
             if target[:4] != "item":
                 for targetitem in recipe.graph.nodes(from_node=target):
                     self.nodelist.extend(
-                        self.getSubGraphNodes(recipe, targetitem)
+                        self.getMagisGraphNodes(recipe, targetitem)
                     )
             else:
-                self.nodelist.extend(self.getSubGraphNodes(recipe, target))
+                self.nodelist.extend(self.getMagisGraphNodes(recipe, target))
         # print(nodelist)
-        self.subGraph = recipe.graph.subgraph_from_nodes(self.nodelist)
+        self.magisGraph = recipe.graph.subgraph_from_nodes(self.nodelist)
         for node in self.nodelist:
             if node[:4] == "item":
                 # print(type(node))
@@ -124,7 +124,7 @@ class Plan:
         self.makeNormalGraph()
 
         self.startingItems = list(
-            x[5:] for x in self.subGraph.nodes(in_degree=0)
+            x[5:] for x in self.magisGraph.nodes(in_degree=0)
         )
 
         # test = self.crossLists(([1,2,3,4], [5, 6, 7, 8]
@@ -153,6 +153,10 @@ class Plan:
     #     pass
 
     def completeJoblist(self):
+        """
+        Updates self.joblist to hold the specific ResultItem
+        from the fridge instead of the dependencies as JSON-Container
+        """
         for priority in self.joblist:
             shelf = self.fridge.getShelf(priority[0][0])
             for job in priority:
@@ -205,6 +209,13 @@ class Plan:
         ]
 
     def getJoblist(self):
+        """
+        Returns joblist.
+
+        Returns
+        -------
+        joblist
+        """
         return self.joblist
 
     def assertPriority(self, node=None, priority=-1):
@@ -242,6 +253,10 @@ class Plan:
         ----------
         node(str):
             Name of the node
+
+        Returns
+        -------
+        Bool
         """
 
         if node[0:5] == "item.":
@@ -251,14 +266,11 @@ class Plan:
 
     def makeNormalGraph(self):
         """
-        Removes Itemnodes from self.subgraph and directly connects the
+        Removes Itemnodes from self.magisGraph and directly connects the
         surrounding nodes producing the self.graph object
-
-        Parameters
-        ----------
         """
-        self.graph = self.subGraph.copy()
-        # self.graph = copy.deepcopy(self.subGraph)
+        self.graph = self.magisGraph.copy()
+        # self.graph = copy.deepcopy(self.magisGraph)
         for node in self.graph.nodes():
             if self.isItemNode(node):
                 ends = self.graph.nodes(from_node=node)
@@ -389,24 +401,24 @@ class Plan:
             or which hashes should be recalculated
 
         """
-        # ret = {}
-        ret2 = {}
-        # for value in dict.values():
-        #     for x in value:
-        #         c = (list(x.values()))[0]
-        #     c = tuple(list(x.values())[0] for x in value)
-        #     k = tuple(list(x.keys())[0] for x in value)
-        #     ret[hash((k, c))] = value
-
+        ret = {}
         for value in dict.values():
-            ret2[dict_hash(value)] = value
+            ret[dict_hash(value)] = value
 
-        return ret2
+        return ret
 
     def matchInputs(self, input, data, map):
         """
         Matches the variants of the same inputs from child nodes and direct
         inputs with help of a given map
+
+        Parameters
+        ----------
+        input(string): name of the input
+        data(JSONContainer): JSONContainer containing variants of
+                             the specific inputs to the node
+        map(dict): mapping information
+                   (Example: {node_x: input_y})
         """
         ret = {}
         if len(map) > 0:
@@ -428,6 +440,10 @@ class Plan:
         Checks and maps if the inputs of the children of a
         node and the nodes inputs are matching
 
+        Parameters
+        ----------
+        childdict(dict):
+        inputlist(list):
         """
         accordance = {}
         for child in list(childdict):
@@ -440,7 +456,6 @@ class Plan:
             # if
             if x is not None:
                 y2 = x[next(iter(x))]
-                # y2 = dict(ChainMap(y))          ########################################################################
                 e = self.checkAccordance(y2, inputlist)
                 if e != {}:
                     for input in inputlist:
@@ -449,6 +464,10 @@ class Plan:
         return accordance
 
     def getFlavours(self):
+        """
+        Iterates through nodes and checks if they are Flavours.
+        If so they will be remembered in self.flavours.
+        """
         for node in self.nodelist:
             if node[5:] in self.fridge.shelves:
                 # print(type(self.fridge.shelves[node[5:]]))
@@ -459,12 +478,20 @@ class Plan:
                 ):
                     # self.flavours.append(fridge.shelfs[node[5:]])
                     self.flavours[node[5:]] = self.fridge.shelves[node[5:]]
-                    self.subGraph.add_node(node, self.fridge.shelves[node[5:]])
+                    self.magisGraph.add_node(node, self.fridge.shelves[node[5:]])
 
     # def planIt(self):
-    #     for self.subGraph
+    #     for self.magisGraph
 
     def fillTargets(self, recipe):
+        """
+        Should be executed if initially no targets are given.
+        Returns the end nodes of the recipe as targets.
+
+        Returns
+        ----------
+        list
+        """
         targets = []
         for endnode in recipe.graph.nodes(out_degree=0):
             targets.append(endnode)
@@ -478,7 +505,7 @@ class Plan:
         """
         return self.items
 
-    def getSubGraphNodes(self, recipe, target):
+    def getMagisGraphNodes(self, recipe, target):
         """
         Creates a list of nodes needed to calculate the target object
 

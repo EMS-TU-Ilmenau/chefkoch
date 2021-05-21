@@ -36,5 +36,6 @@ args = {
 }
 chef = ck.Chefkoch(cheffile, args)
 # y = rcp.Plan(chef.recipe, fridge=chef.fridge)
+chef.scheduler.doWork()
 print(chef)
 # os.system('chef test')
