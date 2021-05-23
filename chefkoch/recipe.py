@@ -158,11 +158,21 @@ class Plan:
         information where a step finds its inputs
         """
         map = {}
-        for node in self.graph.nodes():
-            g = self.graph.node(node)
+        # map[""]
+        for nodeName in self.graph.nodes():
+            node = self.graph.node(nodeName)
             # for input in g.inputs:
-            for inNode in self.graph.nodes(to_node=node):
-                map[node] = {self.graph.node(inNode).outputs["result"]: inNode}
+            for inNodeName in self.graph.nodes(to_node=nodeName):
+                inNode = self.graph.node(inNodeName)
+                # for inNodeInput in inNode.inputs:
+                for inputKey, inputValue in node.inputs.items():
+                    print(inputKey)
+                    if inputValue == inNode.outputs["result"]:
+                        map[nodeName] = {inputKey: inNodeName}
+
+            # if nodeName in map:
+            #     for mapKey in map[nodeName].keys():
+            #         print(mapKey)
         return map
 
     def completeJoblist(self):

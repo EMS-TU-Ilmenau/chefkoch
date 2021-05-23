@@ -9,10 +9,22 @@ from abc import ABC, abstractmethod
 import os
 import importlib
 import inspect
+import types
 import subprocess
 import shlex
 
 # finding imported modules -> dependencies
+# try:
+#     import builtins
+# except ImportError:
+#     import __builtin__ as builtins
+#
+# def get_builtins():
+#     a = builtins
+#     return list(filter(lambda x: not x.startswith('_'), a))
+#
+# primitive2 = (int, float, str, bool, list, dict, set, object,  )
+# primitive = get_builtins()
 
 
 class Step(Item, ABC):
@@ -67,9 +79,9 @@ class StepResource(Step, ABC):
             shelf.name, shelf.path + "/" + shelf.name + ".log"
         )
 
-    def executeStep(self):
-        # maybe check resource
-        pass
+    # def executeStep(self):
+    #     # maybe check resource
+    #     pass
 
 
 class StepPython(StepResource):
@@ -122,15 +134,15 @@ class StepPython(StepResource):
             self.logger.critical(
                 "STEP_(" + shelf.name + "): There is no execute"
             )
-        self.map = None
+        self.map = {}
             # raise Exception("There is no execute in " + str(mod_name))
 
-    def executeStep(self):
+    def executeStep(self, dependencies):
         # Parameter zum Berechnen müssen übergeben
         """
         executes this python-step
         """
-        super().executeStep()
+        # super().executeStep()
         if self.found:
             print("going to execute the step")
             # getting the signature of execute
@@ -142,24 +154,42 @@ class StepPython(StepResource):
             # should test if it's a flavour shelf (than everything is allright)
             # or if it's an Itemshelf -> then we need the result-Item
             for x in sig._parameters.values():
-                pass
-                """
-                item = self.shelf.fridge.getItem(str(x))
-                if isinstance(item, list):
-                    calldic[str(x)] = item
-                # elif isinstance(item, Resource):
+                # a = list(self.map.keys())
+                if str(x) in self.map.keys():
+                    y = self.map[str(x)]
+                    itemHash = dependencies.data["inputs"][y].split("/")[1]
+                    shelf = self.shelf.fridge.getShelf(y)
+                    item = shelf.items[itemHash].result["result"]
                 else:
+                    # y = x
+                    # if str(x) == "z":
+                    #     print("str(x) == \"z\"")
+                    item = dependencies.data["inputs"][str(x)]
+
+                # if str(x) == "beampatternLog":
+                #     print("str(x) == beampatternLog")
+                # item = self.shelf.fridge.getItem(str(y))
+                if hasattr(item, "type"):
+                # if item.type == "numpy":
                     calldic[str(x)] = item.getContent()
-                """
+                # elif isinstance(item, types.BuiltinFunctionType):
+                #     pass
+                else:
+                    calldic[str(x)] = item
+
 
             # execute the function
-            r = self.module.execute(**calldic)
+            ret = self.module.execute(**calldic)
+            # if type(ret) == dict:
+            #     print(ret)
+            return ret
             # das result muss in den ouput-Shelf!
-            result = Result(self.shelf, r, {})
+            # result = Result(self.shelf, r, JSONContainer(data={}))
             # correct behaivour, bit still missing the outputs
             # shelf = self.shelf.fridge.getShelf(self.dependencies["outputs"])
             # shelf.addItem(result)
-            self.shelf.addItem(result)
+            # self.shelf.addItem(result)
+
         else:
             raise Exception(
                 "Can't execute "

@@ -118,6 +118,9 @@ class Result(Item):
         dependencies(dict):
             the dependencies from this result
         """
+        # if dependencies == {}:
+        # if type(dependencies) == dict:
+        #     print("dependencies dict")
         super().__init__(shelf, dicti=dependencies.data)
         self.result = result
         path = self.shelf.path + "/" + self.hash
@@ -134,18 +137,9 @@ class Result(Item):
     def execute(self):
         # sucht richtige Parameter
         # führt step aus
-        self.shelf.items["step"].executeStep(self)
 
-        # path = self.shelf.items["step"].resource.path # ["path"]
-        # path = path.replace('/', '\\')  # + ".py"
-        # path = path.replace("\\", "/")
-        # p = open(path).read()
-
-        # x = os.getcwd()
-        # eval(open(path).read())
-        # mod = importlib.import_module(open(path).read())
-        # exec("python -m " + path.replace('/', '\\'))
-        pass
+        x = self.shelf.items["step"]
+        self.result = x.executeStep(self.dependencies)
 
     def checkPrerequisites(self):
         if self.prerequisitesFullfilled:
@@ -283,7 +277,7 @@ class Resource(Item):
         elif self.type is "dir":
             pass
         else:
-            print("I've no idea")
+            print("I've no idea: \n     ", self.shelf, "\n      ", self.dependencies.data)
 
     def __str__(self):
         # just for debugging purposes

@@ -3,4 +3,6 @@ def execute(num_K):
     # return {
     #     'result' : result
     # }
-    return num_K + 1
+    return {
+        "result": num_K + 1
+    }

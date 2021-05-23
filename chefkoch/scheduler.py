@@ -20,6 +20,9 @@ class Worker(threading.Thread):
         # if self.resultitem.dependencies.data
         self.checkPrerequisites(0)
 
+    def start(self):
+        self.execute()
+
 
     def execute(self):
         self.resultitem.execute()
@@ -82,12 +85,33 @@ class Scheduler:
 
     def doWork(self):
         self.__update("working")
-        for priority in range(len(self.joblist) - 1, -1, -1):
-            # self.joblist.append()
-            for job in range(len(self.joblist[priority])):
-                # self.joblist.append(threading.Thread(target=Worker(job[1])))
-                # job.append(threading.Thread(target=Worker(job[1])))
-                self.joblist[priority][job] = Worker(self.joblist[priority][job][1])
+        start = time.time()
+        # for priority in range(len(self.joblist), 0, -1):
+        #     threads = []
+        #     for job in self.joblist[priority-1]:
+        #         # thread =
+        #         threads.append(threading.Thread(target=job.checkPrerequisites(1)))
+        #     for t in threads:
+        #         t.start()
+        #     for t in threads:
+        #         t.join()
+
+        for priority in range(len(self.joblist), 0, -1):
+            threads = []
+            for job in self.joblist[priority - 1]:
+                job.execute()
+                # threads.append(job)
+            # for t in threads:
+            #     t.join()
+            print(priority, " is finished")
+            pass
+        # self.__update("working")
+        # for priority in range(len(self.joblist) - 1, -1, -1):
+        #     # self.joblist.append()
+        #     for job in range(len(self.joblist[priority])):
+        #         # self.joblist.append(threading.Thread(target=Worker(job[1])))
+        #         # job.append(threading.Thread(target=Worker(job[1])))
+        #         self.joblist[priority][job] = Worker(self.joblist[priority][job][1])
 
 
 

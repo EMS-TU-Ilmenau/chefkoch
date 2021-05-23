@@ -2,28 +2,17 @@ compute_a:
     type: python
     resource: steps/dosomething.py
     inputs:
-        some_parameters: num_K
+        num_k: num_K
   #      another: num_N
     
     outputs:
-        result: z
+        result: z_result
 
 doItTwice_z:
     type: python
     resource: steps/step2.py
     inputs:
-        data: z
-        test: num_K
-
-    outputs:
-        result: second
-
-doItTwice_y:
-    type: python
-    resource: steps/step2.py
-    inputs:
-        data: second
-        test: num_N
+        z: z_result
 
     outputs:
         result: seconds
@@ -32,7 +21,7 @@ anotherStep:
     type: python
     resource: steps/LogToLin.py
     inputs:
-        data: seconds
+        beampatternLog: seconds
 
     outputs:
         result: beampatternLin
