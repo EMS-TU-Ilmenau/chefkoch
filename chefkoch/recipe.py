@@ -48,27 +48,6 @@ from chefkoch.container import YAMLContainer, JSONContainer, dict_hash
 BUILT_INS = ["collect"]
 
 
-# def dict_hash(dictionary: Dict[str, Any]) -> str:
-#     """MD5 hash of a dictionary"""
-#     dhash = hashlib.md5()
-#     # dhash = hashlib.sha1()
-#     # dhash = hashlib.blake2b()
-#     # We need to sort arguments so {'a': 1, 'b': 2} is
-#     # the same as {'b': 2, 'a': 1}
-#     encoded = json.dumps(dictionary, sort_keys=True).encode()
-#     dhash.update(encoded)
-#     return dhash.hexdigest()
-
-
-# class ResultItem:
-#     def __init__(self, step, JsonContainer):
-#         self.step = step
-#         self.JsonContainer = JsonContainer
-#
-#     def execute(self):
-#         pass
-
-
 class Plan:
     def __init__(self, recipe, *targets, fridge=None):
         """
@@ -80,9 +59,6 @@ class Plan:
                  int (list index of the node in recipe object)
                  or node object
         """
-        # targets = []
-        # self.recipe = recipe
-        # self.magisGraph = Graph()
         self.nodes = []
         self.items = []
         self.magisNodes = []
@@ -107,15 +83,12 @@ class Plan:
                     )
             else:
                 self.magisNodes.extend(self.getMagisGraphNodes(recipe, target))
-        # print(magisNodes)
         self.magisGraph = recipe.graph.subgraph_from_nodes(self.magisNodes)
         for node in self.magisNodes:
             if node[:4] == "item":
-                # print(type(node))
                 self.items.append(node[5:])
             else:
-                # print(type(node))
-                self.nodes      .append(node)
+                self.nodes.append(node)
 
         if fridge is not None:
             # self.planIt()
@@ -126,31 +99,14 @@ class Plan:
             x[5:] for x in self.magisGraph.nodes(in_degree=0)
         )
 
-        # test = self.crossLists(([1,2,3,4], [5, 6, 7, 8]
-        # , ["a", "b", "c", "d"]))
-        # test2 = list(itertools.product(*[[1,2,3,4]
-        # , [5, 6, 7, 8], ["a", "b", "c", "d"]]))
-        # for el in test2:
-        #     print(el)
-        # pass
         for node in self.graph.nodes(out_degree=0):
             self.buildVariants(node)
 
         self.prioritys = {}
         self.assertPriority()
-        # self.initSteps()
         self.joblist = self.makeJoblist()
-        # self.variants = [JSONContainer()]
         print(None)
         self.makeMaps()
-
-    # def initSteps(self):
-    #     """
-    #     Initialize Steps
-    #     """
-    #     for node in self.graph.nodes():
-    #         pass
-    #     pass
 
     def makeMaps(self):
         """
@@ -158,7 +114,6 @@ class Plan:
         information where a step finds its inputs
         """
         map = {}
-        # map[""]
         for nodeName in self.graph.nodes():
             node = self.graph.node(nodeName)
             # for input in g.inputs:
@@ -170,9 +125,6 @@ class Plan:
                     if inputValue == inNode.outputs["result"]:
                         map[nodeName] = {inputKey: inNodeName}
 
-            # if nodeName in map:
-            #     for mapKey in map[nodeName].keys():
-            #         print(mapKey)
         return map
 
     def completeJoblist(self):
@@ -221,7 +173,7 @@ class Plan:
             JSONContainer(
                 data={
                     "hash": nodeVariant[0],
-                    "inputs": nodeVariant[1],  # {i for i in nodeVariant[1]},
+                    "inputs": nodeVariant[1],
                     "priority": self.prioritys[nodeName],
                 }
             ),
@@ -304,6 +256,7 @@ class Plan:
             name of the node whose variants should be calculated
         """
         children = self.graph.nodes(to_node=node)
+        additionalToInput = {}
 
         if len(children) > 0:  # and len(self.variants) > 0:
             if node not in self.variants:
@@ -323,10 +276,9 @@ class Plan:
                             x: None for x in self.flavours[input].items
                         }
                     elif input in self.startingItems:
-                        inputs[input] = ["self"]
-                # g = inputs + childs
-                # h = list(inputs.values())
-                # h. append(*list(childs.values()))
+                        shelf = self.fridge.getShelf(input)
+                        resourceItemHash, = shelf.items.keys()
+                    inputs[input] = {"Resource/" + input + "/" + str(resourceItemHash)}
                 accordance = self.checkAccordance(childs, list(inputs))
                 accorded = {}
                 if len(accordance) > 0:
@@ -338,15 +290,12 @@ class Plan:
                         )
                 else:
                     inputs.update(childs)
-                # inputs.update(childs)
 
-                # if str(node) == "anotherStep":
-                #     print("anotherStep")
                 for input in accorded:
                     for inputValue in accorded[input]:
                         inputs[input][inputValue] = {}
                 crossed = list(itertools.product(*list(inputs.values())))
-                # crossed.append()
+
                 for c in crossed:
                     k = tuple(inputs.keys())
                     value = {k[i]: c[i] for i in range(len(k))}
@@ -361,9 +310,11 @@ class Plan:
                                 # if variant[1] in item[1]:
                                 pass
                             if (
-                                    variant[1] == item[1]
+                                variant[1] == item[1]
                             ):  # or variant[1] in item[1]:
-                                ret[item[0]][child] = child + "/" + str(variant[0])
+                                ret[item[0]][child] = (
+                                    child + "/" + str(variant[0])
+                                )
                                 # ret[item[0]].append(
                                 #     {child: child + "/" + str(variant[0])}
                                 # )
@@ -375,7 +326,9 @@ class Plan:
                                         notFalse = True
                                         break
                                 if notFalse:
-                                    ret[item[0]][child] = child + "/" + str(variant[0])
+                                    ret[item[0]][child] = (
+                                        child + "/" + str(variant[0])
+                                    )
                                     # ret[item[0]].append(
                                     #     {child: child + "/" + str(variant[0])}
                                     # )
@@ -393,7 +346,10 @@ class Plan:
                 if input in self.flavours:
                     inputs[input] = self.flavours[input].items
                 else:
-                    inputs[input] = ["self"]
+                    shelf = self.fridge.getShelf(input)
+                    resourceItemHash, = shelf.items.keys()
+                    inputs[input] = {"Resource/" + input + "/" + str(resourceItemHash)}
+
             crossed = list(itertools.product(*list(inputs.values())))
             for c in crossed:
                 k = tuple(inputs.keys())
@@ -435,7 +391,9 @@ class Plan:
             for key in map.keys():
                 if map[key] == input:
                     for hashkey in data[key]:
-                        n = data[key][hashkey]  # dict(ChainMap(*data[key][hashkey]))
+                        n = data[key][
+                            hashkey
+                        ]  # dict(ChainMap(*data[key][hashkey]))
                         if n[input] in ret:
                             ret[n[input]].append(key + "/" + str(hashkey))
                         else:
@@ -461,7 +419,6 @@ class Plan:
             # if
             if x is not None:
                 y2 = x[next(iter(x))]
-                # y2 = dict(ChainMap(y))          ########################################################################
                 e = self.checkAccordance(y2, inputlist)
                 if e != {}:
                     for input in inputlist:
@@ -475,12 +432,14 @@ class Plan:
                 # print(type(self.fridge.shelves[node[5:]]))
                 # x = type(self.fridge.shelves[node[5:]])
                 if (
-                        type(self.fridge.shelves[node[5:]])
-                        == chefkoch.fridge.FlavourShelf
+                    type(self.fridge.shelves[node[5:]])
+                    == chefkoch.fridge.FlavourShelf
                 ):
                     # self.flavours.append(fridge.shelfs[node[5:]])
                     self.flavours[node[5:]] = self.fridge.shelves[node[5:]]
-                    self.magisGraph.add_node(node, self.fridge.shelves[node[5:]])
+                    self.magisGraph.add_node(
+                        node, self.fridge.shelves[node[5:]]
+                    )
 
     # def planIt(self):
     #     for self.magisGraph
@@ -800,9 +759,9 @@ def dictToRecipe(data):
         Error while parsing YAML data into recipe object.
     """
     if (
-            not isinstance(data, dict)
-            and not isinstance(data, YAMLContainer)
-            and not isinstance(data, JSONContainer)
+        not isinstance(data, dict)
+        and not isinstance(data, YAMLContainer)
+        and not isinstance(data, JSONContainer)
     ):
         raise TypeError("Function dictToRecipe expects dictionary as input.")
     recipe = Recipe([])

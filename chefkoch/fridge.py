@@ -71,7 +71,6 @@ class Fridge:
         for key in map.keys():
             self.shelves[key].items["step"].addMap(map[key])
 
-
     def makeDirectory(self, path):
         """
         creates the directory in the specified path, if the option
@@ -231,9 +230,10 @@ class Fridge:
         for priority in resultlist:
             for result in priority:
                 h = self.shelves[result[0]]
-                g = chefkoch.item.Result(self.shelves[result[0]], None, result[1])
+                g = chefkoch.item.Result(
+                    self.shelves[result[0]], None, result[1]
+                )
                 h.items[result[1]["hash"]] = g
-
 
         # bekommt Liste von results die angelegt werden sollen (vom Plan)
         # legt entsprechende Result-items an mit übergeben dependencies

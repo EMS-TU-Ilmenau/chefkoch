@@ -135,7 +135,7 @@ class StepPython(StepResource):
                 "STEP_(" + shelf.name + "): There is no execute"
             )
         self.map = {}
-            # raise Exception("There is no execute in " + str(mod_name))
+        # raise Exception("There is no execute in " + str(mod_name))
 
     def executeStep(self, dependencies):
         # Parameter zum Berechnen müssen übergeben
@@ -155,28 +155,32 @@ class StepPython(StepResource):
             # or if it's an Itemshelf -> then we need the result-Item
             for x in sig._parameters.values():
                 # a = list(self.map.keys())
+                item = None
                 if str(x) in self.map.keys():
                     y = self.map[str(x)]
                     itemHash = dependencies.data["inputs"][y].split("/")[1]
                     shelf = self.shelf.fridge.getShelf(y)
                     item = shelf.items[itemHash].result["result"]
                 else:
-                    # y = x
-                    # if str(x) == "z":
-                    #     print("str(x) == \"z\"")
-                    item = dependencies.data["inputs"][str(x)]
+                    resource = dependencies.data["inputs"][str(x)]
+                    if isinstance(resource, str):
+                        resourceSplit = resource.split("/")
+                        if resourceSplit[0] == "Resource":
+                            pass
+                            item = self.shelf.fridge.shelves[resourceSplit[1]].items[resourceSplit[2]]
+                    else:
+                        item = dependencies.data["inputs"][str(x)]
 
                 # if str(x) == "beampatternLog":
                 #     print("str(x) == beampatternLog")
                 # item = self.shelf.fridge.getItem(str(y))
                 if hasattr(item, "type"):
-                # if item.type == "numpy":
+                    # if item.type == "numpy":
                     calldic[str(x)] = item.getContent()
                 # elif isinstance(item, types.BuiltinFunctionType):
                 #     pass
                 else:
                     calldic[str(x)] = item
-
 
             # execute the function
             ret = self.module.execute(**calldic)

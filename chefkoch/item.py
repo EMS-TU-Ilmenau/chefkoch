@@ -156,10 +156,10 @@ class Result(Item):
                 if (item[0] + "/") in item[1]:
                     try:
                         x = h.items[item[1].split("/")[1]].result
-                    except:
+                    except Exception:
                         print("Resultitem not found! Execute may never finish")
                         x = None
-                    if x == None:
+                    if x is None:
                         # allFullfilled = False
                         return False
         return True
@@ -277,7 +277,12 @@ class Resource(Item):
         elif self.type is "dir":
             pass
         else:
-            print("I've no idea: \n     ", self.shelf, "\n      ", self.dependencies.data)
+            print(
+                "I've no idea: \n     ",
+                self.shelf,
+                "\n      ",
+                self.dependencies.data,
+            )
 
     def __str__(self):
         # just for debugging purposes

@@ -1,26 +1,26 @@
-compute_a:
-    type: python
-    resource: steps/dosomething.py
-    inputs:
-        some_parameters: num_K
-    
-    outputs:
-        result: z
-
-doItTwice_z:
-    type: python
-    resource: steps/step2.py
-    inputs:
-        data: z
-    
-    outputs:
-        result: seconds
-
-#anotherStep:
+#compute_a:
 #    type: python
-#    resource: steps/LogToLin.py
+#    resource: steps/dosomething.py
 #    inputs:
-#        data: beampatternLog
+#        some_parameters: num_K
 #
 #    outputs:
-#        result: beampatternLin
+#        result: z
+#
+#doItTwice_z:
+#    type: python
+#    resource: steps/step2.py
+#    inputs:
+#        data: z
+#
+#    outputs:
+#        result: seconds
+
+anotherStep:
+    type: python
+    resource: steps/LogToLin.py
+    inputs:
+        data: beampatternLog
+
+    outputs:
+        result: beampatternLin
