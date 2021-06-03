@@ -102,7 +102,6 @@ class Fridge:
         recipe(bool):
             describes, if the recources are from the recipe
         """
-        # print(Resources)
         for element in Resources:
             # FlavourShelf wird angelegt
             shelf = ItemShelf(self, element)
@@ -112,17 +111,14 @@ class Fridge:
                     self.shelves[element],
                     self.basePath + "/" + Resources[element]["resource"],
                 )
-                # print(self.basePath + "/" + Resources[element]["resource"])
                 name = resource.createHash()
 
             else:
-                # print(Resources[element])
                 resource = chefkoch.item.Resource(
                     self.shelves[element],
                     self.basePath + "/" + Resources[element],
                 )
                 name = resource.createHash()
-                # print(name)
 
             self.shelves[element].items[name] = resource
 
@@ -136,7 +132,6 @@ class Fridge:
                     print("This step isn't defined yet or you did smth wrong")
 
                 self.shelves[element].items["step"] = step
-            print(self.shelves[element].items)
 
     def makeFlavours(self, Flavours):
         """
@@ -194,7 +189,6 @@ class Fridge:
             if isinstance(self.shelves[name], FlavourShelf):
                 return self.shelves[name].items
             elif isinstance(self.shelves[name], ItemShelf):
-                # print("this is a wip")
                 # prototypmäßig, erstmal die unpraktischere Variante
                 if "result" in self.shelves[name].items:
                     return self.shelves[name].items["result"]
@@ -205,7 +199,6 @@ class Fridge:
                         ):
                             print("I return a resource")
                             return self.shelves[name].items[x]
-                    # print(self.shelves[name].items)
             else:
                 self.logger.error("This shelf doesn't exist")
 
@@ -388,7 +381,6 @@ class FlavourShelf(Shelf):
         elif isinstance(Flavours, dict):
             f = Flavours
             self.items = self.ranges(f)
-        # print(self.items)
 
     def printFlavour(self):
         """

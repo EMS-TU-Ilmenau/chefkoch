@@ -117,7 +117,7 @@ class Logger:
         filename(str):
             filepath to this particular log-file
         """
-        print(name)
+        # print(name)
         if self.options["directory"]:
             logger = logging.getLogger(name)
 
@@ -336,6 +336,6 @@ class Chefkoch:
 
         """
         # output-shelfs
-        self.scheduler = None
+        self.scheduler.doWork()
         print("I'm cooking")
         pass

@@ -9,22 +9,10 @@ from abc import ABC, abstractmethod
 import os
 import importlib
 import inspect
-import types
-import subprocess
-import shlex
 
-# finding imported modules -> dependencies
-# try:
-#     import builtins
-# except ImportError:
-#     import __builtin__ as builtins
-#
-# def get_builtins():
-#     a = builtins
-#     return list(filter(lambda x: not x.startswith('_'), a))
-#
-# primitive2 = (int, float, str, bool, list, dict, set, object,  )
-# primitive = get_builtins()
+# import types
+# import subprocess
+# import shlex
 
 
 class Step(Item, ABC):
@@ -167,7 +155,9 @@ class StepPython(StepResource):
                         resourceSplit = resource.split("/")
                         if resourceSplit[0] == "Resource":
                             pass
-                            item = self.shelf.fridge.shelves[resourceSplit[1]].items[resourceSplit[2]]
+                            item = self.shelf.fridge.shelves[
+                                resourceSplit[1]
+                            ].items[resourceSplit[2]]
                     else:
                         item = dependencies.data["inputs"][str(x)]
 

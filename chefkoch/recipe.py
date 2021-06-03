@@ -105,7 +105,6 @@ class Plan:
         self.prioritys = {}
         self.assertPriority()
         self.joblist = self.makeJoblist()
-        print(None)
         self.makeMaps()
 
     def makeMaps(self):
@@ -121,7 +120,6 @@ class Plan:
                 inNode = self.graph.node(inNodeName)
                 # for inNodeInput in inNode.inputs:
                 for inputKey, inputValue in node.inputs.items():
-                    print(inputKey)
                     if inputValue == inNode.outputs["result"]:
                         map[nodeName] = {inputKey: inNodeName}
 
@@ -277,8 +275,10 @@ class Plan:
                         }
                     elif input in self.startingItems:
                         shelf = self.fridge.getShelf(input)
-                        resourceItemHash, = shelf.items.keys()
-                    inputs[input] = {"Resource/" + input + "/" + str(resourceItemHash)}
+                        (resourceItemHash,) = shelf.items.keys()
+                    inputs[input] = {
+                        "Resource/" + input + "/" + str(resourceItemHash)
+                    }
                 accordance = self.checkAccordance(childs, list(inputs))
                 accorded = {}
                 if len(accordance) > 0:
@@ -336,7 +336,6 @@ class Plan:
 
                 self.variants[node] = self.reHash(ret)
 
-                # print(inputs)
         elif len(children) == 0:
             # self.variants[node] = self.flavours[node].items
             inputs = {}
@@ -347,8 +346,10 @@ class Plan:
                     inputs[input] = self.flavours[input].items
                 else:
                     shelf = self.fridge.getShelf(input)
-                    resourceItemHash, = shelf.items.keys()
-                    inputs[input] = {"Resource/" + input + "/" + str(resourceItemHash)}
+                    (resourceItemHash,) = shelf.items.keys()
+                    inputs[input] = {
+                        "Resource/" + input + "/" + str(resourceItemHash)
+                    }
 
             crossed = list(itertools.product(*list(inputs.values())))
             for c in crossed:
@@ -356,7 +357,6 @@ class Plan:
                 value = {k[i]: c[i] for i in range(len(k))}
                 ret[dict_hash(value)] = value
             self.variants[node] = ret
-            pass
 
     def reHash(self, dict):
         """
@@ -367,19 +367,12 @@ class Plan:
             dictionary whose keys should be replaced by hashes
             or which hashes should be recalculated
         """
-        # ret = {}
-        ret2 = {}
-        # for value in dict.values():
-        #     for x in value:
-        #         c = (list(x.values()))[0]
-        #     c = tuple(list(x.values())[0] for x in value)
-        #     k = tuple(list(x.keys())[0] for x in value)
-        #     ret[hash((k, c))] = value
+        ret = {}
 
         for value in dict.values():
-            ret2[dict_hash(value)] = value
+            ret[dict_hash(value)] = value
 
-        return ret2
+        return ret
 
     def matchInputs(self, input, data, map):
         """
@@ -393,12 +386,11 @@ class Plan:
                     for hashkey in data[key]:
                         n = data[key][
                             hashkey
-                        ]  # dict(ChainMap(*data[key][hashkey]))
+                        ]
                         if n[input] in ret:
                             ret[n[input]].append(key + "/" + str(hashkey))
                         else:
                             ret[n[input]] = [key + "/" + str(hashkey)]
-                        # print(hashkey)
                 else:
                     ret = self.matchInputs(input, data[map[key]], map[key])
         return ret
@@ -427,24 +419,30 @@ class Plan:
         return accordance
 
     def getFlavours(self):
+        """
+        searches for flavours referenced in nodes inside
+        of the fridge and saves the reference
+        """
         for node in self.magisNodes:
             if node[5:] in self.fridge.shelves:
-                # print(type(self.fridge.shelves[node[5:]]))
-                # x = type(self.fridge.shelves[node[5:]])
                 if (
                     type(self.fridge.shelves[node[5:]])
                     == chefkoch.fridge.FlavourShelf
                 ):
-                    # self.flavours.append(fridge.shelfs[node[5:]])
                     self.flavours[node[5:]] = self.fridge.shelves[node[5:]]
                     self.magisGraph.add_node(
                         node, self.fridge.shelves[node[5:]]
                     )
 
-    # def planIt(self):
-    #     for self.magisGraph
-
     def fillTargets(self, recipe):
+        """
+        called if no targets are given.
+        iterates through all endnodes and sets them as target
+
+        Returns
+        -------
+        List of nodes
+        """
         targets = []
         for endnode in recipe.graph.nodes(out_degree=0):
             targets.append(endnode)
@@ -466,8 +464,8 @@ class Plan:
         """
         magisNodes = []
         for startingnode in recipe.graph.nodes(in_degree=0):
-            print(startingnode, type(startingnode))
-            print(recipe.graph.all_paths(startingnode, target))
+            # print(startingnode, type(startingnode))
+            # print(recipe.graph.all_paths(startingnode, target))
             for liste in recipe.graph.all_paths(startingnode, target):
                 magisNodes.extend(liste)
         return magisNodes
@@ -597,7 +595,7 @@ class Recipe:
                     self.graph.add_node("item." + output)
                 self.graph.add_edge(node.name, "item." + output)
 
-        print(self.graph.to_dict())
+        # print(self.graph.to_dict())
 
 
 class Node:
@@ -664,55 +662,6 @@ class Node:
         self.step = stepsource
         self.type = steptype
         # todo abort in higher level and ignore whole node
-
-
-class Name:
-    """
-    Name convention for the name of a node inside the recipe.
-    """
-
-    def __init__(self, name):
-        """
-        Takes a string or unicode and saves it if it is pure ascii.
-        Parameters
-        ----------
-        name (str or unicode):
-            Name to be checked and saved
-        Raises
-        ------
-        TypeError:
-            If `name` is has another type.
-        ValueError:
-            If `name` contains non-ascii characters.
-        """
-        is_unicode = False
-        try:
-            is_unicode = isinstance(name, unicode)
-        except NameError as mimimi:
-            logger.debug(mimimi)
-            logger.debug(
-                "You are using python 3, " "but don't worry, we make it work."
-            )
-            """
-            pass
-        if not (isinstance(name, str) or is_unicode):
-            raise TypeError("The name of a node must be a string.")
-        if not self.is_ascii(name):
-            raise ValueError("The name of a node must be ascii.")
-        self.name = name"""
-
-    def is_ascii(self, name):
-        """
-        Checks if string consists of only ascii characters.
-        Parameters
-        ----------
-        name (str or unicode):
-            string
-        Returns
-        -------
-        `True`, if name only contains ascii characters.
-        """
-        return all(ord(c) < 128 for c in name)
 
 
 def readRecipe(dict):

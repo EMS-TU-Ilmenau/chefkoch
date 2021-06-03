@@ -118,9 +118,6 @@ class Result(Item):
         dependencies(dict):
             the dependencies from this result
         """
-        # if dependencies == {}:
-        # if type(dependencies) == dict:
-        #     print("dependencies dict")
         super().__init__(shelf, dicti=dependencies.data)
         self.result = result
         path = self.shelf.path + "/" + self.hash
@@ -131,10 +128,12 @@ class Result(Item):
                     self.result, handle, protocol=pickle.HIGHEST_PROTOCOL
                 )
         self.prerequisitesFullfilled = False
-        # self.checkPrerequisites()
         # print("this is a result!")
 
     def execute(self):
+        """
+        executes step and saves result in self.result
+        """
         # sucht richtige Parameter
         # führt step aus
 
@@ -142,6 +141,11 @@ class Result(Item):
         self.result = x.executeStep(self.dependencies)
 
     def checkPrerequisites(self):
+        """
+        checks if all prerequisites are fullfilled and
+        all resources needed for executing this job are
+        available in fridge
+        """
         if self.prerequisitesFullfilled:
             return True
 
@@ -149,9 +153,6 @@ class Result(Item):
             # i = item.items()
 
             h = self.shelf.fridge.shelves[item[0]]
-            # print(type(item[1]))
-            # if type(item[1]) == int:
-            #     print("11")
             if type(item[1]) == str:
                 if (item[0] + "/") in item[1]:
                     try:
@@ -194,7 +195,6 @@ class Resource(Item):
             name, file_ext = os.path.splitext(os.path.split(self.path)[-1])
             if file_ext == ".npy":
                 self.type = "numpy"
-                # print(self.type)
             elif file_ext == ".py":
                 self.type = "python"
             else:
@@ -214,7 +214,6 @@ class Resource(Item):
             with os.scandir(self.path) as entries:
                 for entry in entries:
                     listing.append(entry)
-                    # print(entry)
             self.tarball = tarball.Tarball(
                 self.shelf.path + "/" + self.resourceHash, listing
             )
@@ -239,14 +238,13 @@ class Resource(Item):
         hashname(str):
             sha256 hash over the content of the resource-file
         """
-        # print(self.path)
         BLOCK_SIZE = 65536  # 64 kb
         file_hash = hashlib.sha256()
         if self.type == "numpy":
             content = self.getContent()
             file_hash.update(content.data)
             hashname = file_hash.hexdigest()
-        elif self.type is "dir":
+        elif self.type == "dir":
             # maybe needs more excludes
             hashname = dirhash(
                 self.path, "sha256", excluded_extensions=["pyc"]
@@ -260,7 +258,6 @@ class Resource(Item):
                     fblock = f.read(BLOCK_SIZE)
 
             hashname = file_hash.hexdigest()
-        # print("hashname of ressource: " + hashname)
         return hashname
 
     def getContent(self):
@@ -272,9 +269,8 @@ class Resource(Item):
             data = np.load(self.path)
             copy = np.copy(data)
             np.save(self.path, data)
-            # print("es ist wieder da: " + str(os.path.islink(self.path)))
             return copy
-        elif self.type is "dir":
+        elif self.type == "dir":
             pass
         else:
             print(
