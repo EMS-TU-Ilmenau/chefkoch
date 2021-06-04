@@ -23,7 +23,6 @@ import chefkoch as ck
 # dir = os.getcwd()[:-5]
 dir = os.getcwd()[:-9]
 cheffile = dir + "/testdirectory"
-# cheffile = dir + "/testdirectory_maria"
 args = {
     "options": None,
     "cheffile": None,

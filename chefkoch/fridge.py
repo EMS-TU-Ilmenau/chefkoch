@@ -57,9 +57,6 @@ class Fridge:
         # not sure if this is somehting we need
         pass
 
-    # def addMap(self, graph):
-    #     for
-
     """
     def checkItem(self, item):
         # checks if the item exists and maybe if the hash is still valid
@@ -68,6 +65,9 @@ class Fridge:
     """
 
     def distributeMaps(self, map):
+        """
+        distributes
+        """
         for key in map.keys():
             self.shelves[key].items["step"].addMap(map[key])
 

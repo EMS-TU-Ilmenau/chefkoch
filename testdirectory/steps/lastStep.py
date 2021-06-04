@@ -1,9 +1,8 @@
 import numpy as np
 
-
-def execute(beampatternLog):
+def execute(data, multiplier):
     # beampattern = np.load(beampatternLog)
-    result = 10**(beampatternLog/10)
+    result = np.sum(data) * multiplier
     # np.save('./beampatternLin',result)
     return {
         'result' : result

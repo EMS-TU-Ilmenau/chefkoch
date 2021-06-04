@@ -616,21 +616,30 @@ config_dict = {
         "compute_a": {
             "type": "python",
             "resource": "steps/dosomething.py",
-            "inputs": {"some_parameters": "num_K"},
-            "outputs": {"result": "z"},
+            "inputs": {"num_k": "num_K"},
+            "outputs": {"result": "z_result"},
         },
         "doItTwice_z": {
             "type": "python",
             "resource": "steps/step2.py",
-            "inputs": {"data": "z"},
+            "inputs": {"z": "z_result"},
             "outputs": {"result": "seconds"},
         },
-        # "anotherStep": {
-        #    "type": "python",
-        #    "resource": "steps/LogToLin.py",
-        #    "inputs": {"data": "beampatternLog"},
-        #    "outputs": {"result": "beampatternLin"},
-        # },
+        "anotherStep": {
+            "type": "python",
+            "resource": "steps/LogToLin.py",
+            "inputs": {"beampatternLog": "seconds"},
+            "outputs": {"result": "beampatternLin"},
+        },
+        "lastStep": {
+            "type": "python",
+            "resource": "steps/lastStep.py",
+            "inputs": {
+                "data": "beampatternLin",
+                "multiplier": "seconds",
+            },
+            "outputs": {"result": "last"},
+        },
     },
     "link": {
         "figure_z": "results/figures/figure_z.pdf",
@@ -651,7 +660,6 @@ class TestConfiguration(unittest.TestCase):
     def test_init(self):
         self.cheffile = container.YAMLContainer(path + "/cheffile.yml")
         arg = {
-            "targets": None,
             "options": None,
             "cheffile": None,
             "resource": None,
@@ -659,8 +667,9 @@ class TestConfiguration(unittest.TestCase):
             "kitchen": None,
             "recipe": None,
             "link": None,
+            "targets": None,
         }
-        # self.chef = core.Chefkoch(cheffile, arg)
+        self.maxDiff = None
         self.configuration = core.Configuration(self.cheffile, path, arg)
         self.assertEqual(config_dict, self.configuration.items)
 

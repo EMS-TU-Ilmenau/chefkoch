@@ -121,7 +121,10 @@ class Plan:
                 # for inNodeInput in inNode.inputs:
                 for inputKey, inputValue in node.inputs.items():
                     if inputValue == inNode.outputs["result"]:
-                        map[nodeName] = {inputKey: inNodeName}
+                        if nodeName in map:
+                            map[nodeName].update({inputKey: inNodeName})
+                        else:
+                            map[nodeName] = {inputKey: inNodeName}
 
         return map
 
@@ -263,8 +266,6 @@ class Plan:
                 ret = {}
                 for child in children:
                     self.buildVariants(child)
-                    # if child in self.variants:
-                    # inputs[child] = self.variants[child]
                     childs[child] = list(
                         child + "/" + str(x) for x in self.variants[child]
                     )
@@ -276,9 +277,9 @@ class Plan:
                     elif input in self.startingItems:
                         shelf = self.fridge.getShelf(input)
                         (resourceItemHash,) = shelf.items.keys()
-                    inputs[input] = {
-                        "Resource/" + input + "/" + str(resourceItemHash)
-                    }
+                        inputs[input] = {
+                            "Resource/" + input + "/" + str(resourceItemHash)
+                        }
                 accordance = self.checkAccordance(childs, list(inputs))
                 accorded = {}
                 if len(accordance) > 0:
@@ -304,10 +305,8 @@ class Plan:
                     for child in children:
                         for variant in self.variants[child].items():
                             x = variant[1]
-                            # x1 = set(x)
                             y = item[1]
                             if variant[1].items() <= item[1].items():
-                                # if variant[1] in item[1]:
                                 pass
                             if (
                                 variant[1] == item[1]
@@ -315,9 +314,6 @@ class Plan:
                                 ret[item[0]][child] = (
                                     child + "/" + str(variant[0])
                                 )
-                                # ret[item[0]].append(
-                                #     {child: child + "/" + str(variant[0])}
-                                # )
                                 break
                             else:
                                 notFalse = False
@@ -329,15 +325,11 @@ class Plan:
                                     ret[item[0]][child] = (
                                         child + "/" + str(variant[0])
                                     )
-                                    # ret[item[0]].append(
-                                    #     {child: child + "/" + str(variant[0])}
-                                    # )
                                 break
 
                 self.variants[node] = self.reHash(ret)
 
         elif len(children) == 0:
-            # self.variants[node] = self.flavours[node].items
             inputs = {}
             ret = {}
             # a = self.graph.node(node)
@@ -384,9 +376,7 @@ class Plan:
             for key in map.keys():
                 if map[key] == input:
                     for hashkey in data[key]:
-                        n = data[key][
-                            hashkey
-                        ]
+                        n = data[key][hashkey]
                         if n[input] in ret:
                             ret[n[input]].append(key + "/" + str(hashkey))
                         else:
@@ -406,9 +396,6 @@ class Plan:
                 if child == input:
                     accordance[child] = child
             x = self.variants[child]
-            # z = next(iter(x))
-            # y = x[z]
-            # if
             if x is not None:
                 y2 = x[next(iter(x))]
                 e = self.checkAccordance(y2, inputlist)

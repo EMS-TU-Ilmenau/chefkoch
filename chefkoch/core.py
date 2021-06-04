@@ -338,4 +338,3 @@ class Chefkoch:
         # output-shelfs
         self.scheduler.doWork()
         print("I'm cooking")
-        pass

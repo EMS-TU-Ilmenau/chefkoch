@@ -73,7 +73,7 @@ class JSONContainer:
         try:
             return self.data[item]
         except KeyError:
-            print("error")
+            # print("error")
             return None
 
     def __setitem__(self, key, value):
