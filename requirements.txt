@@ -1,3 +1,4 @@
 dask
 dask-jobqueue
 xxhash
+distributed>=2026.1.0 # not directly required, pinned by Snyk to avoid a vulnerability
